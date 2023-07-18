@@ -10,9 +10,9 @@ E-COMMERCE-MLOPS/
 ├── frontend/ : (plus tard) application WEB pour interagir avec l'API  
 └── scripts/ : liste des scripts permettant de lancer les tests ou de faire le déploiement  
 
-## Mise en place du projet
+## Backend
 
-### Backend
+### Configuration de l'environnement de développement
 
 Un conteneur de développement a été préparé.  
 Voici les prérequis : 
@@ -28,3 +28,17 @@ Une fois les extensions installées, veuillez-suivre les étapes suivantes :
 4. Sélectionner le dossier **backend**.
 
 La fenêtre de VSCode va se rouvrir. Dans le terminal, vous pourrez constater l'installation des packages.
+
+### Lancement de l'API
+
+L'API utilise **uvicorn** comme serveur Web.  
+Pour démarrer le serveur et observer les changements, exécuter la commande suivante dans le terminal du conteneur de développement :
+
+```shell
+uvicorn app.main:app --reload
+```
+
+VSCode doit faire automatiquement la redirection du port 8000.  
+Ouvrir l'addresse ci-dessous dans un navigateur Web sur la machine hôte pour afficher la documentation :
+
+http://127.0.0.1:8000/docs
