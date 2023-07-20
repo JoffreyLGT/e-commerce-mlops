@@ -1,7 +1,16 @@
 FROM mcr.microsoft.com/devcontainers/python:1-3.11-bullseye
 
 ENV PYTHONUNBUFFERED 1
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=.
+
+COPY ../requirements.txt /requirements.txt
+RUN pip install -r requirements.txt
+
+COPY ../start-reload.sh /start-reload.sh
+RUN chmod +x /start-reload.sh
+
+# Should be used for production image
+#CMD [ "/start-reload.sh" ]
 
 # [Optional] If your requirements rarely change, uncomment this section to add them to the image.
 # COPY requirements.txt /tmp/pip-tmp/

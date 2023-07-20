@@ -42,3 +42,8 @@ VSCode doit faire automatiquement la redirection du port 8000.
 Ouvrir l'addresse ci-dessous dans un navigateur Web sur la machine hôte pour afficher la documentation :
 
 http://127.0.0.1:8000/docs
+
+### Génération d'une nouvelle migration
+
+Lorsque des modifications sont réalisées sur la base de données, il est nécessaire de générer un nouveau script de migration pour permettre a Alembic de mettre à jour la BDD.
+
