@@ -7,7 +7,7 @@ from pydantic import BaseModel, EmailStr
 class UserBase(BaseModel):
     email: Optional[EmailStr] = None
     is_active: Optional[bool] = True
-    is_superuser: bool = False
+    is_admin: bool = False
     full_name: Optional[str] = None
 
 

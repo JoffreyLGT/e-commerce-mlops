@@ -33,8 +33,8 @@ class Settings(BaseSettings):
             path=f"{values.get('POSTGRES_DB') or ''}",
         )
     
-    FIRST_SUPERUSER: EmailStr
-    FIRST_SUPERUSER_PASSWORD: str
+    FIRST_ADMINUSER: EmailStr
+    FIRST_ADMINUSER_PASSWORD: str
     USERS_OPEN_REGISTRATION: bool = False
 
     RESET_TOKEN_EXPIRE_HOURS: int = 48

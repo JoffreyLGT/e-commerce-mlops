@@ -14,11 +14,11 @@ from app.database import base_class  # noqa: F401
 def init_db(db: Session) -> None:
     # Tables are created with Alembic migrations
 
-    user = crud_user.get_by_email(db, email=settings.FIRST_SUPERUSER)
+    user = crud_user.get_by_email(db, email=settings.FIRST_ADMINUSER)
     if not user:
         user_in = UserCreate(
-            email=settings.FIRST_SUPERUSER,
-            password=settings.FIRST_SUPERUSER_PASSWORD,
-            is_superuser=True,
+            email=settings.FIRST_ADMINUSER,
+            password=settings.FIRST_ADMINUSER_PASSWORD,
+            is_admin=True,
         )
         user = crud_user.create(db, obj_in=user_in)  # noqa: F841
