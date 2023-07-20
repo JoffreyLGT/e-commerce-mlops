@@ -8,7 +8,6 @@ class UserBase(BaseModel):
     email: Optional[EmailStr] = None
     is_active: Optional[bool] = True
     is_admin: bool = False
-    full_name: Optional[str] = None
 
 
 # Properties to receive via API on creation
@@ -26,7 +25,7 @@ class UserInDBBase(UserBase):
     id: Optional[int] = None
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 # Additional properties to return via API

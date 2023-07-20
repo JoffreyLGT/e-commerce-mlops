@@ -7,7 +7,6 @@ from app.database.base_class import Base
 
 class User(Base):
     id: int = Column(Integer, primary_key=True, index=True)
-    full_name = Column(String, index=True)
     email: str = Column(String, unique=True, index=True, nullable=False)
     hashed_password: str = Column(String, nullable=False)
     is_active: bool = Column(Boolean(), default=True)
