@@ -1,8 +1,7 @@
 import secrets
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import AnyHttpUrl, EmailStr, PostgresDsn, validator
-from pydantic_settings import BaseSettings
+from pydantic import AnyHttpUrl, EmailStr, PostgresDsn, validator, BaseSettings
 
 class Settings(BaseSettings):
     DOMAIN: str
@@ -27,10 +26,10 @@ class Settings(BaseSettings):
             return v
         return PostgresDsn.build(
             scheme="postgresql",
-            username=values.get("POSTGRES_USER"),
+            user=values.get("POSTGRES_USER"),
             password=values.get("POSTGRES_PASSWORD"),
             host=values.get("POSTGRES_SERVER"),
-            path=f"{values.get('POSTGRES_DB') or ''}",
+            path=f"/{values.get('POSTGRES_DB') or ''}",
         )
     
     FIRST_ADMINUSER: EmailStr
@@ -42,5 +41,5 @@ class Settings(BaseSettings):
     class Config:
         case_sensitive = True
 
-
+print(Settings().SQLALCHEMY_DATABASE_URI)
 settings = Settings()
