@@ -41,5 +41,4 @@ class Settings(BaseSettings):
     class Config:
         case_sensitive = True
 
-print(Settings().SQLALCHEMY_DATABASE_URI)
 settings = Settings()
