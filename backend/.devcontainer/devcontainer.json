@@ -5,32 +5,31 @@
 	"dockerComposeFile": "docker-compose.yml",
 	"service": "api",
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
-
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// This can be used to network with other containers or the host.
 	// "forwardPorts": [5000, 5432],
-
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": "./start-reload.sh",
 	"customizations": {
 		"vscode": {
 			"extensions": [
 				"ms-python.python",
-				"ms-python.vscode-pylance",
 				"ms-azuretools.vscode-docker",
-				"ms-python.autopep8",
 				"mtxr.sqltools",
-				"mtxr.sqltools-driver-pg"
+				"mtxr.sqltools-driver-pg",
+				"ms-toolsai.jupyter",
+				"ms-python.vscode-pylance",
+				"ms-python.pylint",
+				"ms-python.black-formatter"
 			]
 		},
 		"settings": {
 			"files.exclude": {
 				"**/__pycache__": true
 			},
-            "sqltools.connections": [
+			"sqltools.connections": [
 				{
 					"previewLimit": 50,
 					"server": "localhost",
@@ -41,15 +40,28 @@
 					"username": "admin",
 					"password": "changethis"
 				}
+			],
+			"python.linting.enabled": true,
+			"python.analysis.typeCheckingMode": "basic",
+			"python.linting.pylintEnabled": true,
+			"editor.formatOnSave": true,
+			"python.analysis.autoFormatStrings": true,
+			"[python]": {
+				"editor.defaultFormatter": "ms-python.black-formatter"
+			},
+			"editor.defaultFormatter": "ms-python.black-formatter",
+			"editor.wordWrapColumn": 100,
+			"editor.rulers": [
+				100
 			]
-        }
+		}
 	},
-
 	// Configure tool-specific properties.
 	// "customizations": {},
-
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "root"
-
-	"forwardPorts": [5432, 8000]
+	"forwardPorts": [
+		5432,
+		8000
+	]
 }

@@ -5,6 +5,16 @@ from PIL import Image, ImageOps
 import tensorflow as tf
 
 
+def load_data(datadir: str = "data") -> pd.DataFrame:
+
+    return pd.concat(
+        [
+            pd.read_csv(f"{datadir}/X.csv", index_col=0),
+            pd.read_csv(f"{datadir}/y.csv", index_col=0)
+        ],
+        axis=1)
+
+
 def get_img_name(productid: int, imageid: int) -> str:
     """
     Return the filename of the image.
@@ -17,17 +27,6 @@ def get_img_name(productid: int, imageid: int) -> str:
     A string containing the filename of the image. Example: image_1000076039_product_580161.jpg
     """
     return f"image_{imageid}_product_{productid}.jpg"
-
-
-def load_data(datadir: str = "data") -> pd.DataFrame:
-
-    return pd.concat(
-        [
-            pd.read_csv(f"{datadir}/X.csv", index_col=0),
-            pd.read_csv(f"{datadir}/y.csv", index_col=0)
-        ],
-        axis=1)
-
 
 def get_imgs_filenames(productids: list[int], imageids: list[int], folder: str = None) -> list[str]:
     """
