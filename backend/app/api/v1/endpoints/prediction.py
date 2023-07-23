@@ -13,7 +13,7 @@ from datascience.classification import get_prediction
 router = APIRouter()
 
 
-@router.post("/prediction", response_model=List[schemas.PredictionResult])
+@router.post("/", response_model=List[schemas.PredictionResult])
 async def predict_category(
     *,
     _db: Session = Depends(deps.get_db),
