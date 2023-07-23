@@ -77,10 +77,11 @@ def read_user_me(
     """
     return current_user
 
+
 @router.get("/{user_id}", response_model=schemas.User)
 def read_user_by_id(
     user_id: int,
-    current_user: models.User = Depends(dependencies.get_current_active_user),
+    current_user: models.User = Depends(dependencies.get_current_active_admin),
     db: Session = Depends(dependencies.get_db),
 ) -> Any:
     """
@@ -102,7 +103,7 @@ def update_user(
     db: Session = Depends(dependencies.get_db),
     user_id: int,
     user_in: schemas.UserUpdate,
-    current_user: models.User = Depends(dependencies.get_current_active_admin),
+    _current_user: models.User = Depends(dependencies.get_current_active_admin),
 ) -> Any:
     """
     Update a user.
