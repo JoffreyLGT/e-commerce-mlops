@@ -23,9 +23,10 @@ Voici les prérequis :
 
 Une fois les extensions installées, veuillez-suivre les étapes suivantes :  
 1. Ouvrir le projet dans VSCode.
-2. Ouvrir la palette des commandes (Cmd+Shift+p).
-3. Saisir **dev container open** et sélectionner l'option **Dev Containers: Open folder in Container...**.
-4. Sélectionner le dossier **backend**.
+2. Cloner le repo e-commerce-mlops sur le terminal et placer vous dans le dossier. 
+3. Ouvrir la palette des commandes (Cmd+Shift+p).
+4. Saisir **dev container open** et sélectionner l'option **Dev Containers: Open folder in Container...**.
+5. Sélectionner le dossier **backend**.
 
 La fenêtre de VSCode va se rouvrir. Dans le terminal, vous pourrez constater l'installation des packages.
 
