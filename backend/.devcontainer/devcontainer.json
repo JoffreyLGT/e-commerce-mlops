@@ -23,37 +23,38 @@
 				"ms-python.vscode-pylance",
 				"ms-python.pylint",
 				"ms-python.black-formatter"
-			]
-		},
-		"settings": {
-			"files.exclude": {
-				"**/__pycache__": true
-			},
-			"sqltools.connections": [
-				{
-					"previewLimit": 50,
-					"server": "localhost",
-					"port": 5432,
-					"driver": "PostgreSQL",
-					"name": "App",
-					"database": "product-classification",
-					"username": "admin",
-					"password": "changethis"
-				}
 			],
-			"python.linting.enabled": true,
-			"python.analysis.typeCheckingMode": "basic",
-			"python.linting.pylintEnabled": true,
-			"editor.formatOnSave": true,
-			"python.analysis.autoFormatStrings": true,
-			"[python]": {
-				"editor.defaultFormatter": "ms-python.black-formatter"
-			},
-			"editor.defaultFormatter": "ms-python.black-formatter",
-			"editor.wordWrapColumn": 100,
-			"editor.rulers": [
-				100
-			]
+			"settings": {
+				"files.exclude": {
+					"**/__pycache__": true
+				},
+				"sqltools.connections": [
+					{
+						"previewLimit": 50,
+						"server": "localhost",
+						"port": 5432,
+						"driver": "PostgreSQL",
+						"name": "App",
+						"database": "product-classification",
+						"username": "admin",
+						"password": "changethis"
+					}
+				],
+				"python.linting.enabled": true,
+				"python.analysis.typeCheckingMode": "basic",
+				"python.linting.pylintEnabled": true,
+				"editor.formatOnSave": true,
+				"python.analysis.autoFormatStrings": true,
+				"[python]": {
+					"editor.defaultFormatter": "ms-python.black-formatter"
+				},
+				"editor.defaultFormatter": "ms-python.black-formatter",
+				"editor.wordWrapColumn": 100,
+				"editor.rulers": [
+					100
+				],
+				"python.languageServer": "Pylance"
+			}
 		}
 	},
 	// Configure tool-specific properties.
