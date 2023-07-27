@@ -40,15 +40,67 @@ uvicorn app.main:app --reload
 ```
 
 VSCode doit faire automatiquement la redirection du port 8000.  
-Ouvrir l'addresse ci-dessous dans un navigateur Web sur la machine hôte pour afficher la documentation :
+Ouvrir l’adresse ci-dessous dans un navigateur Web sur la machine hôte pour afficher la documentation :
 
 http://127.0.0.1:8000/docs
 
+### Modification d'une table en BDD
+
+Suivre les étapes de la section [Ajout d'une table en BDD](#ajout-d-une-table-en-bdd).
+
+### Ajout d'une table en BDD
+
+>> TLDR : Ajouter ou modifier les modèles SQLAlchemy dans `/app/models/`, les schemas Pydantic dans `/app/schemas/` et les outils CRUD d'interaction avec la BDD dans `/app/crud/`. Attention à bien mettre à jour les fichier `__init__.py` de ces modules ! Pour terminer, générer la migration alembic.
+>> Utiliser **prediction_feedback** comme exemple.
+
+1. Création du modèle SQLAlchemy
+
+Créer un nouveau fichier `{{tableobjet}}.py`` dans le dossier `/app/models`.  
+Définir la classe en utilisant SQLAlchemy et en la faisant hériter de la classe `app.database.base_class.Base`.
+
+Importer la classe dans le fichier `/app/models/__init__.py`. Cela permet d'avoir une meilleure syntaxe d'import dans les autres fichiers.
+
+Importer la classe dans le fichier `/app/database/base.py`. L'objectif ici est que la classe soit disponible lors de l'import de la classe Base dans la configuration alembic.
+
+2. Création du schéma Pydantic
+
+Créer un nouveau fichier `{{tableobjet}}.py` dans le dossier `/app/schemas`. Ouvrir le fichier `/app/schemas/prediction_feedback.py` et copier son contenu dans le nouveau fichier créé. Changer les classes pour qu'elles correspondent aux données du nouvel objet.
+
+Importer la classe dans le fichier `/app/schemas/__init__.py`. Cela permet d'avoir une meilleure syntaxe d'import dans les autres fichiers.
+
+3. Création du CRUD
+
+Ce fichier va contenir les fonctions permettant d'interagir avec BDD.
+
+Créer un nouveau fichier `crud_{{tableobjet}}.py` dans le dossier `/app/crud`. Ouvrir le fichier `/app/crud/crud_prediction_feedback.py` et copier son contenu dans le nouveau fichier créé. Changer les types pour renseigner ceux précédemment créés.
+
+Ne pas oublier de terminer le fichier par l'instanciation de la classe dans une variable.
+
+Importer la variable dans le fichier `/app/crud/__init__.py`. Cela permet d'avoir une meilleure syntaxe d'import dans les autres fichiers.
+
+4. Génération de la migration alembic
+
+Ouvrir un nouveau terminal et saisir la commande suivante :
+```shell
+$ alembic revision --autogenerate -m "{{description of what you did}}"
+```
+
+La migration s'appliquera automatiquement lors du prochain redémarrage du dev container. Pour l'appliquer directement et, donc, mettre à jour la BDD, saisir la commande suivante :
+```shell
+$ alembic upgrade head
+```
+
+Si besoin, il est possible de revenir en arrière sur les migrations en utilisant la commande :
+```shell
+alembic downgrade {{identifiant_révision}}
+```
+
+Ou de revenir en arrière sur toutes les migrations via la commande :
+```shell
+alembic downgrade base
+```
+
 ## Normes de développement
-
-### Commentaires
-
-Doivent être rédigés en anglais.
 
 ### Git
 
@@ -88,6 +140,10 @@ In a mixed environment of…
 ### Python
 
 Le dev container est configuré pour installer et configurer automatiquement les extensions VSCode. 
+
+#### Commentaires
+
+Doivent être rédigés en anglais.
 
 #### Language server : Pylance
 
