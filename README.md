@@ -102,10 +102,6 @@ alembic downgrade base
 
 ## Normes de développement
 
-### Commentaires
-
-Doivent être rédigés en anglais.
-
 ### Git
 
 #### Pull Request
@@ -145,6 +141,10 @@ In a mixed environment of…
 
 Le dev container est configuré pour installer et configurer automatiquement les extensions VSCode. 
 
+#### Commentaires
+
+Doivent être rédigés en anglais.
+
 #### Language server : Pylance
 
 Parfois, Pylance indique des erreurs de type à cause de décorateurs des librairies. C'est le cas notamment de la propriété `__tablename__` de SQLAchemy.
@@ -162,9 +162,9 @@ L'extension autoDocstring, intégrée au dev container, permet de générer les 
 
 #### Linter : Pylint
 
-**Pylint analyse le contenu du fichier après la sauvegarde de celui-ci.**
+Pylint analyse le contenu du fichier après la sauvegarde de celui-ci.
 
-Parfois, Pylint fait des recommandation erronée. C'est le cas, par exemple, des validateurs de la librairie Pydantic :
+Parfois, Pylint fait des recommandations erronées. C'est le cas, par exemple, des validateurs de la librairie Pydantic :
 
 ```python
 # Pylint(E0213:no-self-argument): Method 'assemble_db_connection' should have "self" as first argument
@@ -191,7 +191,8 @@ Celui-ci commence par `pylint: disable=`, suivi par la(les) références de(s) r
 
 Formate automatiquement le code lors de l'enregistrement du fichier.
 
-Attention, les imports sont réorganisés automatiquement. Dans certains cas, nous souhaitons maintenir un ordre précis. Pour désactiver la réorganisation des imports :
+Attention, les imports sont réorganisés automatiquement. Dans certains cas, nous souhaitons maintenir un ordre précis.  
+Pour désactiver la réorganisation des imports :
 - Fichier complet : ajouter `# isort: skip_file` après la docstring du module.
 - Bloc spécifique : encadrer les lignes avec les commentaires `# isort: off` et `# isort: on`.
 
