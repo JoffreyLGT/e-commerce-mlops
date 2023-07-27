@@ -16,14 +16,16 @@ MODELS_DIR = os.path.join("datascience", "data", "models")
 
 
 def get_prediction(
-    designation: str, description: str, image: np.ndarray
+    designation: str,
+    description: str,
+    image: np.ndarray,
+    limit: int | None,
 ) -> List[Tuple[int, float, str]]:
     # Get the predictions from model
     predictions = predict_prdtypecode(designation, description, image)
     # Get the top best prediction, which in at the first position
     # since the predictions are sorted by probabilities descending
-    top_3 = [(i[0], i[1], CATEGORIES_DIC[i[0]]) for i in predictions[0][0:3]]
-    return top_3
+    return [(i[0], i[1], CATEGORIES_DIC[i[0]]) for i in predictions[0][:limit]]
 
 
 def preprocess_image(img):
