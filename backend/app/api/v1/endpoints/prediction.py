@@ -4,7 +4,7 @@ from typing import Any, List, Optional
 from fastapi import APIRouter, Depends, UploadFile, HTTPException
 import numpy as np
 from sqlalchemy.orm import Session
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 
 import app.api.dependencies as deps
 from app import schemas, models
@@ -31,9 +31,17 @@ async def predict_category(
         extension = image.filename.split(".")[-1] in ("jpg", "jpeg")
         if extension is False:
             raise HTTPException(
-                400, detail="Invalid image extension. Must be jpg or jpeg."
+                400,
+                detail="Invalid image extension. Image must be in JPEG or JPG format.",
             )
-        image_data = Image.open(BytesIO(await image.read()))
+        try:
+            # Open the image with PIL
+            image_data = Image.open(BytesIO(await image.read()))
+        except UnidentifiedImageError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid image format. Image must be in JPEG or JPG format.",
+            ) from exc
 
     if limit is not None and limit <= 0:
         raise HTTPException(
