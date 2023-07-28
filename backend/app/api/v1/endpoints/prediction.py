@@ -28,13 +28,13 @@ async def predict_category(
     if image is None:
         image_data = np.zeros((254, 254, 3))
     else:
+        extension = image.filename.split(".")[-1] in ("jpg", "jpeg")
+        if extension is False:
+            raise HTTPException(
+                400,
+                detail="Invalid image extension. Image must be in JPEG or JPG format.",
+            )
         try:
-            extension = image.filename.split(".")[-1] in ("jpg", "jpeg")
-            if extension is False:
-                raise HTTPException(
-                    400,
-                    detail="Invalid image extension. Image must be in JPEG or JPG format.",
-                )
             # Open the image with PIL
             image_data = Image.open(BytesIO(await image.read()))
         except UnidentifiedImageError as exc:
