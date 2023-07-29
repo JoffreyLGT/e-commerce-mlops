@@ -1,0 +1,39 @@
+version: '3.8'
+
+name: product-classification
+services:
+  api:
+    build:
+      context: ./backend
+      dockerfile: backend.Dockerfile
+      target: ${TARGET?Variable not set}
+
+    ports:
+      - "8000:8000"
+
+    env_file:
+      - .env
+
+    environment:
+      - SERVER_NAME=${DOMAIN?Variable not set}
+      - SERVER_HOST=https://${DOMAIN?Variable not set}
+
+  db:
+    image: postgres:latest
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    
+    env_file:
+      - .env
+
+    ports:
+      - 5432:5432
+
+volumes:
+  postgres-data:
+
+networks: 
+  default: 
+    name: product-classification
+    external: true
