@@ -6,11 +6,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.api import api_router
+from app.core.metadata import app_metadata, tags_metadata
 from app.core.settings import settings
 
-app = FastAPI(
-    title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json"
-)
+app = FastAPI(**app_metadata, openapi_tags=tags_metadata)
 
 app.add_middleware(
     CORSMiddleware,
