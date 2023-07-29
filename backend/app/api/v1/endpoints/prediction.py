@@ -1,13 +1,13 @@
 from io import BytesIO
 from typing import Any, List, Optional
 
-from fastapi import APIRouter, Depends, UploadFile, HTTPException
 import numpy as np
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from PIL import Image, UnidentifiedImageError
+from sqlalchemy.orm import Session
 
 import app.api.dependencies as deps
-from app import schemas, models
+from app import models, schemas
 from datascience.classification import get_prediction
 
 router = APIRouter()
@@ -28,7 +28,11 @@ async def predict_category(
     if image is None:
         image_data = np.zeros((254, 254, 3))
     else:
-        extension = image.filename.split(".")[-1] in ("jpg", "jpeg")
+        extension = (
+            False
+            if image.filename is None
+            else image.filename.split(".")[-1] in ("jpg", "jpeg")
+        )
         if extension is False:
             raise HTTPException(
                 400,
