@@ -36,7 +36,7 @@ L'API utilise **uvicorn** comme serveur Web.
 Pour démarrer le serveur et observer les changements, exécuter la commande suivante dans le terminal du conteneur de développement :
 
 ```shell
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 VSCode doit faire automatiquement la redirection du port 8000.  
