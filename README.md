@@ -4,11 +4,21 @@ Fourni une API permettant de prédire la catégorie d'un produit en fonction de 
 
 ## Structure du projet
 
+```
 E-COMMERCE-MLOPS/  
-├── .github/workflows : Github Actions  
-├── backend/ : API et modèle de prédiction  
-├── frontend/ : (plus tard) application WEB pour interagir avec l'API  
-└── scripts/ : liste des scripts permettant de lancer les tests ou de faire le déploiement  
+├─ .github/workflow/ : Github Actions  
+├─ .vscode/settings.json : configurations du workspace VSCode  
+├─ backend/ : API et modèle de prédiction  
+├─ frontend/ : (plus tard) application WEB pour interagir avec l'API  
+├─ scripts/ : liste des scripts permettant de lancer les tests ou de faire le déploiement 
+│ ├─ ressources/ : contient les ressources nécessaires aux scripts
+```
+
+## Mise en place avec Docker
+
+1. Remplir le fichier .env avec vos informations.
+2. Exécuter `scripts/docker-setup.sh` pour créer les conteneurs.
+3. Lancer les conteneurs via Docker Desktop ou via ligne de commande.
 
 ## Backend
 
@@ -42,7 +52,12 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 VSCode doit faire automatiquement la redirection du port 8000.  
 Ouvrir l’adresse ci-dessous dans un navigateur Web sur la machine hôte pour afficher la documentation :
 
-http://127.0.0.1:8000/docs
+http://localhost:8000/docs
+
+### Monitoring
+
+Le monitoring est mise en place avec la librairie [OpenTelemetry](https://opentelemetry.io) permettat l'envoi des évènements sur plusieurs solutions du marché. 
+Dans ce projet, nous utilisons la version Open Source de [SigNoz](https://signoz.io).
 
 ### Modification d'une table en BDD
 
