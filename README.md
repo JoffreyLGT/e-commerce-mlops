@@ -212,3 +212,19 @@ Pour désactiver la réorganisation des imports :
 - Bloc spécifique : encadrer les lignes avec les commentaires `# isort: off` et `# isort: on`.
 
 [Documentation isort sur les méthode de désactivation](https://pycqa.github.io/isort/docs/configuration/action_comments.html)
+
+### Test Unitaires fonctionnels sur l'API et modéle.
+
+Ici est est question de faire différents tests unitaires sur le bon fonctionnement des différentes routes API mise en place et les bonnes informations sur la prédiction du modéle.
+Dans le contexte de notre projet, la mise en place des tests unitaires constituent des bonnes pratiques de code dans le sens ou ils s'assurent que chaque élément constitutif du code soit en bonne santé. La majeure partie du code (l'insfrastructure) qui est le squelette du projet se trouvant dans le dossier Backend, nous devons tester certaines fonctionnalité. 
+Ainsi nous devons savoir quels types de tests nous devons utilisés, soit un test unitaire ou test d'intégration.
+
+##### Les bonnes pratiques pour effectuer des tests:
+
+Les tests doivent se faire correctement à savoir:
+ - Facile à écrire
+ - Facile à lire et comprendre
+ - Fiable...
+Le code sera effectuer sur l'éditeur de programmation Visual Studio Code
+
+
