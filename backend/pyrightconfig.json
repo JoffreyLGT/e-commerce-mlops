@@ -1,0 +1,10 @@
+{
+    "include": [
+      "src"
+    ],
+    
+    "exclude": [
+      "**/.pytest_cache",
+      "**/__pycache__",
+    ],
+}
