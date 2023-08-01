@@ -1,14 +1,16 @@
-from io import BytesIO
-from typing import Any, List, Optional
+"""Prediction router with all the routes to predict product categories."""
 
-from fastapi import APIRouter, Depends, UploadFile, HTTPException
+from io import BytesIO
+from typing import Any, List
+
 import numpy as np
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from PIL import Image, UnidentifiedImageError
 
 import app.api.dependencies as deps
-from app import schemas, models
-from datascience.classification import get_prediction
+from app import models, schemas
+from datascience.classification import predict_prdtypecode
+from datascience.src.data import CATEGORIES_DIC
 
 router = APIRouter()
 
@@ -16,8 +18,8 @@ router = APIRouter()
 @router.post("/", response_model=List[schemas.PredictionResult])
 async def predict_category(
     *,
-    designation: str = "",
-    description: str = "",
+    designation: str | None = None,
+    description: str | None = None,
     image: UploadFile | None = None,
     limit: int | None = None,
     _current_user: models.User = Depends(deps.get_current_active_user),
@@ -25,10 +27,13 @@ async def predict_category(
     """
     Predict the category of the product.
     """
-    if image is None:
-        image_data = np.zeros((254, 254, 3))
-    else:
-        extension = image.filename.split(".")[-1] in ("jpg", "jpeg")
+    image_data = None
+    if image is not None:
+        extension = (
+            False
+            if image.filename is None
+            else image.filename.split(".")[-1] in ("jpg", "jpeg")
+        )
         if extension is False:
             raise HTTPException(
                 400,
@@ -36,7 +41,7 @@ async def predict_category(
             )
         try:
             # Open the image with PIL
-            image_data = Image.open(BytesIO(await image.read()))
+            image_data = np.asarray(Image.open(BytesIO(await image.read())))
         except UnidentifiedImageError as exc:
             raise HTTPException(
                 status_code=400,
@@ -49,12 +54,19 @@ async def predict_category(
             detail="Invalid value for limit. Must be a positive integer.",
         )
 
-    result = get_prediction(
-        designation,
-        description,
-        np.asarray(image_data),
-        limit,
-    )
+    # Check if we have data. We need either text data or an image to do a prediction
+    if designation is None and description is None and image is None:
+        raise HTTPException(
+            400,
+            detail="You must provide either designation/description or an image to get a result.",
+        )
+
+    # Get the predictions from model
+    predictions = predict_prdtypecode(designation, description, image_data)
+    # Since the predictions are sorted by probabilities descending, we just need to return
+    # the {limit} first elements of the list
+    result = [(i[0], i[1], CATEGORIES_DIC[i[0]]) for i in predictions[0][:limit]]
+
     return [
         schemas.PredictionResult(prdtypecode=i[0], probabilities=i[1], label=i[2])
         for i in result
