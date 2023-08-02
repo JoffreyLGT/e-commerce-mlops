@@ -173,4 +173,7 @@ backend/datascience/data/models/image/cnn_mobilenetv2.h5
 backend/datascience/data/models/text/mlp_model_v2.h5
 backend/datascience/data/pickles/text_preprocessor.pkl
 
+# Full repository
 signoz
+# Generated with /scripts/test.sh
+docker-stack.yaml
