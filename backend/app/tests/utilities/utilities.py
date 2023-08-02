@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 from pydantic import EmailStr
 
 from app.core.settings import settings
+from datascience.src.data import CATEGORIES_DIC
 
 
 def random_lower_string(length: int = 32) -> str:
@@ -46,8 +47,18 @@ def get_admin_token_headers(client: TestClient) -> Dict[str, str]:
         "username": settings.FIRST_ADMINUSER,
         "password": settings.FIRST_ADMINUSER_PASSWORD,
     }
-    r = client.post(f"{settings.API_V1_STR}/login/access-token", data=login_data)
-    tokens = r.json()
+    response = client.post(f"{settings.API_V1_STR}/login/access-token", data=login_data)
+    tokens = response.json()
     a_token = tokens["access_token"]
     headers = {"Authorization": f"Bearer {a_token}"}
     return headers
+
+
+def random_category_id() -> int:
+    """Return a random category id (prdtypecode).
+
+    Returns:
+        Random category id.
+    """
+    all_ids = list(CATEGORIES_DIC.keys())
+    return random.choice(all_ids)
