@@ -6,6 +6,9 @@ ENV PYTHONPATH=.
 COPY ../requirements.txt /requirements.txt
 RUN pip install -r requirements.txt
 
+COPY ../requirements-dev.txt /requirements-dev.txt
+RUN pip install -r requirements-dev.txt
+
 COPY ../start-reload.sh /start-reload.sh
 RUN chmod +x /start-reload.sh
 

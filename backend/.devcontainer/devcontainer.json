@@ -28,7 +28,8 @@
 			],
 			"settings": {
 				"files.exclude": {
-					"**/__pycache__": true
+					"**/__pycache__": true,
+					".pytest_cache": true
 				},
 				"sqltools.connections": [
 					{
@@ -42,9 +43,18 @@
 						"password": "changethis"
 					}
 				],
+				"python.testing.pytestArgs": [
+					"app"
+				],
+				"python.testing.unittestEnabled": false,
+				"python.testing.pytestEnabled": true,
+				"python.linting.pydocstyleEnabled": true,
 				"python.linting.enabled": true,
 				"python.analysis.typeCheckingMode": "basic",
 				"python.linting.pylintEnabled": true,
+				"python.linting.pylintArgs": [
+					"--rcfile=pylintrc"
+				],
 				"editor.formatOnSave": true,
 				"python.analysis.autoFormatStrings": true,
 				"python.formatting.provider": "none",

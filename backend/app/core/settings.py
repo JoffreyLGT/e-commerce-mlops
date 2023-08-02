@@ -1,5 +1,5 @@
-"""
-Contains all the settings needed to run the API.
+"""Contains all the settings needed to run the API.
+
 Most of them are coming from env variables, others are
 constructed or simply defined.
 Note: important variable must have validator using pydantic.
@@ -8,13 +8,11 @@ Note: important variable must have validator using pydantic.
 import secrets
 from typing import Any, Dict, List, Union
 
-from pydantic import AnyHttpUrl, EmailStr, PostgresDsn, validator, BaseSettings
+from pydantic import AnyHttpUrl, BaseSettings, EmailStr, PostgresDsn, validator
 
 
 class Settings(BaseSettings):
-    """
-    Settings to use in the API. Values are overwritten by environment variables.
-    """
+    """Settings to use in the API. Values are overwritten by environment variables."""
 
     # pylint: disable=E0213
     DOMAIN: str | None = None
@@ -35,9 +33,11 @@ class Settings(BaseSettings):
 
     @validator("SQLALCHEMY_DATABASE_URI", pre=True)
     def assemble_db_connection(cls, v: str | None, values: Dict[str, Any]) -> Any:
-        """
-        Validate the information provided through env variable to ensure we are able to build a
-        correct PostgreSQL connection string if SQLALCHEMY_DATABASE_URI is not provided.
+        """Ensure we have a valid DB connection.
+
+        Validate the information provided through env variable to ensure we are able to
+        build a correct PostgreSQL connection string if SQLALCHEMY_DATABASE_URI is
+        not provided.
         """
         # Check if SQLALCHEMY_DATABASE_URI was provided through env
         if isinstance(v, str):
@@ -58,9 +58,13 @@ class Settings(BaseSettings):
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
-        """
-        Validate the format of BACKEND_CORS_ORIGINS and ensure we are sending
-        back a list of strings.
+        """Validate the format of BACKEND_CORS_ORIGINS.
+
+        Raises:
+            ValueError: if value is not a string or a list of string.
+
+        Returns:
+            Single string with all CORS separated by commas.
         """
         if isinstance(v, str) and not v.startswith("["):
             return [i.strip() for i in v.split(",")]
@@ -68,6 +72,7 @@ class Settings(BaseSettings):
             return v
         raise ValueError(v)
 
+    TEST_USER: EmailStr = EmailStr("user@test.com")
     FIRST_ADMINUSER: EmailStr | None = None
     FIRST_ADMINUSER_PASSWORD: str | None = None
     USERS_OPEN_REGISTRATION: bool = False
@@ -79,9 +84,7 @@ class Settings(BaseSettings):
 
     # pylint: disable=R0903
     class Config:
-        """
-        Pydantic configuration.
-        """
+        """Pydantic configuration."""
 
         case_sensitive = True
 
