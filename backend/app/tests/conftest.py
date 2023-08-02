@@ -9,6 +9,8 @@ from sqlalchemy.orm import Session
 from app.core.settings import settings
 from app.database.session import SessionLocal
 from app.main import app
+from app.schemas import PredictionFeedback
+from app.tests.utilities.prediction_feedback import create_random_feedback
 from app.tests.utilities.user import authentication_token_from_email
 from app.tests.utilities.utilities import get_admin_token_headers
 
@@ -66,3 +68,16 @@ def normal_user_token_headers(client: TestClient, db: Session) -> Dict[str, str]
     return authentication_token_from_email(
         client=client, email=settings.TEST_USER, db=db
     )
+
+
+@pytest.fixture(scope="module")
+def prediction_feedback(db: Session) -> PredictionFeedback:
+    """Insert a new prediction feedback in DB and returns it.
+
+    Args:
+        db: database session.
+
+    Returns:
+        Newly created prediction feedback.
+    """
+    return create_random_feedback(db=db)

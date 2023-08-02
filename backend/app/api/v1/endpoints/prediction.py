@@ -1,10 +1,10 @@
-"""Prediction router with all the routes to predict product categories."""
+"""Routes to predict product categories."""
 
 from io import BytesIO
 from typing import Any, List
 
 import numpy as np
-from fastapi import APIRouter, Depends, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from PIL import Image, UnidentifiedImageError
 
 import app.api.dependencies as deps
@@ -22,10 +22,19 @@ async def predict_category(
     description: str | None = None,
     image: UploadFile | None = None,
     limit: int | None = None,
+    # Authentication and access management, do not delete!
     _current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    """
-    Predict the category of the product.
+    """Predict the category of the product.
+
+    Raises:
+        HTTPException: 400 if image extension is invalid.
+        HTTPException: 400 if image format is invalid.
+        HTTPException: 400 if limit is not a positive int.
+        HTTPException: 400 if not enough data is provided.
+
+    Returns:
+        Prediction results with category id, probabilities and category label.
     """
     image_data = None
     if image is not None:
@@ -36,7 +45,7 @@ async def predict_category(
         )
         if extension is False:
             raise HTTPException(
-                400,
+                status.HTTP_400_BAD_REQUEST,
                 detail="Invalid image extension. Image must be in JPEG or JPG format.",
             )
         try:
@@ -44,20 +53,20 @@ async def predict_category(
             image_data = np.asarray(Image.open(BytesIO(await image.read())))
         except UnidentifiedImageError as exc:
             raise HTTPException(
-                status_code=400,
+                status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid image format. Image must be in JPEG or JPG format.",
             ) from exc
 
     if limit is not None and limit <= 0:
         raise HTTPException(
-            400,
+            status.HTTP_400_BAD_REQUEST,
             detail="Invalid value for limit. Must be a positive integer.",
         )
 
     # Check if we have data. We need either text data or an image to do a prediction
     if designation is None and description is None and image is None:
         raise HTTPException(
-            400,
+            status.HTTP_400_BAD_REQUEST,
             detail="You must provide either designation/description or an image to get a result.",
         )
 

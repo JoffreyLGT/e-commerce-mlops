@@ -44,7 +44,7 @@ def get_current_user(
 
     Raises:
         HTTPException: 403 if credentials are invalid.
-        HTTPException: 404 if user is not found.
+        HTTPException: 403 if user is not found.
 
     Returns:
         Current user information.
@@ -61,7 +61,9 @@ def get_current_user(
         ) from exc
     user = crud.user.get(db, id=token_data.sub)
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="User not found"
+        )
     return user
 
 
@@ -74,13 +76,15 @@ def get_current_active_user(
         current_user: authenticate user and fetch its data from DB.
 
     Raises:
-        HTTPException: 400 if user is inactive.
+        HTTPException: 403 if user is inactive.
 
     Returns:
         User information.
     """
     if not crud.user.is_active(current_user):
-        raise HTTPException(status_code=400, detail="Inactive user")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Inactive user"
+        )
     return current_user
 
 
@@ -93,13 +97,14 @@ def get_current_active_admin(
         current_user: authenticate user, fetch its data from DB and check if active.
 
     Raises:
-        HTTPException: 400 if user is inactive.
+        HTTPException: 403 if user is inactive.
 
     Returns:
         User information.
     """
     if not crud.user.is_admin(current_user):
         raise HTTPException(
-            status_code=400, detail="The user doesn't have enough privileges"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The user doesn't have enough privileges",
         )
     return current_user
