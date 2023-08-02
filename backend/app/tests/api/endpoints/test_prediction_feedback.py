@@ -23,7 +23,7 @@ def test_get_feedbacks_admin(
     request = client.get(
         f"{settings.API_V1_STR}/feedback/", headers=admin_token_headers
     )
-    assert status.HTTP_200_OK <= request.status_code < status.HTTP_300_MULTIPLE_CHOICES
+    assert request.status_code == status.HTTP_200_OK
     response = request.json()
     response_feedback = list(
         filter(lambda x: x["id"] == prediction_feedback.id, response)
@@ -55,6 +55,10 @@ def test_create_existing_feedback(
     normal_user_token_headers: Dict[str, str],
     prediction_feedback: PredictionFeedback,
 ) -> None:
+    """Test if we can add an already existing feedback.
+
+    Should not be the case.
+    """
     request = client.post(
         f"{settings.API_V1_STR}/feedback/",
         headers=normal_user_token_headers,
@@ -70,6 +74,7 @@ def test_create_existing_feedback(
 def test_create_new_feedback(
     client: TestClient, normal_user_token_headers: Dict[str, str]
 ) -> None:
+    """Test if we can create a new feedback."""
     expected = PredictionFeedbackCreate(
         product_id=random.randint(0, 999999),
         real_category_id=random_category_id(),

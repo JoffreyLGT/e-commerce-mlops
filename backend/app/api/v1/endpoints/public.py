@@ -1,4 +1,4 @@
-"""Contains a public route to check if the API is online."""
+"""Route to check if the API is online."""
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session

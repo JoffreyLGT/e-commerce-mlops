@@ -1,13 +1,14 @@
+"""Routes to manage users."""
+
 from typing import Any, List
 
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from pydantic.networks import EmailStr
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import dependencies
-from app.core.settings import settings
 
 router = APIRouter()
 
@@ -17,29 +18,34 @@ def read_users(
     db: Session = Depends(dependencies.get_db),
     skip: int = 0,
     limit: int = 100,
-    current_user: models.User = Depends(dependencies.get_current_active_admin),
+    # Authentication and access management, do not delete!
+    _current_user: models.User = Depends(dependencies.get_current_active_admin),
 ) -> Any:
-    """
-    Retrieve users.
-    """
+    """Retrieve users information."""
     users = crud.user.get_multi(db, skip=skip, limit=limit)
     return users
 
 
-@router.post("/", response_model=schemas.User)
+@router.post("/", response_model=schemas.User, status_code=status.HTTP_201_CREATED)
 def create_user(
     *,
     db: Session = Depends(dependencies.get_db),
     user_in: schemas.UserCreate,
-    current_user: models.User = Depends(dependencies.get_current_active_admin),
+    # Authentication and access management, do not delete!
+    _current_user: models.User = Depends(dependencies.get_current_active_admin),
 ) -> Any:
-    """
-    Create new user.
+    """Create a new user and return their information.
+
+    Raises:
+        HTTPException: 400 if user already exists in the system.
+
+    Returns:
+        New user information.
     """
     user = crud.user.get_by_email(db, email=user_in.email)
     if user:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="The user with this username already exists in the system.",
         )
     user = crud.user.create(db, obj_in=user_in)
@@ -54,8 +60,10 @@ def update_user_me(
     email: EmailStr = Body(None),
     current_user: models.User = Depends(dependencies.get_current_active_user),
 ) -> Any:
-    """
-    Update own user.
+    """Update user's own information.
+
+    Returns:
+        Updated user information.
     """
     current_user_data = jsonable_encoder(current_user)
     user_in = schemas.UserUpdate(**current_user_data)
@@ -69,30 +77,32 @@ def update_user_me(
 
 @router.get("/me", response_model=schemas.User)
 def read_user_me(
-    db: Session = Depends(dependencies.get_db),
     current_user: models.User = Depends(dependencies.get_current_active_user),
 ) -> Any:
-    """
-    Get current user.
-    """
+    """Get current user information."""
     return current_user
 
 
 @router.get("/{user_id}", response_model=schemas.User)
 def read_user_by_id(
     user_id: int,
-    current_user: models.User = Depends(dependencies.get_current_active_admin),
+    # Authentication and access management, do not delete!
+    _current_user: models.User = Depends(dependencies.get_current_active_admin),
     db: Session = Depends(dependencies.get_db),
 ) -> Any:
-    """
-    Get a specific user by id.
+    """Get a specific user's information by their id.
+
+    Raises:
+        HTTPException: 404 if the user is not in db.
+
+    Returns:
+        User information.
     """
     user = crud.user.get(db, id=user_id)
-    if user == current_user:
-        return user
-    if not crud.user.is_admin(current_user):
+    if not user:
         raise HTTPException(
-            status_code=400, detail="The user doesn't have enough privileges"
+            status_code=404,
+            detail="The user with this username does not exist in the system",
         )
     return user
 
@@ -103,10 +113,16 @@ def update_user(
     db: Session = Depends(dependencies.get_db),
     user_id: int,
     user_in: schemas.UserUpdate,
+    # Authentication and access management, do not delete!
     _current_user: models.User = Depends(dependencies.get_current_active_admin),
 ) -> Any:
-    """
-    Update a user.
+    """Update a specific user's information by their id.
+
+    Raises:
+        HTTPException: 404 if the user is not in db.
+
+    Returns:
+        User information.
     """
     user = crud.user.get(db, id=user_id)
     if not user:

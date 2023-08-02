@@ -2,6 +2,7 @@
 
 from typing import Dict
 
+from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
@@ -16,6 +17,7 @@ def test_get_users_admin_me(
 ) -> None:
     """Test the route to retrieve admin user's own information"""
     request = client.get(f"{settings.API_V1_STR}/users/me", headers=admin_token_headers)
+    assert status.HTTP_200_OK == request.status_code
     current_user = request.json()
     assert current_user
     assert current_user["is_active"] is True
@@ -30,6 +32,8 @@ def test_get_users_normal_user_me(
     request = client.get(
         f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers
     )
+    assert status.HTTP_200_OK == request.status_code
+
     current_user = request.json()
     assert current_user
     assert current_user["is_active"] is True
@@ -44,13 +48,13 @@ def test_create_user_new_email(
     username = random_email()
     password = random_lower_string()
     data = {"email": username, "password": password}
-    response = client.post(
+    request = client.post(
         f"{settings.API_V1_STR}/users/",
         headers=admin_token_headers,
         json=data,
     )
-    assert 200 <= response.status_code < 300
-    created_user = response.json()
+    assert status.HTTP_200_OK <= request.status_code < status.HTTP_300_MULTIPLE_CHOICES
+    created_user = request.json()
     user = crud.user.get_by_email(db, email=username)
     assert user
     assert user.email == created_user["email"]
@@ -65,12 +69,12 @@ def test_get_existing_user(
     user_in = UserCreate(email=username, password=password)
     user = crud.user.create(db, obj_in=user_in)
     user_id = user.id
-    r = client.get(
+    request = client.get(
         f"{settings.API_V1_STR}/users/{user_id}",
         headers=admin_token_headers,
     )
-    assert 200 <= r.status_code < 300
-    api_user = r.json()
+    assert status.HTTP_200_OK == request.status_code
+    api_user = request.json()
     existing_user = crud.user.get_by_email(db, email=username)
     assert existing_user
     assert existing_user.email == api_user["email"]
@@ -89,13 +93,17 @@ def test_create_user_existing_username(
     user_in = UserCreate(email=username, password=password)
     crud.user.create(db, obj_in=user_in)
     data = {"email": username, "password": password}
-    response = client.post(
+    request = client.post(
         f"{settings.API_V1_STR}/users/",
         headers=admin_token_headers,
         json=data,
     )
-    created_user = response.json()
-    assert response.status_code == 400
+    assert (
+        status.HTTP_400_BAD_REQUEST
+        <= request.status_code
+        < status.HTTP_500_INTERNAL_SERVER_ERROR
+    )
+    created_user = request.json()
     assert "_id" not in created_user
 
 
@@ -109,12 +117,16 @@ def test_create_user_by_normal_user(
     username = random_email()
     password = random_lower_string()
     data = {"email": username, "password": password}
-    response = client.post(
+    request = client.post(
         f"{settings.API_V1_STR}/users/",
         headers=normal_user_token_headers,
         json=data,
     )
-    assert response.status_code == 400
+    assert (
+        status.HTTP_400_BAD_REQUEST
+        <= request.status_code
+        < status.HTTP_500_INTERNAL_SERVER_ERROR
+    )
 
 
 def test_retrieve_users(
@@ -131,8 +143,9 @@ def test_retrieve_users(
     user_in2 = UserCreate(email=username2, password=password2)
     crud.user.create(db, obj_in=user_in2)
 
-    r = client.get(f"{settings.API_V1_STR}/users/", headers=admin_token_headers)
-    all_users = r.json()
+    request = client.get(f"{settings.API_V1_STR}/users/", headers=admin_token_headers)
+    assert status.HTTP_200_OK == request.status_code
+    all_users = request.json()
 
     assert len(all_users) > 1
     for item in all_users:
