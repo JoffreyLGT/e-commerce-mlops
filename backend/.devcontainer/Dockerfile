@@ -9,12 +9,6 @@ RUN pip install -r requirements.txt
 COPY ../requirements-dev.txt /requirements-dev.txt
 RUN pip install -r requirements-dev.txt
 
-COPY ../start-reload.sh /start-reload.sh
-RUN chmod +x /start-reload.sh
-
-# Should be used for production image
-#CMD [ "/start-reload.sh" ]
-
 # [Optional] If your requirements rarely change, uncomment this section to add them to the image.
 # COPY requirements.txt /tmp/pip-tmp/
 # RUN pip3 --disable-pip-version-check --no-cache-dir install -r /tmp/pip-tmp/requirements.txt \

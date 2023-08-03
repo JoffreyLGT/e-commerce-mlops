@@ -11,7 +11,7 @@
 	// This can be used to network with other containers or the host.
 	// "forwardPorts": [5000, 5432],
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postStartCommand": "./start-reload.sh",
+	"postStartCommand": "./scripts/start-reload.sh",
 	"customizations": {
 		"vscode": {
 

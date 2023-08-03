@@ -17,7 +17,7 @@ E-COMMERCE-MLOPS/
 ## Mise en place avec Docker
 
 1. Remplir le fichier .env avec vos informations.
-2. Exécuter `scripts/docker-setup.sh` pour créer les conteneurs.
+2. Exécuter `scripts/docker-deploy.sh` pour créer les conteneurs.
 3. Lancer les conteneurs via Docker Desktop ou via ligne de commande.
 
 ## Backend
