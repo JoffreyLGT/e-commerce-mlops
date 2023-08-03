@@ -9,6 +9,6 @@ set -e
 set -x
 
 # Run prestart.sh to create DB
-./prestart.sh
+./scripts/prestart.sh
 
-pytest --cov=app --cov-report=term-missing app/tests "${@}"
+pytest app/tests "${@}"
