@@ -42,6 +42,7 @@ jobs:
       id: cache
       with:
         path: ${{ env.pythonLocation }}
+        # Editing one of the requirements file triggers a cache refresh
         key: ${{ env.pythonLocation }}-${{ hashFiles('./backend/requirements.txt') }}-${{ hashFiles('./backend/requirements-dev.txt') }}
     - name: Install pip packages
       if: steps.cache.outputs.cache-hit != 'true'
@@ -52,8 +53,8 @@ jobs:
       id: cache-models
       with:
         path: ./backend/datascience/data
-        key: model-saved
-
+        # Editing the script to download the model saves triggers a cache refresh
+        key: -${{ hashFiles('./backend/scripts/download_models.py') }}
     - name: Download saved models
       if: steps.cache-models.outputs.cache-hit != 'true'
       run: python scripts/download_models.py 
