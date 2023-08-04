@@ -12,6 +12,7 @@
 	// "forwardPorts": [5000, 5432],
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postStartCommand": "./scripts/start-reload.sh",
+	"shutdownAction":"stopCompose",
 	"customizations": {
 		"vscode": {
 
