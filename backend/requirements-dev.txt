@@ -4,3 +4,4 @@ pydocstyle
 sqlalchemy-stubs
 isort
 black
+pylint
