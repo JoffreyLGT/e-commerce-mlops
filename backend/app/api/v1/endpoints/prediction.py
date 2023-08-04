@@ -1,7 +1,7 @@
 """Routes to predict product categories."""
 
 from io import BytesIO
-from typing import Any, List
+from typing import Any
 
 import numpy as np
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
@@ -15,7 +15,7 @@ from datascience.src.data import CATEGORIES_DIC
 router = APIRouter()
 
 
-@router.post("/", response_model=List[schemas.PredictionResult])
+@router.post("/", response_model=list[schemas.PredictionResult])
 async def predict_category(
     *,
     designation: str | None = None,
@@ -67,13 +67,13 @@ async def predict_category(
     if designation is None and description is None and image is None:
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST,
-            detail="You must provide either designation/description or an image to get a result.",
+            detail="You must provide either designation/description or an image to get a result.",  # noqa: E501
         )
 
     # Get the predictions from model
     predictions = predict_prdtypecode(designation, description, image_data)
-    # Since the predictions are sorted by probabilities descending, we just need to return
-    # the {limit} first elements of the list
+    # Since the predictions are sorted by probabilities descending, we just need to
+    # return the {limit} first elements of the list
     result = [(i[0], i[1], CATEGORIES_DIC[i[0]]) for i in predictions[0][:limit]]
 
     return [

@@ -1,13 +1,18 @@
-from typing import TYPE_CHECKING, List
+"""Definition of a User object.
 
-from sqlalchemy import Boolean, Column, Integer, String
-from sqlalchemy.orm import relationship
+Contains their credentials and their access rights.
+"""
+from sqlalchemy import Boolean, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database.base_class import Base
 
+
 class User(Base):
-    id: int = Column(Integer, primary_key=True, index=True)
-    email: str = Column(String, unique=True, index=True, nullable=False)
-    hashed_password: str = Column(String, nullable=False)
-    is_active: bool = Column(Boolean(), default=True)
-    is_admin: bool = Column(Boolean(), default=False)
+    """User object with their credentials and access rights."""
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    email: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
+    hashed_password: Mapped[str] = mapped_column(String, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean(), default=True)
+    is_admin: Mapped[bool] = mapped_column(Boolean(), default=False)

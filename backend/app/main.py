@@ -1,6 +1,4 @@
-"""
-Entry point of the backend. Setup FastAPI, middleware and routing system.
-"""
+"""Entry point of the backend. Setup FastAPI, middleware and routing system."""
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware

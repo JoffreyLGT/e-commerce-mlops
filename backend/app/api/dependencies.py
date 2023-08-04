@@ -1,5 +1,5 @@
 """Contains dependencies used by the routes."""
-from typing import Generator
+from collections.abc import Generator
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer

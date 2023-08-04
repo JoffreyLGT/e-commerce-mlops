@@ -1,6 +1,4 @@
 pytest
 httpx
-pydocstyle
-sqlalchemy-stubs
-isort
+
 black

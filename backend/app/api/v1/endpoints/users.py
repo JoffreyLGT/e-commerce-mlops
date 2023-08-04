@@ -1,6 +1,6 @@
 """Routes to manage users."""
 
-from typing import Any, List
+from typing import Any
 
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 from fastapi.encoders import jsonable_encoder
@@ -13,7 +13,7 @@ from app.api import dependencies
 router = APIRouter()
 
 
-@router.get("/", response_model=List[schemas.User])
+@router.get("/", response_model=list[schemas.User])
 def read_users(
     db: Session = Depends(dependencies.get_db),
     skip: int = 0,
@@ -71,7 +71,7 @@ def update_user_me(
         user_in.password = password
     if email is not None:
         user_in.email = email
-    user = crud.user.update(db, db_obj=current_user, obj_in=user_in)
+    user = crud.user.update(db, db_user=current_user, user_in=user_in)
     return user
 
 
@@ -130,5 +130,5 @@ def update_user(
             status_code=404,
             detail="The user with this username does not exist in the system",
         )
-    user = crud.user.update(db, db_obj=user, obj_in=user_in)
+    user = crud.user.update(db, db_user=user, user_in=user_in)
     return user

@@ -1,38 +1,52 @@
-from typing import Optional
-
+"""Define Pydantic schemas for a User object."""
 from pydantic import BaseModel, EmailStr
 
 
-# Shared properties
 class UserBase(BaseModel):
-    email: Optional[EmailStr] = None
-    is_active: Optional[bool] = True
+    """Shared attributes between each class."""
+
+    email: EmailStr | None = None
+    is_active: bool | None = True
     is_admin: bool = False
 
 
-# Properties to receive via API on creation
 class UserCreate(UserBase):
+    """Properties to receive via API on creation."""
+
     email: EmailStr
     password: str
 
 
-# Properties to receive via API on update
 class UserUpdate(UserBase):
-    password: Optional[str] = None
+    """Properties to receive via API on update."""
+
+    password: str | None = None
 
 
 class UserInDBBase(UserBase):
-    id: Optional[int] = None
+    """Base properties stored in DB. They are the one needed for all entries."""
+
+    id: int | None = None
 
     class Config:
+        """Pydantic configuration.
+
+        Attributes:
+            orm_mode            Map the models to ORM objects.
+        """
+
         orm_mode = True
 
 
-# Additional properties to return via API
 class User(UserInDBBase):
-    pass
+    """Properties to return to client.
+
+    By default, all the base properties stored in DB.
+    """
 
 
 # Additional properties stored in DB
 class UserInDB(UserInDBBase):
+    """Additional properties stored in DB. Most of the time, they are optionals."""
+
     hashed_password: str

@@ -1,6 +1,6 @@
 """Contains all the fixtures used in tests."""
 
-from typing import Dict, Generator
+from collections.abc import Generator
 
 import pytest
 from fastapi.testclient import TestClient
@@ -37,7 +37,7 @@ def fixture_client() -> Generator:
 
 
 @pytest.fixture(scope="module")
-def admin_token_headers(client: TestClient) -> Dict[str, str]:
+def admin_token_headers(client: TestClient) -> dict[str, str]:
     """Fixture to get an admin token header.
 
     The returned header is the one from the FIRST_ADMINUSER created on first start.
@@ -52,7 +52,7 @@ def admin_token_headers(client: TestClient) -> Dict[str, str]:
 
 
 @pytest.fixture(scope="module")
-def normal_user_token_headers(client: TestClient, db: Session) -> Dict[str, str]:
+def normal_user_token_headers(client: TestClient, db: Session) -> dict[str, str]:
     """Fixture to get a normal user token header.
 
     The returned header is the one from the TEST_USER.

@@ -1,7 +1,6 @@
-"""Functions to manage PredictionFeedback entries in DB.
-"""
+"""Functions to manage PredictionFeedback entries in DB."""
+
 from sqlalchemy.orm import Session
-from typing import List
 
 from app.core.settings import settings
 from app.crud.base import CRUDBase
@@ -27,7 +26,7 @@ class CRUDPredictionFeedback(
         """Fetch the entry for a specific product id from DB.
 
         Args:
-            db: _description_
+            db: session to run requests.
             product_id: product identifier in Rakuten systems
             model_version: version of the model used for prediction
 
@@ -51,13 +50,14 @@ class CRUDPredictionFeedback(
         model_version: str | None = None,
         skip: int = 0,
         limit: int = 100
-    ) -> List[PredictionFeedback]:
+    ) -> list[PredictionFeedback]:
         """Fetch all entries for a model version.
 
         Args:
-            db: _description_
-            product_id: product identifier in Rakuten systems
-            model_version: version of the model used for prediction
+            db: session to run requests.
+            model_version: version of the model used for prediction. Defaults to None.
+            skip: number of results to skip. Defaults to 0.
+            limit: maximum number of results. Defaults to 100.
 
         Returns:
             Corresponding entry or None if there is no match in DB.

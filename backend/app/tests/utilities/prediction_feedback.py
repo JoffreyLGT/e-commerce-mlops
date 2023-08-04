@@ -1,7 +1,6 @@
 """Utilities regarding prediction feedback management used in tests."""
 import random
 
-from numpy import product
 from sqlalchemy.orm import Session
 
 from app import crud
@@ -18,7 +17,6 @@ def create_random_feedback(db: Session) -> PredictionFeedback:
     Returns:
         New user information.
     """
-
     feedback_in = PredictionFeedbackCreate(
         product_id=random.randint(0, 999999),
         real_category_id=random_category_id(),

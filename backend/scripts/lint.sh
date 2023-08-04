@@ -3,11 +3,10 @@
 # Print a trace of simple commands
 set -x
 
+# FIXME Add datascience folder
+
 # Formatter
 black app --check
-# Import organiser
-isort --check-only app
+
 # Linter
-pylint --rcfile pylintrc app
-# docstring checker
-pydocstyle
+ruff app

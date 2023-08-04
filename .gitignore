@@ -177,3 +177,5 @@ backend/datascience/data/pickles/text_preprocessor.pkl
 signoz
 # Generated with /scripts/test.sh
 docker-stack.yaml
+# Ruff cache
+.ruff_cache

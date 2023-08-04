@@ -2,7 +2,6 @@
 
 import random
 import string
-from typing import Dict
 
 from fastapi.testclient import TestClient
 from pydantic import EmailStr
@@ -32,7 +31,7 @@ def random_email() -> EmailStr:
     return EmailStr(f"{random_lower_string(10)}@{random_lower_string(6)}.com")
 
 
-def get_admin_token_headers(client: TestClient) -> Dict[str, str]:
+def get_admin_token_headers(client: TestClient) -> dict[str, str]:
     """Use the API route to get an admin access token header.
 
     The returned header is the one from the FIRST_ADMINUSER created on first start.

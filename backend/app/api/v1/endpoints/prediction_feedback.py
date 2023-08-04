@@ -1,6 +1,6 @@
 """Routes to manage prediction feedbacks from Rakuten."""
 
-from typing import Any, List
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -12,7 +12,7 @@ from app.core.settings import settings
 router = APIRouter()
 
 
-@router.get("/", response_model=List[schemas.PredictionFeedback])
+@router.get("/", response_model=list[schemas.PredictionFeedback])
 def get_feedbacks(
     db: Session = Depends(dependencies.get_db),
     # Authentication and access management, do not delete!
@@ -45,7 +45,7 @@ def create_feedback(
     if feedback:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="A prediction feedback with this product id already exists in the system.",
+            detail="A prediction feedback with this product id already exists in the system.",  # noqa: E501
         )
     feedback = crud.prediction_feedback.create(db, obj_in=feedback_in)
     return feedback

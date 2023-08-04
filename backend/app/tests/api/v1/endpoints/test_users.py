@@ -1,6 +1,5 @@
 """Test the users routes."""
 
-from typing import Dict
 
 from fastapi import status
 from fastapi.testclient import TestClient
@@ -13,9 +12,9 @@ from app.tests.utilities.utilities import random_email, random_lower_string
 
 
 def test_get_users_admin_me(
-    client: TestClient, admin_token_headers: Dict[str, str]
+    client: TestClient, admin_token_headers: dict[str, str]
 ) -> None:
-    """Test the route to retrieve admin user's own information"""
+    """Test the route to retrieve admin user's own information."""
     request = client.get(f"{settings.API_V1_STR}/users/me", headers=admin_token_headers)
     assert status.HTTP_200_OK == request.status_code
     current_user = request.json()
@@ -26,7 +25,7 @@ def test_get_users_admin_me(
 
 
 def test_get_users_normal_user_me(
-    client: TestClient, normal_user_token_headers: Dict[str, str]
+    client: TestClient, normal_user_token_headers: dict[str, str]
 ) -> None:
     """Test the route to retrieve normal user's own information."""
     request = client.get(
@@ -108,7 +107,7 @@ def test_create_user_existing_username(
 
 
 def test_create_user_by_normal_user(
-    client: TestClient, normal_user_token_headers: Dict[str, str]
+    client: TestClient, normal_user_token_headers: dict[str, str]
 ) -> None:
     """Test the route to create a new user as normal user.
 
