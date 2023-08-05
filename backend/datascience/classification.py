@@ -3,6 +3,7 @@
 
 import os
 import pickle
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -28,8 +29,10 @@ def preprocess_image(img: Tensor) -> Tensor:
 
 
 def predict_prdtypecode(
-    designation: str | None, description: str | None, image: np.ndarray | None
-):
+    designation: str | None,
+    description: str | None,
+    image: np.ndarray[Any, Any] | None,
+) -> list[list[tuple[int, float]]]:
     """Use the models to predict the probabilities for the product to be part of each categories.
 
     Args:
@@ -40,7 +43,6 @@ def predict_prdtypecode(
     Returns:
         List of probabilities for the product to be from each categories.
     """
-
     has_text = designation is not None or description is not None
     has_image = image is not None
     has_both = has_text and has_image
@@ -79,7 +81,7 @@ def predict_prdtypecode(
             return get_prdtypecode_probabilities(text_predictions)
 
     # Work with image model only if we have image data
-    if has_image:
+    if has_image and image is not None:
         # Load image model
         model_path = os.path.join(MODELS_DIR, "image", "cnn_mobilenetv2.h5")
         image_model = keras.models.load_model(model_path, compile=False)
@@ -113,14 +115,15 @@ def predict_prdtypecode(
     concat_predictions = np.concatenate((text_predictions, image_predictions), axis=1)
     fusion_dataset = tf.data.Dataset.from_tensor_slices(concat_predictions).batch(1)
     # Concatenate both results
-    y_pred = fusion_model.predict(fusion_dataset)
+    y_pred: list[list[float]] = fusion_model.predict(fusion_dataset)
 
     return get_prdtypecode_probabilities(y_pred)
 
 
-def get_prdtypecode_probabilities(y_pred):
-    """
-    Get the probabilities for each categories from the predictions.
+def get_prdtypecode_probabilities(
+    y_pred: list[list[float]],
+) -> list[list[tuple[int, float]]]:
+    """Get the probabilities for each categories from the predictions.
 
     Argument:
     - y_pred: predictions from the model
@@ -128,12 +131,17 @@ def get_prdtypecode_probabilities(y_pred):
     Returns:
     - a list of [prdtypecode, probability in percent] sorted descending
     """
-    list_decisions = []
+    list_decisions: list[list[tuple[int, float]]] = []
     for y in y_pred:
-        list_probabilities = []
+        list_probabilities: list[tuple[int, float]] = []
         for i, probability in enumerate(y):
+            code = list(PRDTYPECODE_DIC.keys())
+            if len(code) <= i:
+                raise NotImplementedError(
+                    "PRDTYPECODE_DIC does not contain {i} values."
+                )
             list_probabilities.append(
-                [list(PRDTYPECODE_DIC.keys())[i], np.round(probability * 100, 2)]
+                [code[i], np.around(probability * 100, 2)]  # type: ignore
             )
         list_decisions.append(
             sorted(list_probabilities, key=lambda x: x[1], reverse=True)

@@ -10,7 +10,6 @@ class Base(DeclarativeBase):
     """Base of DB classes with default attributes."""
 
     id: Any
-    __name__: str
 
     @declared_attr.directive
     def __tablename__(cls) -> str:

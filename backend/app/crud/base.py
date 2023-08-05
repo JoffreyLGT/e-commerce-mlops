@@ -1,6 +1,6 @@
 """Base CRUD class containing Create, Read, Update, Delete functions."""
 
-from typing import Any, Generic, TypeVar, cast
+from typing import Any, Generic, TypeVar
 
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
@@ -66,7 +66,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             Entry added in DB.
         """
         obj_in_data = jsonable_encoder(obj_in)
-        db_obj = self.model(**obj_in_data)  # type: ignore
+        db_obj = self.model(**obj_in_data)
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
@@ -112,8 +112,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         Returns:
             Deleted entry.
         """
-        obj = db.get(self.model, id)
+        obj = db.get(self.model, id)  # pyright: ignore
         assert obj is not None
         db.delete(obj)
         db.commit()
-        return cast(ModelType, obj)
+        return obj

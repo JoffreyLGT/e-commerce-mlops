@@ -18,7 +18,7 @@ reusable_oauth2 = OAuth2PasswordBearer(
 )
 
 
-def get_db() -> Generator:
+def get_db() -> Generator[Session, None, None]:
     """Initiate a session with DB.
 
     Yields:

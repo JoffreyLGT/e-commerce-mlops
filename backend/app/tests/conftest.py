@@ -16,7 +16,7 @@ from app.tests.utilities.utilities import get_admin_token_headers
 
 
 @pytest.fixture(name="db", scope="session")
-def fixture_db() -> Generator:
+def fixture_db() -> Generator[Session, None, None]:
     """Fixture to get DB session.
 
     Yields:
@@ -26,7 +26,7 @@ def fixture_db() -> Generator:
 
 
 @pytest.fixture(name="client", scope="module")
-def fixture_client() -> Generator:
+def fixture_client() -> Generator[TestClient, None, None]:
     """Fixture to get a TestClient.
 
     Yields:

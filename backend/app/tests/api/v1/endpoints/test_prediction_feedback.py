@@ -23,10 +23,10 @@ def test_get_feedbacks_admin(
         f"{settings.API_V1_STR}/feedback/", headers=admin_token_headers
     )
     assert request.status_code == status.HTTP_200_OK
-    response = request.json()
-    response_feedback = list(
-        filter(lambda x: x["id"] == prediction_feedback.id, response)
-    )
+    response: list[PredictionFeedback] = [
+        PredictionFeedback(**feedback) for feedback in request.json()
+    ]
+    response_feedback = list(filter(lambda x: x.id == prediction_feedback.id, response))
     assert len(response_feedback) == 1
     value = response_feedback[0]
     expected = prediction_feedback.to_json()

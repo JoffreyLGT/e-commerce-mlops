@@ -3,16 +3,17 @@ import numpy as np
 import pandas as pd
 from PIL import Image, ImageOps
 import tensorflow as tf
+from tensorflow.sparse import SparseTensor
 
 
 def load_data(datadir: str = "data") -> pd.DataFrame:
-
     return pd.concat(
         [
             pd.read_csv(f"{datadir}/X.csv", index_col=0),
-            pd.read_csv(f"{datadir}/y.csv", index_col=0)
+            pd.read_csv(f"{datadir}/y.csv", index_col=0),
         ],
-        axis=1)
+        axis=1,
+    )
 
 
 def get_img_name(productid: int, imageid: int) -> str:
@@ -28,7 +29,10 @@ def get_img_name(productid: int, imageid: int) -> str:
     """
     return f"image_{imageid}_product_{productid}.jpg"
 
-def get_imgs_filenames(productids: list[int], imageids: list[int], folder: str = None) -> list[str]:
+
+def get_imgs_filenames(
+    productids: list[int], imageids: list[int], folder: str = None
+) -> list[str]:
     """
     Return a list of filenames from productids and imagesids.
 
@@ -40,12 +44,18 @@ def get_imgs_filenames(productids: list[int], imageids: list[int], folder: str =
     Return:
     A list of the same size as productids and imageids containing the filenames.
     """
-    if (len(productids) != len(imageids)):
+    if len(productids) != len(imageids):
         raise ValueError("productids and imageids should be the same size")
-    if (folder == None):
-        return [get_img_name(productid, imageid) for productid, imageid in zip(productids, imageids)]
+    if folder == None:
+        return [
+            get_img_name(productid, imageid)
+            for productid, imageid in zip(productids, imageids)
+        ]
     else:
-        return [os.path.join(folder, get_img_name(productid, imageid)) for productid, imageid in zip(productids, imageids)]
+        return [
+            os.path.join(folder, get_img_name(productid, imageid))
+            for productid, imageid in zip(productids, imageids)
+        ]
 
 
 def remove_white_stripes(img_array: np.ndarray) -> np.ndarray:
@@ -65,8 +75,7 @@ def remove_white_stripes(img_array: np.ndarray) -> np.ndarray:
     left_line = -1
 
     i = 1
-    while (top_line == -1 or bottom_line == -1
-            or left_line == -1 or right_line == -1):
+    while top_line == -1 or bottom_line == -1 or left_line == -1 or right_line == -1:
         if top_line == -1 and img_array[:i].mean() != 255:
             top_line = i
         if bottom_line == -1 and img_array[-i:].mean() != 255:
@@ -80,16 +89,21 @@ def remove_white_stripes(img_array: np.ndarray) -> np.ndarray:
         if i >= img_array.shape[0]:
             break
 
-    if (top_line == -1 or bottom_line == -1
-       or left_line == -1 or right_line == -1):
+    if top_line == -1 or bottom_line == -1 or left_line == -1 or right_line == -1:
         return img_array
     else:
-        return img_array[top_line:-bottom_line,
-                         left_line:-right_line,
-                         :]
+        return img_array[top_line:-bottom_line, left_line:-right_line, :]
 
 
-def crop_resize_img(filename: str, imput_img_dir: str, output_img_dir: str, width: int, height: int, keep_ratio: bool, grayscale: bool = False) -> None:
+def crop_resize_img(
+    filename: str,
+    imput_img_dir: str,
+    output_img_dir: str,
+    width: int,
+    height: int,
+    keep_ratio: bool,
+    grayscale: bool = False,
+) -> None:
     """
     Crop, resize and apply a grayscale filter to the image.
 
@@ -129,7 +143,9 @@ def crop_resize_img(filename: str, imput_img_dir: str, output_img_dir: str, widt
     new_img.save(f"{output_img_dir}/{filename}")
 
 
-def get_output_dir(width: int, height: int, keep_ratio: bool, grayscale: bool, type: str):
+def get_output_dir(
+    width: int, height: int, keep_ratio: bool, grayscale: bool, type: str
+):
     result = f"cropped_w{width}_h{height}"
     if keep_ratio:
         result += "_ratio"
@@ -143,12 +159,20 @@ def get_output_dir(width: int, height: int, keep_ratio: bool, grayscale: bool, t
     return os.path.join("data", "images", result, type)
 
 
-def get_img_full_path(width: int, height: int, keep_ratio: bool, grayscale: bool, type: str, prdtypecode: int, filename: str):
+def get_img_full_path(
+    width: int,
+    height: int,
+    keep_ratio: bool,
+    grayscale: bool,
+    type: str,
+    prdtypecode: int,
+    filename: str,
+):
     output_dir = get_output_dir(width, height, keep_ratio, grayscale, type)
     return os.path.join("data", "images", type, output_dir, prdtypecode, filename)
 
 
-def convert_sparse_matrix_to_sparse_tensor(X):
+def convert_sparse_matrix_to_sparse_tensor(X) -> SparseTensor:
     """
     Convert sparse matrix to sparce tensor.
 
@@ -163,33 +187,35 @@ def convert_sparse_matrix_to_sparse_tensor(X):
     return tf.sparse.reorder(tf.SparseTensor(indices, coo.data, coo.shape))
 
 
-PRDTYPECODE_DIC = {10: 0,
-                   1140: 1,
-                   1160: 2,
-                   1180: 3,
-                   1280: 4,
-                   1281: 5,
-                   1300: 6,
-                   1301: 7,
-                   1302: 8,
-                   1320: 9,
-                   1560: 10,
-                   1920: 11,
-                   1940: 12,
-                   2060: 13,
-                   2220: 14,
-                   2280: 15,
-                   2403: 16,
-                   2462: 17,
-                   2522: 18,
-                   2582: 19,
-                   2583: 20,
-                   2585: 21,
-                   2705: 22,
-                   2905: 23,
-                   40: 24,
-                   50: 25,
-                   60: 26}
+PRDTYPECODE_DIC = {
+    10: 0,
+    1140: 1,
+    1160: 2,
+    1180: 3,
+    1280: 4,
+    1281: 5,
+    1300: 6,
+    1301: 7,
+    1302: 8,
+    1320: 9,
+    1560: 10,
+    1920: 11,
+    1940: 12,
+    2060: 13,
+    2220: 14,
+    2280: 15,
+    2403: 16,
+    2462: 17,
+    2522: 18,
+    2582: 19,
+    2583: 20,
+    2585: 21,
+    2705: 22,
+    2905: 23,
+    40: 24,
+    50: 25,
+    60: 26,
+}
 
 
 def to_simplified_prdtypecode(y: np.array):
@@ -215,7 +241,12 @@ def to_normal_prdtypecode(y: np.array):
     Returns:
     - y with original prdtypecode.
     """
-    return np.array([list(PRDTYPECODE_DIC.keys())[list(PRDTYPECODE_DIC.values()).index(i)] for i in y])
+    return np.array(
+        [
+            list(PRDTYPECODE_DIC.keys())[list(PRDTYPECODE_DIC.values()).index(i)]
+            for i in y
+        ]
+    )
 
 
 def get_model_prediction(y_pred):
@@ -233,6 +264,7 @@ def get_model_prediction(y_pred):
         list_decision.append(np.argmax(y))
     return np.array(to_normal_prdtypecode(list_decision))
 
+
 def open_resize_img(filename: str, y) -> None:
     """
     Open image using the filename and return a resized version of it ready for the image model.
@@ -248,40 +280,67 @@ def open_resize_img(filename: str, y) -> None:
     return (tf.image.resize(img, [224, 224]), y)
 
 
-CATEGORIES_DIC = {10: "Livre",
-                   1140: "Figurine et produits dérivés",
-                   1160: "Carte à collectionner",
-                   1180: "Univers fantastiques",
-                   1280: "Jouet pour enfant",
-                   1281: "Jeu de société",
-                   1300: "Miniature de collection",
-                   1301: "Loisir",
-                   1302: "Activité d'extérieur",
-                   1320: "Accessoire bébé",
-                   1560: "Meuble d'intérieur",
-                   1920: "Litterie, rideaux",
-                   1940: "Epicerie",
-                   2060: "Décoration d'intérieur",
-                   2220: "Accessoire animaux de compagnie",
-                   2280: "Magazine et BD",
-                   2403: "Livres anciens",
-                   2462: "Jeu vidéo - Pack",
-                   2522: "Fourniture de bureau",
-                   2582: "Meubles extérieur",
-                   2583: "Piscine",
-                   2585: "Bricolage",
-                   2705: "Livre",
-                   2905: "Jeu vidéo - Jeu",
-                   40: "Jeu vidéo - Jeu",
-                   50: "Jeu vidéo - Accessoire",
-                   60: "Jeu vidéo - Console"}
+CATEGORIES_DIC = {
+    10: "Livre",
+    1140: "Figurine et produits dérivés",
+    1160: "Carte à collectionner",
+    1180: "Univers fantastiques",
+    1280: "Jouet pour enfant",
+    1281: "Jeu de société",
+    1300: "Miniature de collection",
+    1301: "Loisir",
+    1302: "Activité d'extérieur",
+    1320: "Accessoire bébé",
+    1560: "Meuble d'intérieur",
+    1920: "Litterie, rideaux",
+    1940: "Epicerie",
+    2060: "Décoration d'intérieur",
+    2220: "Accessoire animaux de compagnie",
+    2280: "Magazine et BD",
+    2403: "Livres anciens",
+    2462: "Jeu vidéo - Pack",
+    2522: "Fourniture de bureau",
+    2582: "Meubles extérieur",
+    2583: "Piscine",
+    2585: "Bricolage",
+    2705: "Livre",
+    2905: "Jeu vidéo - Jeu",
+    40: "Jeu vidéo - Jeu",
+    50: "Jeu vidéo - Accessoire",
+    60: "Jeu vidéo - Console",
+}
 
 DATA_SAMPLE = [
-    ["Christmas decoration", "Décor De Noël Ornement Led Lumières Cerfs Panier Lumineux Maison En Bois Fenêtre Mall", "Décor De Noël Ornement Led Lumières Cerfs Panier Lumineux Maison En Bois Fenêtre Mall", "assets/image_1257660878_product_3881422405.jpg"],
-    ["English manual", "Exploring English Level 2 Teacher's Resource Manual", "", "assets/image_859609154_product_93575721.jpg"],
-    ["Start Wars figurine", "Figurine - Star Wars - Stormtrooper - 30th", "", "assets/image_835089072_product_68594029.jpg"],
-    ["Pool", "Intex - 57495fr - Jeu D'eau Et De Plage - Piscine Carré - Hublot", "Longeur: 549 cm Largeur: 30 cm Descriptif produit: Piscine carrée hublot 229x229x56cm.Larges parois fenêtres transparentes sur les ctés.Capacité : 1215 litres environ Nécessite des piles: Non Modèle : 57495E", "assets/image_898066724_product_144402962.jpg"],
-    ["Console NES", "Nintendo Nes 2 Manettes Et Mario Bros", "", "assets/image_1124990133_product_2086705884.jpg"]
+    [
+        "Christmas decoration",
+        "Décor De Noël Ornement Led Lumières Cerfs Panier Lumineux Maison En Bois Fenêtre Mall",
+        "Décor De Noël Ornement Led Lumières Cerfs Panier Lumineux Maison En Bois Fenêtre Mall",
+        "assets/image_1257660878_product_3881422405.jpg",
+    ],
+    [
+        "English manual",
+        "Exploring English Level 2 Teacher's Resource Manual",
+        "",
+        "assets/image_859609154_product_93575721.jpg",
+    ],
+    [
+        "Start Wars figurine",
+        "Figurine - Star Wars - Stormtrooper - 30th",
+        "",
+        "assets/image_835089072_product_68594029.jpg",
+    ],
+    [
+        "Pool",
+        "Intex - 57495fr - Jeu D'eau Et De Plage - Piscine Carré - Hublot",
+        "Longeur: 549 cm Largeur: 30 cm Descriptif produit: Piscine carrée hublot 229x229x56cm.Larges parois fenêtres transparentes sur les ctés.Capacité : 1215 litres environ Nécessite des piles: Non Modèle : 57495E",
+        "assets/image_898066724_product_144402962.jpg",
+    ],
+    [
+        "Console NES",
+        "Nintendo Nes 2 Manettes Et Mario Bros",
+        "",
+        "assets/image_1124990133_product_2086705884.jpg",
+    ],
 ]
 
 
@@ -297,8 +356,9 @@ def get_random_product(prdtypecode, data):
     - tuple with (designation, description, image_path)
     """
     product = data[data["prdtypecode"] == prdtypecode].sample(1).iloc[0]
-    image_path = get_imgs_filenames(productids=[product["productid"]],
-                               imageids=[product["imageid"]],
-                               folder="../data/images/image_train")[0]
-    return (product["designation"], product["description"],
-            image_path)
+    image_path = get_imgs_filenames(
+        productids=[product["productid"]],
+        imageids=[product["imageid"]],
+        folder="../data/images/image_train",
+    )[0]
+    return (product["designation"], product["description"], image_path)

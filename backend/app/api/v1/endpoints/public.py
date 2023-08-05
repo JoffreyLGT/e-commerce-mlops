@@ -1,5 +1,7 @@
 """Route to check if the API is online."""
 
+from typing import Any
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -9,10 +11,10 @@ from app.core.settings import settings
 router = APIRouter()
 
 
-@router.get("/")
+@router.get("/", response_model=str)
 async def is_online(
     _db: Session = Depends(dependencies.get_db),
-):
+) -> Any:
     """Check if the API is running and if DB session is active.
 
     Args:

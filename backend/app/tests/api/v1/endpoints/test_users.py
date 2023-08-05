@@ -41,7 +41,7 @@ def test_get_users_normal_user_me(
 
 
 def test_create_user_new_email(
-    client: TestClient, admin_token_headers: dict, db: Session
+    client: TestClient, admin_token_headers: dict[str, str], db: Session
 ) -> None:
     """Test the route to create a new user."""
     username = random_email()
@@ -60,7 +60,7 @@ def test_create_user_new_email(
 
 
 def test_get_existing_user(
-    client: TestClient, admin_token_headers: dict, db: Session
+    client: TestClient, admin_token_headers: dict[str, str], db: Session
 ) -> None:
     """Test the route to get a specific user information."""
     username = random_email()
@@ -80,7 +80,7 @@ def test_get_existing_user(
 
 
 def test_create_user_existing_username(
-    client: TestClient, admin_token_headers: dict, db: Session
+    client: TestClient, admin_token_headers: dict[str, str], db: Session
 ) -> None:
     """Test the route to create a new user as admin with an existing id.
 
@@ -129,7 +129,7 @@ def test_create_user_by_normal_user(
 
 
 def test_retrieve_users(
-    client: TestClient, admin_token_headers: dict, db: Session
+    client: TestClient, admin_token_headers: dict[str, str], db: Session
 ) -> None:
     """Test the route to retrieve users from DB."""
     username = random_email()

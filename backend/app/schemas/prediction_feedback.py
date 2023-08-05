@@ -2,10 +2,11 @@
 
 
 import json
+from typing import Any, Self
 
 from pydantic import BaseModel, validator
 
-from app.core.security import settings
+from app.core.settings import settings
 
 
 class PredictionFeedbackBase(BaseModel):
@@ -24,7 +25,7 @@ class PredictionFeedbackBase(BaseModel):
         """
         return json.dumps(self.__dict__)
 
-    def to_json(self):
+    def to_json(self) -> Any:
         """Export object to JSON format.
 
         Returns:
@@ -33,7 +34,7 @@ class PredictionFeedbackBase(BaseModel):
         return json.loads(self.to_json_str())
 
     @classmethod
-    def from_json(cls, json_str):
+    def from_json(cls, json_str: str) -> Self:
         """Load object from a JSON.
 
         Args:
@@ -68,7 +69,7 @@ class PredictionFeedbackInDBBase(PredictionFeedbackBase):
     pred_category_id: int
 
     @validator("model_version")
-    def set_model_version(cls, model_version):
+    def set_model_version(cls, model_version: str) -> str:
         """Assign a default value to model_version if set to None."""
         return model_version or settings.MODEL_VERSION
 
