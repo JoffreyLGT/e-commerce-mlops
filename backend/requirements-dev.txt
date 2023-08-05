@@ -2,3 +2,11 @@ pytest
 httpx
 ruff
 black
+mypy
+# All stubs and types for mypy/Pylance
+pandas-stubs
+types-Pillow
+types-pytz
+types-passlib
+types-python-jose
+types-tensorflow

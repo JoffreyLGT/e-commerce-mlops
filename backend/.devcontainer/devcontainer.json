@@ -20,13 +20,15 @@
 				"ms-python.black-formatter",
 				"njpwerner.autodocstring",
 				"charliermarsh.ruff",
-				"tamasfe.even-better-toml"
+				"tamasfe.even-better-toml",
+				"ms-python.mypy-type-checker"
 			],
 			"settings": {
 				"files.exclude": {
 					"**/__pycache__": true,
 					".pytest_cache": true,
-					".ruff_cache": true
+					".ruff_cache": true,
+					".mypy_cache": true
 				},
 				"sqltools.connections": [
 					{
