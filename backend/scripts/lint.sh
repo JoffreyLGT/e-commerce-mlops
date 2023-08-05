@@ -10,3 +10,6 @@ black app --check
 
 # Linter
 ruff app
+
+# Type checker
+mypy app
