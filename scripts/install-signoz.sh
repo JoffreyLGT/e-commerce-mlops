@@ -36,9 +36,9 @@ rm signoz/deploy/docker/clickhouse-setup/docker-compose.yaml
 echo "$me - Copy our custom signoz docker-compose"
 cp signoz-docker-compose.yml signoz/deploy/docker/clickhouse-setup/docker-compose.yaml
 
-# Ensure the network already existsr
+# Create network only if it doesn't exists
 echo "$me - Create network $network if it doesn't exist"
-docker network create $network
+docker network ls|grep $network > /dev/null || docker network create $network
 
 # Create containers
 echo "$me - Go into signoz/deploy/docker/clickhouse-setup/"

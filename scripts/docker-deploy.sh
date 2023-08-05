@@ -12,9 +12,6 @@ me=$(basename "$0")
 reldir="$( dirname -- "$0"; )";
 cd "$reldir";
 
-echo "$me - Create docker network $network"
-docker network create $network
-
 echo "$me - Create project containers without starting them"
 export TARGET=$target
 docker compose -f "../docker-compose.yaml" create --build --force-recreate

@@ -36,4 +36,3 @@ volumes:
 networks: 
   default: 
     name: product-classification
-    external: true
