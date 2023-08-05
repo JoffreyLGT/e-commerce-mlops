@@ -15,7 +15,7 @@ class PredictionFeedback(Base):
 
     __tablename__: str = "prediction_feedback"
 
-    id: Mapped[str] = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     product_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
     model_version: Mapped[str] = mapped_column(String, nullable=False, index=True)
 

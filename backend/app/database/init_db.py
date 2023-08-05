@@ -33,6 +33,6 @@ def init_db(db: Session) -> None:
             password=settings.FIRST_ADMINUSER_PASSWORD,
             is_admin=True,
         )
-        user = crud_user.create(db, user_in=user_in)
+        user = crud_user.create(db, obj_in=user_in)
     else:
         print("FIRST_ADMINUSER already in DB.")

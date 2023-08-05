@@ -77,6 +77,6 @@ async def predict_category(
     result = [(i[0], i[1], CATEGORIES_DIC[i[0]]) for i in predictions[0][:limit]]
 
     return [
-        schemas.PredictionResult(prdtypecode=i[0], probabilities=i[1], label=i[2])
+        schemas.PredictionResult(category_id=i[0], probabilities=i[1], label=i[2])
         for i in result
     ]

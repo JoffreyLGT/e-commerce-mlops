@@ -20,13 +20,13 @@ class UserCreate(UserBase):
 class UserUpdate(UserBase):
     """Properties to receive via API on update."""
 
-    password: str | None = None
+    password: str
 
 
 class UserInDBBase(UserBase):
     """Base properties stored in DB. They are the one needed for all entries."""
 
-    id: int | None = None
+    id: int
 
     class Config:
         """Pydantic configuration.
