@@ -27,7 +27,7 @@ def login_access_token(
 
     Returns:
         JSON object with "access_token" and "token_type".
-    """ """"""
+    """
     user = crud.user.authenticate(
         db, email=form_data.username, password=form_data.password
     )

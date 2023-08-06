@@ -1,8 +1,9 @@
-from typing import Optional
-
+"""Define Pydantic schemas for a Product object."""
 from pydantic import BaseModel
 
-class Product(BaseModel):
-    designation: Optional[str] = ""
-    description: Optional[str] = ""
 
+class Product(BaseModel):
+    """Product to be sold on a platform."""
+
+    designation: str | None = ""
+    description: str | None = ""

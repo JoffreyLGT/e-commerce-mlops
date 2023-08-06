@@ -68,13 +68,12 @@ class PredictionFeedbackInDBBase(PredictionFeedbackBase):
     pred_category_id: int
 
     @validator("model_version")
-    def set_model_version(cls, model_version):  # pylint: disable=E0213
+    def set_model_version(cls, model_version):
         """Assign a default value to model_version if set to None."""
         return model_version or settings.MODEL_VERSION
 
-    class Config:  # pylint: disable=R0903
-        """
-        Pydantic configuration.
+    class Config:
+        """Pydantic configuration.
 
         Attributes:
             orm_mode            Map the models to ORM objects.
@@ -86,7 +85,10 @@ class PredictionFeedbackInDBBase(PredictionFeedbackBase):
 
 
 class PredictionFeedback(PredictionFeedbackInDBBase):
-    """Properties to return to client. By default, all the base properties stored in DB."""
+    """Properties to return to client.
+
+    By default, all the base properties stored in DB.
+    """
 
 
 class PredictionFeedbackInDB(PredictionFeedbackInDBBase):

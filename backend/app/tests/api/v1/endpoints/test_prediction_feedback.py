@@ -1,8 +1,6 @@
 """Test the prediction_feedback routes."""
 
-import json
 import random
-from typing import Dict
 
 from fastapi import status
 from fastapi.testclient import TestClient
@@ -14,12 +12,13 @@ from app.tests.utilities.utilities import random_category_id
 
 def test_get_feedbacks_admin(
     client: TestClient,
-    admin_token_headers: Dict[str, str],
+    admin_token_headers: dict[str, str],
     prediction_feedback: PredictionFeedback,
 ) -> None:
     """Test the route to get feedback as admin.
 
-    Information should be returned."""
+    Information should be returned.
+    """
     request = client.get(
         f"{settings.API_V1_STR}/feedback/", headers=admin_token_headers
     )
@@ -35,11 +34,12 @@ def test_get_feedbacks_admin(
 
 
 def test_get_feedbacks_user(
-    client: TestClient, normal_user_token_headers: Dict[str, str]
+    client: TestClient, normal_user_token_headers: dict[str, str]
 ) -> None:
     """Test the route to get feedback as normal user.
 
-    Information should not be returned."""
+    Information should not be returned.
+    """
     request = client.get(
         f"{settings.API_V1_STR}/feedback/", headers=normal_user_token_headers
     )
@@ -52,7 +52,7 @@ def test_get_feedbacks_user(
 
 def test_create_existing_feedback(
     client: TestClient,
-    normal_user_token_headers: Dict[str, str],
+    normal_user_token_headers: dict[str, str],
     prediction_feedback: PredictionFeedback,
 ) -> None:
     """Test if we can add an already existing feedback.
@@ -72,7 +72,7 @@ def test_create_existing_feedback(
 
 
 def test_create_new_feedback(
-    client: TestClient, normal_user_token_headers: Dict[str, str]
+    client: TestClient, normal_user_token_headers: dict[str, str]
 ) -> None:
     """Test if we can create a new feedback."""
     expected = PredictionFeedbackCreate(

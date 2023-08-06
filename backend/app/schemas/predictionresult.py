@@ -1,7 +1,10 @@
+"""Define Pydantic schemas for a PredictionResult object."""
 from pydantic import BaseModel
 
 
 class PredictionResult(BaseModel):
-    prdtypecode: int
+    """Probabilities for a product to be in a category."""
+
+    category_id: int
     probabilities: float
     label: str

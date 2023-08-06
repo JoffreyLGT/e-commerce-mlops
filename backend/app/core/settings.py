@@ -6,7 +6,7 @@ Note: important variable must have validator using pydantic.
 """
 
 import secrets
-from typing import Any, Dict, List, Union
+from typing import Any
 
 from pydantic import AnyHttpUrl, BaseSettings, EmailStr, PostgresDsn, validator
 
@@ -14,7 +14,6 @@ from pydantic import AnyHttpUrl, BaseSettings, EmailStr, PostgresDsn, validator
 class Settings(BaseSettings):
     """Settings to use in the API. Values are overwritten by environment variables."""
 
-    # pylint: disable=E0213
     DOMAIN: str | None = None
 
     PROJECT_NAME: str | None = None
@@ -32,7 +31,7 @@ class Settings(BaseSettings):
     SQLALCHEMY_DATABASE_URI: PostgresDsn | None = None
 
     @validator("SQLALCHEMY_DATABASE_URI", pre=True)
-    def assemble_db_connection(cls, v: str | None, values: Dict[str, Any]) -> Any:
+    def assemble_db_connection(cls, v: str | None, values: dict[str, Any]) -> Any:
         """Ensure we have a valid DB connection.
 
         Validate the information provided through env variable to ensure we are able to
@@ -54,10 +53,10 @@ class Settings(BaseSettings):
 
     # BACKEND_CORS_ORIGINS is a JSON-formatted list of origins
     # e.g: '["http://localhost", "http://localhost:8000"]
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
+    BACKEND_CORS_ORIGINS: list[AnyHttpUrl] = []
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
-    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
+    def assemble_cors_origins(cls, v: str | list[str]) -> list[str] | str:
         """Validate the format of BACKEND_CORS_ORIGINS.
 
         Raises:
@@ -68,7 +67,7 @@ class Settings(BaseSettings):
         """
         if isinstance(v, str) and not v.startswith("["):
             return [i.strip() for i in v.split(",")]
-        if isinstance(v, (list, str)):
+        if isinstance(v, list | str):
             return v
         raise ValueError(v)
 
@@ -82,7 +81,6 @@ class Settings(BaseSettings):
     # FIXME set dynamically to not update codebase when updating models
     MODEL_VERSION: str = "1.0"
 
-    # pylint: disable=R0903
     class Config:
         """Pydantic configuration."""
 

@@ -18,6 +18,7 @@ app_metadata = {
     "openapi_url": f"{settings.API_V1_STR}/openapi.json",
 }
 
+# ruff: noqa: E501
 tags_metadata = [
     {
         "name": "Public",

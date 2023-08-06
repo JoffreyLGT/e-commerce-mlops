@@ -1,5 +1,4 @@
 """Utilities regarding user management used in tests."""
-from typing import Dict
 
 from fastapi.testclient import TestClient
 from pydantic import EmailStr
@@ -14,7 +13,7 @@ from app.tests.utilities.utilities import random_email, random_lower_string
 
 def get_user_authentication_headers(
     *, client: TestClient, email: str, password: str
-) -> Dict[str, str]:
+) -> dict[str, str]:
     """Get user authentication headers.
 
     Args:
@@ -52,7 +51,7 @@ def create_random_user(db: Session) -> User:
 
 def authentication_token_from_email(
     *, client: TestClient, email: str, db: Session
-) -> Dict[str, str]:
+) -> dict[str, str]:
     """Return a valid token for the user with given email.
 
     If the user doesn't exist, it is created first.

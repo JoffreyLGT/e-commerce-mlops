@@ -1,6 +1,6 @@
 """Routes to manage users."""
 
-from typing import Any, List
+from typing import Any
 
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 from fastapi.encoders import jsonable_encoder
@@ -13,7 +13,7 @@ from app.api import dependencies
 router = APIRouter()
 
 
-@router.get("/", response_model=List[schemas.User])
+@router.get("/", response_model=list[schemas.User])
 def read_users(
     db: Session = Depends(dependencies.get_db),
     skip: int = 0,

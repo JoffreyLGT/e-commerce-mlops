@@ -6,12 +6,8 @@
 	"service": "api",
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// This can be used to network with other containers or the host.
-	// "forwardPorts": [5000, 5432],
-	// Use 'postCreateCommand' to run commands after the container is created.
 	"postStartCommand": "./scripts/start-reload.sh",
+	"shutdownAction":"stopCompose",
 	"customizations": {
 		"vscode": {
 
@@ -21,15 +17,16 @@
 				"mtxr.sqltools",
 				"mtxr.sqltools-driver-pg",
 				"ms-toolsai.jupyter",
-				"ms-python.pylint",
 				"ms-python.black-formatter",
-				"ms-python.isort",
-				"njpwerner.autodocstring"
+				"njpwerner.autodocstring",
+				"charliermarsh.ruff",
+				"tamasfe.even-better-toml"
 			],
 			"settings": {
 				"files.exclude": {
 					"**/__pycache__": true,
-					".pytest_cache": true
+					".pytest_cache": true,
+					".ruff_cache": true
 				},
 				"sqltools.connections": [
 					{
@@ -48,16 +45,9 @@
 				],
 				"python.testing.unittestEnabled": false,
 				"python.testing.pytestEnabled": true,
-				"python.linting.pydocstyleEnabled": true,
-				"python.linting.enabled": true,
 				"python.analysis.typeCheckingMode": "basic",
-				"python.linting.pylintEnabled": true,
-				"python.linting.pylintArgs": [
-					"--rcfile=pylintrc"
-				],
 				"editor.formatOnSave": true,
 				"python.analysis.autoFormatStrings": true,
-				"python.formatting.provider": "none",
 				"[python]": {
 					"editor.defaultFormatter": "ms-python.black-formatter",
 					"editor.formatOnSave": true,
@@ -65,8 +55,9 @@
 						"source.organizeImports": true
 					}
 				  },
-				"isort.args":["--profile", "black"],
 				"editor.defaultFormatter": "ms-python.black-formatter",
+				"black-formatter.importStrategy": "fromEnvironment",
+				"ruff.organizeImports": true,
 				// 88 is the number chosen by Black formatter
 				"editor.wordWrapColumn": 88,
 				"editor.rulers": [

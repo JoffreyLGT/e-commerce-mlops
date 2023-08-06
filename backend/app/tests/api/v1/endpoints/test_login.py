@@ -1,6 +1,5 @@
 """Contains the tests on login routes."""
 
-from typing import Dict
 
 from fastapi import status
 from fastapi.testclient import TestClient
@@ -22,7 +21,7 @@ def test_get_access_token(client: TestClient) -> None:
 
 
 def test_use_access_token(
-    client: TestClient, admin_token_headers: Dict[str, str]
+    client: TestClient, admin_token_headers: dict[str, str]
 ) -> None:
     """Test if the authentication is working by validating the access token."""
     response = client.post(

@@ -7,5 +7,5 @@ Typical usage example:
     from app.crud import user, prediction_feedback
 """
 
-from .crud_user import user
 from .crud_prediction_feedback import prediction_feedback
+from .crud_user import user
