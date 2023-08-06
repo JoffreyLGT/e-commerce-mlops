@@ -34,7 +34,7 @@ def test_predict_category_valid_color(
     assert len(response) == int(params["limit"])
 
     assert (
-        response[0]["prdtypecode"] == 1180
+        response[0]["category_id"] == 1180
         and response[0]["probabilities"] == 45.0
         and response[0]["label"] == "Univers fantastiques"
     )
