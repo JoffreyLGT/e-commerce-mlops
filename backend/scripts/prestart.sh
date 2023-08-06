@@ -1,13 +1,20 @@
 #! /usr/bin/env bash
 
+dir_fullpath=$(dirname $(readlink -f "${BASH_SOURCE:-$0}"))
+
+if [ "$ENV_TARGET"=="development" ]
+then
+    pre-commit install
+fi
+
 # Let the DB start
-python scripts/backend_pre_start.py
+python $dir_fullpath/backend_pre_start.py
 
 # Run migrations
 alembic upgrade head
 
 # Create initial data in DB
-python scripts/seed_data.py
+python $dir_fullpath/seed_data.py
 
 # Download model saves
-python scripts/download_models.py
+python $dir_fullpath/download_models.py

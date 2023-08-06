@@ -79,3 +79,11 @@ plugins = ["numpy.typing.mypy_plugin"]
 [[tool.mypy.overrides]]
 module = "gdown"
 ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    # action:message:category:module:line
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning:passlib",
+    "ignore::DeprecationWarning:tensorflow",
+]

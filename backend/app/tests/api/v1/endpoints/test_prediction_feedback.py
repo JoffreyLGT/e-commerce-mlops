@@ -20,7 +20,9 @@ def test_get_feedbacks_admin(
     Information should be returned.
     """
     request = client.get(
-        f"{settings.API_V1_STR}/feedback/", headers=admin_token_headers
+        f"{settings.API_V1_STR}/feedback/",
+        headers=admin_token_headers,
+        params={"limit": "1000"},
     )
     assert request.status_code == status.HTTP_200_OK
     response: list[PredictionFeedback] = [
