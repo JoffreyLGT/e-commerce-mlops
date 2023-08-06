@@ -1,8 +1,9 @@
 import os
+
 import numpy as np
 import pandas as pd
-from PIL import Image, ImageOps
 import tensorflow as tf
+from PIL import Image, ImageOps
 from tensorflow.sparse import SparseTensor
 
 
@@ -17,8 +18,7 @@ def load_data(datadir: str = "data") -> pd.DataFrame:
 
 
 def get_img_name(productid: int, imageid: int) -> str:
-    """
-    Return the filename of the image.
+    """Return the filename of the image.
 
     Arguments:
     - productid: int - "productid" field from the original DataFrame.
@@ -31,10 +31,9 @@ def get_img_name(productid: int, imageid: int) -> str:
 
 
 def get_imgs_filenames(
-    productids: list[int], imageids: list[int], folder: str = None
+    productids: list[int], imageids: list[int], folder: str | None = None
 ) -> list[str]:
-    """
-    Return a list of filenames from productids and imagesids.
+    """Return a list of filenames from productids and imagesids.
 
     Arguments:
     - productids: list of product ids
@@ -46,7 +45,7 @@ def get_imgs_filenames(
     """
     if len(productids) != len(imageids):
         raise ValueError("productids and imageids should be the same size")
-    if folder == None:
+    if folder is None:
         return [
             get_img_name(productid, imageid)
             for productid, imageid in zip(productids, imageids)
@@ -59,15 +58,16 @@ def get_imgs_filenames(
 
 
 def remove_white_stripes(img_array: np.ndarray) -> np.ndarray:
-    """
-    Analyse each lines and column of the array to remove the outer white stripes they might contain.
+    """Remove outer white lines and columns.
 
     Arguments:
-    - img_array: imaged loaded into a np.ndarray.
+        img_array: imaged loaded into a np.ndarray.
+
     Returns:
-    - The same array without the outer white stripes.
+        The same array without the outer white stripes.
+
     Example:
-    - remove_white_stripes(np.asarray(Image.open("my_image.png")))
+        remove_white_stripes(np.asarray(Image.open("my_image.png")))
     """
     top_line = -1
     right_line = -1
@@ -104,8 +104,7 @@ def crop_resize_img(
     keep_ratio: bool,
     grayscale: bool = False,
 ) -> None:
-    """
-    Crop, resize and apply a grayscale filter to the image.
+    """Crop, resize and apply a grayscale filter to the image.
 
     Arguments:
     - filename - str: name of the image to process. Must contain the extension.
@@ -115,7 +114,6 @@ def crop_resize_img(
     - keep_ratio - bool: True to keep the image ratio and eventualy add some white stripes around to fill empty space. False to stretch the image.
     - grayscale - bool: True to remove the colors and set them as grayscale.
     """
-
     # Remove the outer white stripes from the image
     img_array = np.asarray(Image.open(imput_img_dir + filename))
     new_img_array = remove_white_stripes(img_array)
@@ -173,8 +171,7 @@ def get_img_full_path(
 
 
 def convert_sparse_matrix_to_sparse_tensor(X) -> SparseTensor:
-    """
-    Convert sparse matrix to sparce tensor.
+    """Convert sparse matrix to sparce tensor.
 
     Arguments:
     - X: sparse matrix to convert.
@@ -219,8 +216,7 @@ PRDTYPECODE_DIC = {
 
 
 def to_simplified_prdtypecode(y: np.array):
-    """
-    Convert the prdtypecode into a simplified equivalent ranging from 0 to 26.
+    """Convert the prdtypecode into a simplified equivalent ranging from 0 to 26.
 
     Arguments:
     - y: list of prdtypecode to convert to a simplified range.
@@ -232,8 +228,7 @@ def to_simplified_prdtypecode(y: np.array):
 
 
 def to_normal_prdtypecode(y: np.array):
-    """
-    Convert back a simplified prdtypecode (ranging from 0 to 26) to the original prdtypecode.
+    """Convert back a simplified prdtypecode (ranging from 0 to 26) to the original prdtypecode.
 
     Arguments:
     - y: list of prdtypecode to convert to a the original value.
@@ -250,8 +245,7 @@ def to_normal_prdtypecode(y: np.array):
 
 
 def get_model_prediction(y_pred):
-    """
-    Get normal prdtypecode from a model prediction returning the probabilities of each prdtypecode.
+    """Get normal prdtypecode from a model prediction returning the probabilities of each prdtypecode.
 
     Arguments:
     - y: list of predictions for each prdtypecode.
@@ -266,8 +260,7 @@ def get_model_prediction(y_pred):
 
 
 def open_resize_img(filename: str, y) -> None:
-    """
-    Open image using the filename and return a resized version of it ready for the image model.
+    """Open image using the filename and return a resized version of it ready for the image model.
 
     Argument:
     - filename: complete path to image file including the extension.
@@ -345,8 +338,7 @@ DATA_SAMPLE = [
 
 
 def get_random_product(prdtypecode, data):
-    """
-    Return a random product with prdtypecode from data.
+    """Return a random product with prdtypecode from data.
 
     Arguments:
     - prdtypecode: type of the product to return

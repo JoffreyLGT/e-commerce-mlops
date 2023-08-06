@@ -1,30 +1,42 @@
-# pylint: disable=no-name-in-module
+"""Functions to create the text model."""
+
+# pyright: reportMissingModuleSource=false
 
 import os
+from typing import TypedDict
 
 import tensorflow as tf
-from tensorflow.python.keras.optimizer_v2.adam import Adam
-from tensorflow.python.keras import models
-from tensorflow.python.keras.layers import Dense, InputLayer
-from tensorflow.python.keras.layers import Dropout
+from tensorflow.keras import models
+from tensorflow.keras.layers import Dense, Dropout, InputLayer
+from tensorflow.keras.optimizers import Adam
 
 CHECKPOINT_DIR = os.path.join("datascience", "data", "models", "text_checkpoints")
 CHECKPOINT_PATH = os.path.join(
     CHECKPOINT_DIR, "cp_{val_loss:.2f}-{val_accuracy:.2f}-.ckpt"
 )
 
+
+class History(TypedDict):
+    """Values sent back by `tf.keras.callbacks.History`."""
+
+    val_acc: list[float]
+    val_loss: list[float]
+
+
 # Path to the history CSV file to store training metrics
 HIST_CSV_PATH = os.path.join(CHECKPOINT_DIR, "history.csv")
 
 
-def get_last_layer_units_and_activation(num_classes):
-    """Gets the # units and activation function for the last network layer.
+def get_last_layer_units_and_activation(
+    num_classes: int,
+) -> tuple[int, str]:
+    """Gets the units and activation function for the last network layer.
 
-    # Arguments
-        num_classes: int, number of classes.
+    Args:
+        num_classes: number of classes to predict.
 
-    # Returns
-        units, activation values.
+    Returns:
+        Tuple with units, activation values.
     """
     if num_classes == 2:
         activation = "sigmoid"
@@ -35,10 +47,16 @@ def get_last_layer_units_and_activation(num_classes):
     return units, activation
 
 
-def mlp_model(layers, units, dropout_rate, input_shape, num_classes):
+def mlp_model(
+    layers: int,
+    units: int,
+    dropout_rate: float,
+    input_shape: tuple[int, int, int],
+    num_classes: int,
+) -> models.Sequential:
     """Creates an instance of a multi-layer perceptron model.
 
-    # Arguments
+    Args:
         layers: int, number of `Dense` layers in the model.
         units: int, output dimension of the layers.
         dropout_rate: float, percentage of input to drop at Dropout layers.
@@ -46,7 +64,7 @@ def mlp_model(layers, units, dropout_rate, input_shape, num_classes):
         num_classes: int, number of output classes.
 
     # Returns
-        An MLP model instance.
+        MLP model instance.
     """
     op_units, op_activation = get_last_layer_units_and_activation(num_classes)
     model = models.Sequential()
@@ -69,22 +87,23 @@ def train_ngram_model(
     layers=2,
     units=128,  # 64,
     dropout_rate=0.2,
-):
+) -> History:
     """Trains n-gram model on the given dataset.
 
-    # Arguments
-        data: tuples of training and test texts and labels.
-        learning_rate: float, learning rate for training model.
-        epochs: int, number of epochs.
-        batch_size: int, number of samples per batch.
-        layers: int, number of `Dense` layers in the model.
-        units: int, output dimension of Dense layers in the model.
-        dropout_rate: float: percentage of input to drop at Dropout layers.
+    Args:
+        data: for training and test. Must contain features and target.
+        num_classes: number of target classes.
+        learning_rate: of the training model. Defaults to 1e-3.
+        epochs: number of epoch for the training. Defaults to 1000.
+        batch_size: number of sample per batch. Defaults to 128.
+        layers: number of `Dense` layers in the model. Defaults to 2.
+        units: output dimension of `Dense` layers in the model. Defaults to 128.
+        dropout_rate: input percentage to drop with `Dropout` layers. Defaults to 0.2.
 
-    # Raises
-        ValueError: If validation data has label values which were not seen
-            in the training data.
+    Returns:
+        _description_
     """
+
     # Get the data.
     (train_dataset, train_labels), (val_dataset, val_labels) = data
 
@@ -131,7 +150,7 @@ def train_ngram_model(
     )
 
     # Print results.
-    history = history.history  # type: ignore
+    history = history.history
     print(
         f"Validation accuracy: {history['val_acc'][-1]}, loss: {history['val_loss'][-1]}"
     )

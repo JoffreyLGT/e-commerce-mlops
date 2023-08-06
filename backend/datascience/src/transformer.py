@@ -1,24 +1,23 @@
 import datetime
-from html.parser import HTMLParser
 import os
-from queue import Queue
 import queue
-from threading import Thread
+import re
 import time
+from html.parser import HTMLParser
+from queue import Queue
+from threading import Thread
+
 import numpy as np
 import pandas as pd
-import re
+from PIL import Image
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import MinMaxScaler
-from datascience.src.data import get_imgs_filenames, crop_resize_img
-from PIL import Image
+
+from datascience.src.data import crop_resize_img, get_imgs_filenames
 
 
 class HTMLRemover(BaseEstimator, TransformerMixin):
-    """
-    Transformer removing HTML tags and decoding HTML special characters.
-    """
+    """Transformer removing HTML tags and decoding HTML special characters."""
 
     def _parseValue(self, value):
         if type(value) != str:
@@ -63,13 +62,11 @@ class NumRemover(BaseEstimator, TransformerMixin):
 
 
 class _RakutenHTMLParser(HTMLParser):
-    """
-    Parse the text fed to it using feed() and return the content without HTML tag or encoding with get_all_content().
-    """
+    """Parse the text fed to it using feed() and return the content without HTML tag or encoding with get_all_content()."""
 
     def __init__(self):
         self.allcontent = ""
-        super(_RakutenHTMLParser, self).__init__()
+        super().__init__()
 
     def handle_data(self, data):
         self.allcontent += data + " "
@@ -78,19 +75,15 @@ class _RakutenHTMLParser(HTMLParser):
         return self.allcontent.strip()
 
 
-class Progression():
-    """
-    Inform the user about the progression of images transformation.
-    """
+class Progression:
+    """Inform the user about the progression of images transformation."""
 
     def __init__(self, total_rows: int):
         self.start_time = time.perf_counter()
         self.total_rows = total_rows
 
     def display(self, remaining_rows_number: int):
-        """
-        Display the image progression in the output.
-        """
+        """Display the image progression in the output."""
         current_row_number = self.total_rows - remaining_rows_number
         if current_row_number == 0:
             return
@@ -104,16 +97,12 @@ class Progression():
             seconds=int(remaining_time)))
 
     def done(self):
-        """
-        Clear the output and display a 100% progress.
-        """
+        """Clear the output and display a 100% progress."""
         print("Avancement : 100%")
 
 
 class ImageTransformer(BaseEstimator, TransformerMixin):
-    """
-    Transform images by first cropping the white stripes and then resize them either while keeping their original ratio or by stretching them. Can also set it to grayscale.
-    """
+    """Transform images by first cropping the white stripes and then resize them either while keeping their original ratio or by stretching them. Can also set it to grayscale."""
 
     def __init__(self, width: int, height: int, keep_ratio: bool, grayscale: bool, input_img_dir: str = "data/images/image_train/", nb_threads: int = 4) -> None:
         super().__init__()
@@ -127,9 +116,7 @@ class ImageTransformer(BaseEstimator, TransformerMixin):
         self.filenames_queue = Queue()
 
     def _initiate_crop_resize(self, type):
-        """
-        Private function started by the threads to crop_resize_img.
-        """
+        """Private function started by the threads to crop_resize_img."""
         while not self.filenames_queue.empty():
             filename, prdtypecode = self.filenames_queue.get()
             output_dir = self.output_img_dir if prdtypecode is None else os.path.join(
@@ -157,9 +144,7 @@ class ImageTransformer(BaseEstimator, TransformerMixin):
         return X
 
     def get_output_dir(self):
-        """
-        Return the output directory where transformed images will be saved.
-        """
+        """Return the output directory where transformed images will be saved."""
         result = f"data/images/cropped_w{self.width}_h{self.height}"
         if self.keep_ratio:
             result += "_ratio"
@@ -172,16 +157,11 @@ class ImageTransformer(BaseEstimator, TransformerMixin):
         return result
 
     def fit(self, X=None, y=None):
-        """
-        Doesn't do anything in this scenario, but must be here for Pipeline compatibility.
-        """
+        """Doesn't do anything in this scenario, but must be here for Pipeline compatibility."""
         return self
 
-    def transform(self, X, y=None, type: str = None):
-        """
-        Transform the images for each line of X.
-        """
-
+    def transform(self, X, y=None, type: str | None = None):
+        """Transform the images for each line of X."""
         existing_files = []
 
         # Check if the output directory for images exists
@@ -198,10 +178,10 @@ class ImageTransformer(BaseEstimator, TransformerMixin):
 
         # Remove the images already in the destination folder so we don't have to process them a second time
         if y is None:
-            files_to_process = list(filter(lambda value: value != None, [(
+            files_to_process = list(filter(lambda value: value is not None, [(
                 (x, None) if x not in existing_files else None) for x in images_filenames]))
         else:
-            files_to_process = list(filter(lambda value: value != None, [(
+            files_to_process = list(filter(lambda value: value is not None, [(
                 (x, y) if x not in existing_files else None) for x, y in zip(images_filenames, y)]))
 
         # Update the queue with the list of images to process
@@ -226,7 +206,7 @@ class ImageTransformer(BaseEstimator, TransformerMixin):
                 if thread.is_alive():
                     is_alive = True
                     break
-            if is_alive == False:
+            if is_alive is False:
                 # It's not the case, stop the loop
                 break
             # Display the progression and wait for 3 secs
@@ -250,7 +230,7 @@ class ImageTransformer(BaseEstimator, TransformerMixin):
             return X
 
 
-class ImagePipeline():
+class ImagePipeline:
 
     def __init__(self, width: int, height: int, keep_ratio: bool, grayscale: bool, input_img_dir: str = "data/images/image_train/", nb_threads: int = 4) -> None:
 
@@ -265,10 +245,8 @@ class ImagePipeline():
         ])
 
 
-class AdvancedImagePipeline():
-    """
-    Version of ImagePipeline made for deep learning models
-    """
+class AdvancedImagePipeline:
+    """Version of ImagePipeline made for deep learning models."""
 
     def __init__(self, width: int, height: int, keep_ratio: bool, grayscale: bool, input_img_dir: str = "data/images/image_train/", nb_threads: int = 4) -> None:
 

@@ -10,3 +10,9 @@ types-pytz
 types-passlib
 types-python-jose
 types-tensorflow
+types-Pygments
+types-colorama
+types-decorator
+types-jsonschema
+types-openpyxl
+types-six
