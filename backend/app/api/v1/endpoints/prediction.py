@@ -57,7 +57,7 @@ async def predict_category(
         except UnidentifiedImageError as exc:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid image format. Image must be in JPEG or JPG format and colored.",
+                detail="Invalid image format. Image must be in JPEG or JPG format and colored.",  # noqa: E501
             ) from exc
 
     if limit is not None and limit <= 0:

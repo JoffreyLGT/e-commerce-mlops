@@ -1,7 +1,6 @@
 """Test the prediction routes."""
 
 from io import BytesIO
-from typing import Dict
 
 from fastapi import status
 from fastapi.testclient import TestClient
@@ -11,14 +10,13 @@ from app.core.settings import settings
 
 
 def test_predict_category_valid_color(
-    client: TestClient, normal_user_token_headers: Dict[str, str]
-):
-    """Test the prediction with valid data and a RGB picture."""
-
-    params = {
+    client: TestClient, normal_user_token_headers: dict[str, str]
+) -> None:
+    """Prediction with valid data and a RGB picture."""
+    params: dict[str, str] = {
         "designation": "Guillaume Le Maréchal Tome 1 - Le Chevalier D'aliénor",
-        "description": "L'histoire oubliée du meilleur chevalier du monde... 1167, duché de Normandie..",
-        "limit": 1,
+        "description": "L'histoire oubliée du meilleur chevalier du monde... 1167, duché de Normandie..",  # noqa: E501
+        "limit": "1",
     }
     image = Image.new("RGB", (450, 1470))
     image_file = BytesIO()  #  BytesIO is use to simulate image file
@@ -33,7 +31,7 @@ def test_predict_category_valid_color(
     assert request.status_code == status.HTTP_200_OK
 
     response = request.json()
-    assert len(response) == params["limit"]
+    assert len(response) == int(params["limit"])
 
     assert (
         response[0]["prdtypecode"] == 1180
@@ -43,20 +41,17 @@ def test_predict_category_valid_color(
 
 
 def test_predict_category_invalid_gray(
-    client: TestClient, normal_user_token_headers: Dict[str, str]
-):
-    """Test the prediction with valid text but black and white image.."""
-
-    params = {
+    client: TestClient, normal_user_token_headers: dict[str, str]
+) -> None:
+    """Prediction with valid text but grayscaled image."""
+    params: dict[str, str] = {
         "designation": "Guillaume Le Maréchal Tome 1 - Le Chevalier D'aliénor",
-        "description": "L'histoire oubliée du meilleur chevalier du monde... 1167, duché de Normandie..",
-        "limit": 7,
+        "description": "L'histoire oubliée du meilleur chevalier du monde... 1167, duché de Normandie..",  # noqa: E501
+        "limit": "7",
     }
-    image = Image.new(
-        "L", (4785, 6370)
-    )  # test image uploaded in black_and_white, the "0" passed throught color is to tell us that canal color is black
+    grayscale_image = Image.new("L", (4785, 6370))
     image_file = BytesIO()  #  BytesIO is use to simulate image file
-    image.save(image_file, format="jpeg")
+    grayscale_image.save(image_file, format="jpeg")
 
     request = client.post(
         f"{settings.API_V1_STR}/predict/",
@@ -72,16 +67,13 @@ def test_predict_category_invalid_gray(
 
 
 def test_predict_category_with_negative_limit(
-    client: TestClient, normal_user_token_headers: Dict[str, str]
-):
-    """Test the prediction with negative limit value.
-
-    Should return an error."""
-
-    params = {
+    client: TestClient, normal_user_token_headers: dict[str, str]
+) -> None:
+    """Prediction with negative limit value, must raise an error."""
+    params: dict[str, str] = {
         "designation": "Guillaume Le Maréchal Tome 1 - Le Chevalier D'aliénor",
-        "description": "L'histoire oubliée du meilleur chevalier du monde... 1167, duché de Normandie..",
-        "limit": -1,
+        "description": "L'histoire oubliée du meilleur chevalier du monde... 1167, duché de Normandie..",  # noqa: E501
+        "limit": "-1",
     }
 
     request_negative_limit = client.post(
@@ -101,15 +93,13 @@ def test_predict_category_with_negative_limit(
 
 
 def test_predict_category_with_wrong_extension(
-    client: TestClient, normal_user_token_headers: Dict[str, str]
-):
+    client: TestClient, normal_user_token_headers: dict[str, str]
+) -> None:
     """Test the prediction with wrong extension."""
-
-    # sending data request
-    params = {
+    params: dict[str, str] = {
         "designation": "Guillaume Le Maréchal Tome 1 - Le Chevalier D'aliénor",
-        "description": "L'histoire oubliée du meilleur chevalier du monde... 1167, duché de Normandie..",
-        "limit": 7,
+        "description": "L'histoire oubliée du meilleur chevalier du monde... 1167, duché de Normandie..",  # noqa: E501
+        "limit": "7",
     }
     image = Image.new("RGB", (3245, 5641))
 
@@ -137,14 +127,13 @@ def test_predict_category_with_wrong_extension(
 
 
 def test_predict_category_invalid_image_format(
-    client: TestClient, normal_user_token_headers: Dict[str, str]
-):
+    client: TestClient, normal_user_token_headers: dict[str, str]
+) -> None:
     """Test with wrong image format."""
-
-    params = {
+    params: dict[str, str] = {
         "designation": "Guillaume Le Maréchal Tome 1 - Le Chevalier D'aliénor",
-        "description": "L'histoire oubliée du meilleur chevalier du monde... 1167, duché de Normandie..",
-        "limit": 7,
+        "description": "L'histoire oubliée du meilleur chevalier du monde... 1167, duché de Normandie..",  # noqa: E501
+        "limit": "7",
     }
 
     image_file = BytesIO()
@@ -171,18 +160,13 @@ def test_predict_category_invalid_image_format(
 
 
 def test_predict_category_image_four_dimensions(
-    client: TestClient, normal_user_token_headers: Dict[str, str]
-):
-    """test of the prediction with wrong image format,
-
-    this should not be the case and for that ,
-    must raire an error.
-    """
-
-    params = {
+    client: TestClient, normal_user_token_headers: dict[str, str]
+) -> None:
+    """Prediction with wrong image format, must raise an error."""
+    params: dict[str, str] = {
         "designation": "Guillaume Le Maréchal Tome 1 - Le Chevalier D'aliénor",
-        "description": "L'histoire oubliée du meilleur chevalier du monde... 1167, duché de Normandie..",
-        "limit": 7,
+        "description": "L'histoire oubliée du meilleur chevalier du monde... 1167, duché de Normandie..",  # noqa: E501
+        "limit": "7",
     }
     image_data = Image.new("RGBA", (100, 100))  # test image uploaded in color
     image_file = (
@@ -190,7 +174,6 @@ def test_predict_category_image_four_dimensions(
     )  #  BytesIO is use to simulate image file. this is where we save the image test
     image_data.save(image_file, format="png")  # we save the test image in png format
 
-    # sending POST request with incorrect image format
     request_invalid_format = client.post(
         f"{settings.API_V1_STR}/predict/",
         headers=normal_user_token_headers,
@@ -211,12 +194,9 @@ def test_predict_category_image_four_dimensions(
 
 
 def test_predict_category_without_data(
-    client: TestClient, normal_user_token_headers: Dict[str, str]
-):
-    """Test  the prediction with empty data
-
-    Must raise an error"""
-
+    client: TestClient, normal_user_token_headers: dict[str, str]
+) -> None:
+    """Prediction with empty data, must raise an error."""
     request_without_data = client.post(
         f"{settings.API_V1_STR}/predict/",
         headers=normal_user_token_headers,
