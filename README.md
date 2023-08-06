@@ -17,8 +17,9 @@ E-COMMERCE-MLOPS/
 ## Mise en place avec Docker
 
 1. Remplir le fichier .env avec vos informations.
-2. Exécuter `scripts/docker-deploy.sh` pour créer les conteneurs.
-3. Lancer les conteneurs via Docker Desktop ou via ligne de commande.
+2. Ajouter la variable d'environnement `export ENV_TARGET="development"`
+3. Exécuter `scripts/docker-deploy.sh` pour créer les conteneurs.
+4. Lancer les conteneurs via Docker Desktop ou via ligne de commande.
 
 ## Backend
 
@@ -26,38 +27,49 @@ E-COMMERCE-MLOPS/
 
 Un conteneur de développement a été préparé.  
 Voici les prérequis : 
-- [Visual Studio Code](https://code.visualstudio.com) 
-- Extension VSCode [Docker](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker)
+- [Visual Studio Code](https://code.visualstudio.com)
 - Extension VSCode [Dev Container](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
 Une fois les extensions installées, veuillez-suivre les étapes suivantes :  
-1. Ouvrir le projet dans VSCode.
-2. Cloner le repo e-commerce-mlops sur le terminal et placer vous dans le dossier. 
-3. Ouvrir la palette des commandes (Cmd+Shift+p).
+1. Cloner le repo :
+```shell
+git clone https://github.com/JoffreyLGT/e-commerce-mlops.git
+```
+2. Ouvrir le projet dans VSCode.
+3. Ouvrir la palette des commandes (`Cmd+Shift+p`).
 4. Saisir **dev container open** et sélectionner l'option **Dev Containers: Open folder in Container...**.
 5. Sélectionner le dossier **backend**.
 
-La fenêtre de VSCode va se rouvrir. Dans le terminal, vous pourrez constater l'installation des packages.
+La fenêtre de VSCode va se recharger. Dans le terminal, vous pourrez constater le lancement de l'API.
+
+Les extensions peuvent afficher des notifications lors de la configuration, notamment Pylance indiquant que l'extension Python n'est pas détectée. Il faut simplement les fermer sans les prendre en compte.
 
 ### Lancement de l'API
 
-L'API utilise **uvicorn** comme serveur Web.  
-Pour démarrer le serveur et observer les changements, exécuter la commande suivante dans le terminal du conteneur de développement :
+Le lancement de l'API en mode développement sur le conteneur se fait avec le script `start-reload.sh` :
 
 ```shell
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+./scripts/start-reload.sh
 ```
 
-VSCode doit faire automatiquement la redirection du port 8000.  
+VSCode s'occupe automatiquement de la redirection du port 8000.  
 Ouvrir l’adresse ci-dessous dans un navigateur Web sur la machine hôte pour afficher la documentation :
 
 http://localhost:8000/docs
 
 ### Monitoring
 
-Le monitoring est mise en place avec la librairie [OpenTelemetry](https://opentelemetry.io) permettat l'envoi des évènements sur plusieurs solutions du marché. 
+Le monitoring est mise en place avec la librairie [OpenTelemetry](https://opentelemetry.io) permettant l'envoi des évènements sur plusieurs solutions du marché. 
 Dans ce projet, nous utilisons la version Open Source de [SigNoz](https://signoz.io).
+
+Pour démarrer l'application avec la télémétrie, il faut exécuter le script `start-with-telemetry.sh` : 
+
+```shell
+./scripts/start-with-telemetry.sh
+```
+
+A noter que Signoz doit être installé sur votre machine et connecté sur le même réseau que le devcontainer.
 
 ### Modification d'une table en BDD
 
@@ -166,7 +178,7 @@ Parfois, Pylance indique des erreurs de type à cause de décorateurs des librai
 
 Pour ignorer ces erreurs, ajouter le commentaire suivant en bout de ligne :
 ```python
-__tablename__ = "prediction_feedback" # type: ignore
+__tablename__ = "prediction_feedback" # pyright: ignore
 ```
 
 #### Docstring : Google
@@ -175,40 +187,20 @@ Nous utilisons la convention de [Google expliquée ici](https://google.github.io
 
 L'extension autoDocstring, intégrée au dev container, permet de générer les templates de docstring via la commande (Cmd + Shift + p) `Generate Docstring`.
 
-#### Linter : Pylint
+#### Analyseur de code statique : Ruff
 
-Pylint analyse le contenu du fichier après la sauvegarde de celui-ci.
+[Ruff](https://beta.ruff.rs/docs/) effectue l'analyse de code statique du fichier en direct et fait des recommandations. Il combine des règles provenant de plusieurs autres linter du marché et réorganise les imports en utillisant les règles [iSort](https://beta.ruff.rs/docs/faq/#how-does-ruffs-import-sorting-compare-to-isort).
 
-Parfois, Pylint fait des recommandations erronées. C'est le cas, par exemple, des validateurs de la librairie Pydantic :
+Pour visualiser les règles activées dans le projet, ouvrir le fichier `/backend/pyproject.toml`.
 
-```python
-# Pylint(E0213:no-self-argument): Method 'assemble_db_connection' should have "self" as first argument
-@validator("SQLALCHEMY_DATABASE_URI", pre=True)
-    def assemble_db_connection(cls, v: str | None, values: Dict[str, Any]) -> Any:
-```
+Certaines recommandations peuvent être érronées. Pour les désactiver, je vous invite à consulter la page  [Ruff error suppression](https://beta.ruff.rs/docs/configuration/#error-suppression).
 
-La désactivation des remarques de Pylint se fait via un commentaire formaté.   
-Celui-ci commence par `pylint: disable=`, suivi par la(les) références de(s) remarque(s). 
+#### Formateur : Black
 
-- Pour désactiver une remarque sur une ligne seulement, on ajoute le commentaire sur la même ligne.
-- Pour désactiver toutes les remarques d'un scope, on ajoute le commentaire sur une nouvelle ligne dans le scope. Attention, seule les lignes en dessous du commentaire seront ignorée.
+[Black](https://black.readthedocs.io/en/stable/) formate automatiquement le code lors de l'enregistrement du fichier.
 
-```python
-# Désactive la remarque E0213 seulement pour la ligne ci-dessous
-@validator("SQLALCHEMY_DATABASE_URI", pre=True) # pylint: disable=E0213
+#### Vérificateur de type : Mypy
 
-# Désactive la remarque E0213 pour toutes les lignes dans le scope
-# pylint: disable=E0213
-@validator("SQLALCHEMY_DATABASE_URI", pre=True) 
-```
+[Mypy](https://mypy.readthedocs.io/en/stable/) s'occupe de mettre en avant les potentiels problèmes liés aux types.
 
-#### Formateur : isort et Black
-
-Formate automatiquement le code lors de l'enregistrement du fichier.
-
-Attention, les imports sont réorganisés automatiquement. Dans certains cas, nous souhaitons maintenir un ordre précis.  
-Pour désactiver la réorganisation des imports :
-- Fichier complet : ajouter `# isort: skip_file` après la docstring du module.
-- Bloc spécifique : encadrer les lignes avec les commentaires `# isort: off` et `# isort: on`.
-
-[Documentation isort sur les méthode de désactivation](https://pycqa.github.io/isort/docs/configuration/action_comments.html)
+Il s'exécute à l'enregistrement du fichier.
