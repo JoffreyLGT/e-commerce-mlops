@@ -12,7 +12,7 @@ router = APIRouter()
 @router.get("/")
 async def is_online(
     _db: Session = Depends(dependencies.get_db),
-):
+) -> str:
     """Check if the API is running and if DB session is active.
 
     Args:
@@ -21,4 +21,4 @@ async def is_online(
     Returns:
         Message saying the API is online.
     """
-    return {f"API {settings.PROJECT_NAME} is online!"}
+    return f"API {settings.PROJECT_NAME} is online!"

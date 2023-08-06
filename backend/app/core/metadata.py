@@ -1,12 +1,24 @@
 """Contains all metadata used by FastAPI."""
 
+from typing import Any, TypedDict
 
 from app.core.settings import settings
+
+
+class FastAPIMetadata(TypedDict):
+    """Definition of the app metadata."""
+
+    title: str
+    summary: str
+    version: str
+    contact: Any
+    openapi_url: str
+
 
 title = f"{settings.PROJECT_NAME} API"
 # description = ""
 
-app_metadata = {
+app_metadata: FastAPIMetadata = {
     "title": title,
     # "description": description,
     "summary": f"{title} predicts the category of your products.",

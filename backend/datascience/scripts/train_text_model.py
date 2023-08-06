@@ -1,26 +1,30 @@
+"""Script to generate a text preprocessing pickle.
+
+This pickle is used to preprocess the data and send them to the model.
 """
-Script to generate a text preprocessing pickle to be used
-to preprocess the data and send them to the model.
-"""
+
+# pyright: reportMissingTypeStubs=false, reportUnknownVariableType=false
+# pyright: reportUnknownMemberType=false
 
 import os
 import pickle
 
-import scipy.sparse as sparse
 import numpy as np
+import scipy.sparse as sparse
 import tensorflow as tf
+from scipy.sparse import coo_array, csr_matrix
 from sklearn.model_selection import train_test_split
 
 from datascience.src import data, text_model
 
 
-def convert_sparse_matrix_to_sparse_tensor(X):
-    """
-    Convert a sparse matrix into a sparse tensor.
-    """
-    coo = X.tocoo()
-    indices = np.mat([coo.row, coo.col]).transpose()
-    return tf.sparse.reorder(tf.SparseTensor(indices, coo.data, coo.shape))
+def convert_sparse_matrix_to_sparse_tensor(X: csr_matrix) -> tf.SparseTensor:
+    """Convert a sparse matrix into a sparse tensor."""
+    coo: coo_array = X.tocoo()
+    indices = np.mat([coo.row, coo.col]).transpose()  # pyright: ignore
+    return tf.sparse.reorder(
+        tf.SparseTensor(indices, coo.data, coo.shape)
+    )  # pyright: ignore
 
 
 print("Generation text preprocessor")
@@ -61,8 +65,8 @@ X_train = preprocessor.transform(X_train)
 X_test = preprocessor.transform(X_test)
 
 print("Convert them into sparse matrix")
-X_train = sparse.csr_matrix(X_train)
-X_test = sparse.csr_matrix(X_test)
+X_train: sparse.csr_matrix = sparse.csr_matrix(X_train)
+X_test: sparse.csr_matrix = sparse.csr_matrix(X_test)
 
 print("Convert target values into a range [0, num_classes - 1]")
 y_temp = np.copy(y_train)

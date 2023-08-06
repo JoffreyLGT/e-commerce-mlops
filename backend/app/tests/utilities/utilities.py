@@ -43,8 +43,8 @@ def get_admin_token_headers(client: TestClient) -> dict[str, str]:
         Admin access token header of an admin user.
     """
     login_data = {
-        "username": settings.FIRST_ADMINUSER,
-        "password": settings.FIRST_ADMINUSER_PASSWORD,
+        "username": str(settings.FIRST_ADMINUSER),
+        "password": str(settings.FIRST_ADMINUSER_PASSWORD),
     }
     response = client.post(f"{settings.API_V1_STR}/login/access-token", data=login_data)
     tokens = response.json()

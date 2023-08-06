@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app import crud
 from app.core.settings import settings
 from app.models.user import User
-from app.schemas.user import UserCreate, UserUpdate
+from app.schemas import Token, UserCreate, UserUpdate
 from app.tests.utilities.utilities import random_email, random_lower_string
 
 
@@ -26,10 +26,9 @@ def get_user_authentication_headers(
     """
     data = {"username": email, "password": password}
 
-    response = client.post(f"{settings.API_V1_STR}/login/access-token", data=data)
-    response = response.json()
-    auth_token = response["access_token"]
-    headers = {"Authorization": f"Bearer {auth_token}"}
+    request = client.post(f"{settings.API_V1_STR}/login/access-token", data=data)
+    response = Token(**request.json())
+    headers = {"Authorization": f"Bearer {response.access_token}"}
     return headers
 
 

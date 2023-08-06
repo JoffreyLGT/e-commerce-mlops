@@ -1,6 +1,5 @@
 """Contains the tests on login routes."""
 
-
 from fastapi import status
 from fastapi.testclient import TestClient
 
@@ -10,8 +9,8 @@ from app.core.settings import settings
 def test_get_access_token(client: TestClient) -> None:
     """Test the recuperation of an access token."""
     login_data = {
-        "username": settings.FIRST_ADMINUSER,
-        "password": settings.FIRST_ADMINUSER_PASSWORD,
+        "username": str(settings.FIRST_ADMINUSER),
+        "password": str(settings.FIRST_ADMINUSER_PASSWORD),
     }
     response = client.post(f"{settings.API_V1_STR}/login/access-token", data=login_data)
     assert response.status_code == status.HTTP_200_OK

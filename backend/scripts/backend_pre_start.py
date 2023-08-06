@@ -1,3 +1,4 @@
+"""Task to do to ensure the database is up and running before starting the API."""
 import logging
 
 from sqlalchemy import text
@@ -19,6 +20,10 @@ wait_seconds = 1
     after=after_log(logger, logging.WARN),
 )
 def init() -> None:
+    """Initiate a connection to the DB and execute a simple request.
+
+    The goal is to ensure it's running and ready to accept our requests.
+    """
     try:
         db = SessionLocal()
         # Try to create session to check if DB is awake
@@ -29,6 +34,7 @@ def init() -> None:
 
 
 def main() -> None:
+    """Main function called when the script starts."""
     logger.info("Initializing service")
     init()
     logger.info("Service finished initializing")
