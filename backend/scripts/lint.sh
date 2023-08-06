@@ -9,7 +9,7 @@ folders="app scripts"
 black $folders --check
 
 # Linter
-if [ $IS_GH_ACTION="True" ]
+if [[ $IS_GH_ACTION = "True" ]]
 then
     ruff check --format=github $folders
 else
