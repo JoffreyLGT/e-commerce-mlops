@@ -7,7 +7,7 @@ set -x
 black app scripts --check
 
 # Linter
-ruff app scripts
+ruff app scripts --statistics
 
 # Type checker
 mypy app scripts
