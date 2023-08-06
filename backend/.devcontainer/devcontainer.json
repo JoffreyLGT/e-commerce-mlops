@@ -60,6 +60,9 @@
 				"editor.defaultFormatter": "ms-python.black-formatter",
 				"black-formatter.importStrategy": "fromEnvironment",
 				"ruff.organizeImports": true,
+				"ruff.args": [
+					"--config=./pyproject.toml"
+				],
 				// 88 is the number chosen by Black formatter
 				"editor.wordWrapColumn": 88,
 				"editor.rulers": [

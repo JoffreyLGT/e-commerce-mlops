@@ -3,13 +3,11 @@
 # Print a trace of simple commands
 set -x
 
-# FIXME Add datascience folder
-
 # Formatter
-black app --check
+black app scripts --check
 
 # Linter
-ruff app
+ruff app scripts
 
 # Type checker
-mypy app
+mypy app scripts

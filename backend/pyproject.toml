@@ -74,3 +74,8 @@ strict = true
 warn_return_any = false
 implicit_reexport = false
 namespace_packages = true
+plugins = ["numpy.typing.mypy_plugin"]
+
+[[tool.mypy.overrides]]
+module = "gdown"
+ignore_missing_imports = true

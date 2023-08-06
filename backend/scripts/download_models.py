@@ -1,6 +1,4 @@
-"""
-Download the models and preprocessing saves from Google Drive.
-"""
+"""Download the models and preprocessing saves from Google Drive."""
 
 import os
 
