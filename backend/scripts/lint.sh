@@ -3,11 +3,18 @@
 # Print a trace of simple commands
 set -x
 
+folders="app scripts"
+
 # Formatter
-black app scripts --check
+black $folders --check
 
 # Linter
-ruff app scripts
+if [ $IS_GH_ACTION="True" ]
+then
+    ruff check --format=github $folders
+else
+    ruff check $folders
+fi
 
 # Type checker
-mypy app scripts
+mypy $folders
