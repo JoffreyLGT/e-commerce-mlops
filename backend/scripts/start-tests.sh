@@ -1,14 +1,14 @@
-#! /usr/bin/env sh
+#! /usr/bin/env bash
 
-# Store the script name for logging purpose
-me=$(basename "$0")
+# Get the full path to this script's directory
+current_dir=$(dirname $(readlink -f "${BASH_SOURCE:-$0}"))
+# And the parent dir to ensure we can call the scripts
+backend_dir="$(dirname "$current_dir")"
 
 # Exit in case of error
 set -e
-# Print a trace of simple commands
-set -x
 
 # Run prestart.sh to create DB
-./scripts/prestart.sh
+PYTHONPATH=$backend_dir $current_dir/prestart.sh
 
-pytest app/tests "${@}"
+PYTHONPATH=$backend_dir pytest $backend_dir/app/tests --disable-warnings -q

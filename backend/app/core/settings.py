@@ -6,6 +6,7 @@ Note: important variable must have validator using pydantic.
 """
 
 import secrets
+from pathlib import Path
 from typing import Any
 
 from pydantic import AnyHttpUrl, BaseSettings, EmailStr, PostgresDsn, validator
@@ -87,4 +88,15 @@ class Settings(BaseSettings):
         case_sensitive = True
 
 
+def _get_backend_dir() -> str:
+    """Get full path to backend directory."""
+    current_path = Path(__file__)
+    if "backend" not in str(current_path):
+        raise FileNotFoundError("Impossible to find 'backend' directory.")
+    while current_path.name != "backend":
+        current_path = current_path.parent
+    return str(current_path)
+
+
 settings = Settings()
+backend_dir = _get_backend_dir()

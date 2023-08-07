@@ -4,25 +4,27 @@ import os
 
 import gdown
 
+from app.core.settings import backend_dir
+
 files = [
     (
         "https://drive.google.com/uc?id=1BeeAydZtfeqW1PIoM2O6SuD7lSKOr84S",
-        os.path.join("datascience", "data", "models", "text"),
+        os.path.join(backend_dir, "datascience", "data", "models", "text"),
         "mlp_model_v2.h5",
     ),
     (
         "https://drive.google.com/uc?id=1eCW7UZ6oKyLvt_cn5Ek4vzNa55YZAU70",
-        os.path.join("datascience", "data", "models", "image"),
+        os.path.join(backend_dir, "datascience", "data", "models", "image"),
         "cnn_mobilenetv2.h5",
     ),
     (
         "https://drive.google.com/uc?id=1CwMWDs6Sb7EDNoOM4tzC5Eyo2DOP2G8M",
-        os.path.join("datascience", "data", "models", "fusion"),
+        os.path.join(backend_dir, "datascience", "data", "models", "fusion"),
         "fusion_text_image.h5",
     ),
     (
         "https://drive.google.com/uc?id=1koGV4Zk0gWDeUSedrQFJsIZZTQsByV78",
-        os.path.join("datascience", "data", "pickles"),
+        os.path.join(backend_dir, "datascience", "data", "pickles"),
         "text_preprocessor.pkl",
     ),
 ]

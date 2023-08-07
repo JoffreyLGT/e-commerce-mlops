@@ -25,6 +25,7 @@ services:
     environment:
       - SERVER_NAME=${DOMAIN?Variable not set}
       - SERVER_HOST=https://${DOMAIN?Variable not set}
+      - ENV_TARGET=development
 
   db:
     image: postgres:latest

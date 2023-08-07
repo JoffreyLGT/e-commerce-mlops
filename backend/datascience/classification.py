@@ -10,10 +10,11 @@ import pandas as pd
 import tensorflow as tf
 from tensorflow import Tensor, keras
 
+from app.core.settings import backend_dir
 from datascience.src.data import PRDTYPECODE_DIC, convert_sparse_matrix_to_sparse_tensor
 
-PICKLES_DIR = os.path.join("datascience", "data", "pickles")
-MODELS_DIR = os.path.join("datascience", "data", "models")
+PICKLES_DIR = os.path.join(backend_dir, "datascience", "data", "pickles")
+MODELS_DIR = os.path.join(backend_dir, "datascience", "data", "models")
 
 
 def preprocess_image(img: Tensor) -> Tensor:
