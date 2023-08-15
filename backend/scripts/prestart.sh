@@ -2,12 +2,6 @@
 
 dir_fullpath=$(dirname $(readlink -f "${BASH_SOURCE:-$0}"))
 
-# Install pre-commit if $ENV_TARGET is empty or has value "development"
-if [ -z "$ENV_TARGET" ] || [ "$ENV_TARGET"=="development" ]
-then
-    pre-commit install
-fi
-
 # Let the DB start
 python $dir_fullpath/backend_pre_start.py
 
