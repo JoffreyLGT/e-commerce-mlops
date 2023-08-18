@@ -39,9 +39,13 @@ git clone https://github.com/JoffreyLGT/e-commerce-mlops.git
 2. Ouvrir le projet dans VSCode.
 3. Ouvrir la palette des commandes (`Cmd+Shift+p`).
 4. Saisir **dev container open** et sélectionner l'option **Dev Containers: Open folder in Container...**.
-5. Sélectionner le dossier **backend**.
+5. Sélectionner le dossier **e-commerce-mlops**.
 
-La fenêtre de VSCode va se recharger. Dans le terminal, vous pourrez constater le lancement de l'API.
+La fenêtre de VSCode va se recharger. Une fois l'installation du dev container terminée, plusieurs terminaux vont s'ouvrir :
+- backend : terminal se trouvant dans le dossier backend avec l'environnement virtuel du projet backend.
+- datascience : terminal se trouvant dans le dossier backend avec l'environnement virtuel du projet datascience.
+- API reload : lance l'API en mode rechargement.
+- MLFlow UI : lance l'interface Web de MLFlow.
 
 Les extensions peuvent afficher des notifications lors de la configuration, notamment Pylance indiquant que l'extension Python n'est pas détectée. Il faut simplement les fermer sans les prendre en compte.
 
