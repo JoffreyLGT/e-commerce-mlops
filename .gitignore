@@ -166,12 +166,12 @@ cython_debug/
 #.idea/
 
 
-backend/datascience/data/X.csv
-backend/datascience/data/y.csv
-backend/datascience/data/models/fusion/fusion_text_image.h5
-backend/datascience/data/models/image/cnn_mobilenetv2.h5
-backend/datascience/data/models/text/mlp_model_v2.h5
-backend/datascience/data/pickles/text_preprocessor.pkl
+**/X.csv
+**/y.csv
+**/fusion_text_image.h5
+**/cnn_mobilenetv2.h5
+**/mlp_model_v2.h5
+**/text_preprocessor.pkl
 
 # Full repository
 signoz
@@ -179,3 +179,6 @@ signoz
 docker-stack.yaml
 # Ruff cache
 .ruff_cache
+
+datascience/data
+datascience/.python-version

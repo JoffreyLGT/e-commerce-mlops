@@ -1,3 +1,15 @@
+[project]
+name = "datascience"
+version = "0.1.0"
+description = "Create and test product classification models and track their performance using MLFlow."
+# authors = ["Joffrey Lagut <j.lagut@live.fr>", "Landry <landry@test.com>", "Arnaud <arnaud@test.com>"]
+readme = "README.md"
+requires-python = ">3.11"
+
+[build-system]
+# Minimum requirements for the build system to execute.
+requires = ["setuptools", "wheel"]  # PEP 508 specifications.
+
 [tool.ruff]
 # Set max line length to 88 to match Black
 line-length = 88
@@ -44,6 +56,7 @@ exclude = [
     "**/.pytest_cache",
     "**/__pycache__",
     "/usr/local/lib/**",
+    "**/Python.framework/**"
 ]
 
 # Allow unused variables when underscore-prefixed.
@@ -66,8 +79,19 @@ convention = "google"
 [tool.pyright]
 pythonVersion = "3.11"
 typeCheckingMode = "strict"
-include = ["app"]
+# include = []
 exclude = ["**/.pytest_cache", "**/__pycache__", ".ruff_cache"]
+
+[tool.mypy]
+strict = true
+warn_return_any = false
+implicit_reexport = false
+namespace_packages = true
+plugins = ["numpy.typing.mypy_plugin", "pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = "gdown"
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 filterwarnings = [

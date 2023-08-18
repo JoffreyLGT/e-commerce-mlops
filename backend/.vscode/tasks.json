@@ -1,0 +1,46 @@
+{
+    "version": "2.0.0",
+    "presentation": {
+        "echo": false,
+        "panel": "dedicated",
+        "showReuseMessage": true
+    },
+    "tasks": [
+        {
+            "label": "Start Backend",
+            "runOptions": {
+                "runOn": "folderOpen"
+            },
+            "dependsOrder": "parallel",
+            "dependsOn": [
+                "API reload",
+                "Backend",
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Backend",
+            "type": "process",
+            "command": "",
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "echo": false,
+                "focus": true
+            }
+        },
+        {
+            "label": "API reload",
+            "type": "shell",
+            "command": "source .venv/bin/activate && ./scripts/start-reload.sh",
+            "promptOnClose": false,
+            "presentation": {
+                "panel": "dedicated",
+                "reveal": "silent",
+                "focus": false
+            }
+        }
+    ]
+}

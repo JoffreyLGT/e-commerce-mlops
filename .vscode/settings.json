@@ -1,5 +1,16 @@
 {
     "files.exclude": {
-        "**/signoz": true
+        // Do not display backend and datascience since they are in workspace
+        "backend":true,
+        "datascience":true,
+    },
+    "terminal.integrated.profiles.linux": {
+        "zsh": {
+          "path": "/bin/zsh -l",
+          "args": ["-l"]
+        }
+      },
+    "terminal.integrated.automationProfile.linux": {
+        "path": "/bin/zsh"
     }
 }

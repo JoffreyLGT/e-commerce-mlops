@@ -2,13 +2,13 @@ version: '3.8'
 
 name: e-commerce-mlops
 services:
-  api:
+  project:
     build:
       context: ..
       dockerfile: .devcontainer/Dockerfile
 
     volumes:
-      - ../..:/workspaces:cached
+      - ../:/workspaces:cached
 
     # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity
@@ -20,12 +20,13 @@ services:
     # (Adding the "ports" property to this file will not forward from a Codespace.)
 
     env_file:
-      - ../../.env
+      - ../.env
 
     environment:
-      - SERVER_NAME=${DOMAIN?Variable not set}
-      - SERVER_HOST=https://${DOMAIN?Variable not set}
+      - SERVER_NAME=${DOMAIN:-localhost}
+      - SERVER_HOST=https://${DOMAIN:-localhost}
       - ENV_TARGET=development
+      - RESET_VENV=${RESET_VENV:-false}
 
   db:
     image: postgres:latest
@@ -34,7 +35,7 @@ services:
       - postgres-data:/var/lib/postgresql/data
     
     env_file:
-      - ../../.env
+      - ../.env
 
     # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward PostgreSQL locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
