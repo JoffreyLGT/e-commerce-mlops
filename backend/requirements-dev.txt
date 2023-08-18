@@ -3,7 +3,6 @@ httpx
 ruff
 black
 mypy
-pre-commit
 # All stubs and types for mypy/Pylance
 pandas-stubs
 types-Pillow
