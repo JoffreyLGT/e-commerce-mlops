@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"name": "root",
+			"path": "."
+		},
+		{
+			"path": "backend"
+		},
+		{
+			"path": "datascience"
+		}
+	],
+	"settings": {
+		"terminal.integrated.defaultProfile.linux": "zsh"
+	}
+}

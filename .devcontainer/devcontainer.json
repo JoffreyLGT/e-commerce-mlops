@@ -1,16 +1,17 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/postgres
+// Features to add to the dev container. More info: https://containers.dev/features.
 {
-	"name": "Python 3 & PostgreSQL",
+	"name": "Dev-PrdClassification",
 	"dockerComposeFile": "docker-compose.yml",
-	"service": "api",
-	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-	// Features to add to the dev container. More info: https://containers.dev/features.
-	"postStartCommand": "./scripts/start-reload.sh",
+	"service": "project",
+	"workspaceFolder": "/workspaces",
+	"onCreateCommand": "./.devcontainer/onCreateCommand.sh",
+	// Set workspace directory as safe
+	"postAttachCommand": "git config --global --add safe.directory /workspaces",
 	"shutdownAction":"stopCompose",
 	"customizations": {
 		"vscode": {
-
 			"extensions": [
 				"ms-python.python",
 				"ms-azuretools.vscode-docker",
@@ -24,6 +25,7 @@
 				"ms-python.mypy-type-checker"
 			],
 			"settings": {
+				"terminal.integrated.defaultProfile.linux": "zsh",
 				"files.exclude": {
 					"**/__pycache__": true,
 					".pytest_cache": true,
@@ -42,14 +44,20 @@
 						"password": "changethis"
 					}
 				],
+				"python.defaultInterpreterPath": ".venv/bin/python",
+				"python.interpreter.infoVisibility": "always",
+				"python.analysis.diagnosticMode": "openFilesOnly",
+				"python.analysis.downloadStubs": true,
+				"python.envFile": "/workspaces/.env",
 				"python.testing.pytestArgs": [
-					"app"
+					"/workspaces/backend/app"
 				],
 				"python.testing.unittestEnabled": false,
 				"python.testing.pytestEnabled": true,
 				"python.analysis.typeCheckingMode": "basic",
 				"editor.formatOnSave": true,
 				"python.analysis.autoFormatStrings": true,
+				"python.venvFolders": ["/workspaces/"],
 				"[python]": {
 					"editor.defaultFormatter": "ms-python.black-formatter",
 					"editor.formatOnSave": true,
@@ -73,12 +81,16 @@
 			}
 		}
 	},
-	// Configure tool-specific properties.
-	// "customizations": {},
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "root"
 	"forwardPorts": [
 		5432,
 		8000
-	]
+	],
+	"features": {
+		// NodeJs
+		"ghcr.io/devcontainers/features/node:1": {},
+		// DirEnv to automatically load .env files
+		"ghcr.io/christophermacgown/devcontainer-features/direnv:1": {}
+	}
 }

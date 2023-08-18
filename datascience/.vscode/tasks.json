@@ -1,0 +1,46 @@
+{
+    "version": "2.0.0",
+    "presentation": {
+        "echo": false,
+        "panel": "dedicated",
+        "showReuseMessage": true
+    },
+    "tasks": [
+        {
+            "label": "Start Datascience",
+            "runOptions": {
+                "runOn": "folderOpen"
+            },
+            "dependsOrder": "parallel",
+            "dependsOn": [
+                "MLFlow UI",
+                "Datasience",
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Datasience",
+            "type": "process",
+            "command": "",
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "echo": false,
+                "focus": true
+            }
+        },
+        {
+            "label": "MLFlow UI",
+            "type": "shell",
+            "command": "source .venv/bin/activate && mlflow ui",
+            "promptOnClose": false,
+            "presentation": {
+                "panel": "dedicated",
+                "reveal": "silent",
+                "focus": false
+            }
+        }
+    ]
+}
