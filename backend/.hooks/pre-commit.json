@@ -1,0 +1,14 @@
+{
+    "type": "python",
+    "venvActivate": "./.venv/bin/activate",
+    "steps": [
+        {
+            "name": "Run lint.sh",
+            "command": "./scripts/lint.sh"
+        },
+        {
+            "name": "Run start-tests.sh",
+            "command": "./scripts/start-tests.sh"
+        }
+    ]
+}

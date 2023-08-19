@@ -14,9 +14,7 @@
             },
             "type": "process",
             "command": [
-                ".devcontainer/openWorkspace.sh",
-                // Kill all terminals to remove postCreateCommand
-                "${command:workbench.action.terminal.killAll}"
+                ".devcontainer/openWorkspace.sh"
             ],
             "isBackground": true,
             "problemMatcher": [],
