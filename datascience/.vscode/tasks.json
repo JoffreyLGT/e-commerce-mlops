@@ -7,32 +7,8 @@
     },
     "tasks": [
         {
-            "label": "Start Datascience",
-            "runOptions": {
-                "runOn": "folderOpen"
-            },
-            "dependsOrder": "parallel",
-            "dependsOn": [
-                "MLFlow UI",
-                "Datasience",
-            ],
-            "problemMatcher": []
-        },
-        {
-            "label": "Datasience",
-            "type": "process",
-            "command": "",
-            "isBackground": true,
-            "problemMatcher": [],
-            "presentation": {
-                "reveal": "always",
-                "panel": "dedicated",
-                "echo": false,
-                "focus": true
-            }
-        },
-        {
-            "label": "MLFlow UI",
+            "label": "Start MLFlow UI",
+            "detail": "Start MLFlow UI using virtual environment.",
             "type": "shell",
             "command": "source .venv/bin/activate && mlflow ui",
             "promptOnClose": false,

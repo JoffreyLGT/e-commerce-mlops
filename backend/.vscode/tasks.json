@@ -7,32 +7,8 @@
     },
     "tasks": [
         {
-            "label": "Start Backend",
-            "runOptions": {
-                "runOn": "folderOpen"
-            },
-            "dependsOrder": "parallel",
-            "dependsOn": [
-                "API reload",
-                "Backend",
-            ],
-            "problemMatcher": []
-        },
-        {
-            "label": "Backend",
-            "type": "process",
-            "command": "",
-            "isBackground": true,
-            "problemMatcher": [],
-            "presentation": {
-                "reveal": "always",
-                "panel": "dedicated",
-                "echo": false,
-                "focus": true
-            }
-        },
-        {
-            "label": "API reload",
+            "label": "Start API",
+            "detail": "Start API in reload mode using `./scripts/start-reload.sh` in virtual environment.",
             "type": "shell",
             "command": "source .venv/bin/activate && ./scripts/start-reload.sh",
             "promptOnClose": false,

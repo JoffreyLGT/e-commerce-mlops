@@ -6,7 +6,7 @@
 	"dockerComposeFile": "docker-compose.yml",
 	"service": "project",
 	"workspaceFolder": "/workspaces",
-	"onCreateCommand": "./.devcontainer/onCreateCommand.sh",
+	"onCreateCommand": ".devcontainer/onCreateCommand.sh",
 	// Set workspace directory as safe
 	"postAttachCommand": "git config --global --add safe.directory /workspaces",
 	"shutdownAction":"stopCompose",
@@ -25,12 +25,14 @@
 				"ms-python.mypy-type-checker"
 			],
 			"settings": {
+				"task.allowAutomaticTasks": "on",
 				"terminal.integrated.defaultProfile.linux": "zsh",
 				"files.exclude": {
 					"**/__pycache__": true,
 					".pytest_cache": true,
 					".ruff_cache": true,
-					".mypy_cache": true
+					".mypy_cache": true,
+					"node_modules": true
 				},
 				"sqltools.connections": [
 					{

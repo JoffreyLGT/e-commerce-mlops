@@ -8,20 +8,12 @@
     },
     "tasks": [
         {
-            "label": "Open workspace",
+            "label": "Open project homepage",
             "runOptions": {
                 "runOn": "folderOpen"
             },
-            "type": "process",
-            "command": [
-                ".devcontainer/openWorkspace.sh"
-            ],
-            "isBackground": true,
-            "problemMatcher": [],
-            "presentation": {
-                "reveal": "never",
-                "echo": false,
-            },
-        },
+            "type": "shell",
+            "command": "code -r Welcome.md"
+        }
     ]
 }
