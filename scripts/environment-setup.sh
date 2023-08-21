@@ -34,12 +34,9 @@ then
     echo "Backend venv already exists."
 else
     echo "Setup backend venv."
-    $PYTHON_EXE -m venv $backend_venv
+    cd $root_dir/backend
+    poetry install
     touch "$backend_venv/$user"
-    source $backend_venv/bin/activate
-    $PYTHON_EXE -m pip install --upgrade pip
-    $PYTHON_EXE -m pip install -r $root_dir/backend/requirements.txt -r $root_dir/backend/requirements-dev.txt
-    deactivate
     echo "Done"
 fi
 
@@ -60,12 +57,9 @@ if [ -d "$datascience_venv" ]
 then
     echo "datascience venv already exists."
 else
-    $PYTHON_EXE -m venv $datascience_venv
+    cd $root_dir/datascience
+    poetry install
     touch "$datascience_venv/$user"
-    source $datascience_venv/bin/activate
-    $PYTHON_EXE -m pip install -q --upgrade pip
-    $PYTHON_EXE -m pip install -q -r $root_dir/datascience/requirements.txt -r $root_dir/datascience/requirements-dev.txt
-    deactivate
     echo "Done"
 fi
 

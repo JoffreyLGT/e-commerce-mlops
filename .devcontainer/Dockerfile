@@ -21,3 +21,21 @@ RUN git clone https://github.com/k-sriram/zsh-auto-venv ${ZSH_CUSTOM:-$HOME/.oh-
 
 # ZSH config
 COPY --chown=vscode .devcontainer/resources/.zshrc $HOME/.zshrc
+
+# Poetry
+RUN pipx install poetry
+RUN mkdir -p ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/poetry \
+    && poetry completions zsh > ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/poetry/_poetry
+
+# Cache all packages
+# The goal here is to cache all packages in the docker image, so setup is fast
+ENV POETRY_VIRTUALENVS_IN_PROJECT true
+# backend environment
+COPY --chown=vscode backend/poetry.lock backend/pyproject.toml /workspaces/backend/
+WORKDIR /workspaces/backend/
+RUN poetry install -n
+
+# backend environment
+COPY --chown=vscode datascience/poetry.lock datascience/pyproject.toml /workspaces/datascience/
+WORKDIR /workspaces/datascience/
+RUN poetry install -n

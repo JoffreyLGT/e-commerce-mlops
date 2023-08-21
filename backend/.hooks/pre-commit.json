@@ -1,6 +1,6 @@
 {
     "type": "python",
-    "venvActivate": "./.venv/bin/activate",
+    "venvActivate": ".venv/bin/activate",
     "steps": [
         {
             "name": "Run lint.sh",

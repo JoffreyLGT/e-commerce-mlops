@@ -22,7 +22,8 @@
 				"njpwerner.autodocstring",
 				"charliermarsh.ruff",
 				"tamasfe.even-better-toml",
-				"ms-python.mypy-type-checker"
+				"ms-python.mypy-type-checker",
+				"bierner.github-markdown-preview"
 			],
 			"settings": {
 				"task.allowAutomaticTasks": "on",
@@ -46,7 +47,6 @@
 						"password": "changethis"
 					}
 				],
-				"python.defaultInterpreterPath": ".venv/bin/python",
 				"python.interpreter.infoVisibility": "always",
 				"python.analysis.diagnosticMode": "openFilesOnly",
 				"python.analysis.downloadStubs": true,
@@ -59,7 +59,6 @@
 				"python.analysis.typeCheckingMode": "basic",
 				"editor.formatOnSave": true,
 				"python.analysis.autoFormatStrings": true,
-				"python.venvFolders": ["/workspaces/"],
 				"[python]": {
 					"editor.defaultFormatter": "ms-python.black-formatter",
 					"editor.formatOnSave": true,

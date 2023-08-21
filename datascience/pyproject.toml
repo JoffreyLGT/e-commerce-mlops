@@ -1,14 +1,28 @@
-[project]
+[tool.poetry]
 name = "datascience"
 version = "0.1.0"
 description = "Create and test product classification models and track their performance using MLFlow."
-# authors = ["Joffrey Lagut <j.lagut@live.fr>", "Landry <landry@test.com>", "Arnaud <arnaud@test.com>"]
+authors = ["Joffrey Lagut <j.lagut@live.fr>", "Landry <landry@test.com>", "Arnaud <arnaud@test.com>"]
 readme = "README.md"
-requires-python = ">3.11"
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.12"
+tensorflow = {version = "2.13.0"}
+tensorflow-cpu-aws = {version = "2.13.0", platform = "linux"}
+tensorflow-macos = {version = "2.13.0", platform = "darwin"}
+tensorflow-metal = {version = "1.0.0", platform = "darwin"}
+mlflow = "^2.6.0"
+pydantic = "*"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+ruff = "0.*"
+black = "^23.7.0"
+mypy = "^1.5.1"
 
 [build-system]
-# Minimum requirements for the build system to execute.
-requires = ["setuptools", "wheel"]  # PEP 508 specifications.
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 # Set max line length to 88 to match Black

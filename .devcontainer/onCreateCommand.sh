@@ -8,7 +8,7 @@
 sudo chown -R 1000:1000 "/home/vscode/.npm"  
 
 # Trigger prestart script
-source /workspaces/backend/.venv/bin/activate
 cd /workspaces/backend
+source "$(poetry env info --path)/bin/activate"
 ./scripts/prestart.sh
 deactivate

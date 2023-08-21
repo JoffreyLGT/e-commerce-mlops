@@ -8,12 +8,10 @@
     },
     "tasks": [
         {
-            "label": "Open project homepage",
-            "runOptions": {
-                "runOn": "folderOpen"
-            },
+            "label": "Run pre-commit hooks",
+            "detail": "Run hooks without doing a git commit.",
             "type": "shell",
-            "command": "code -r Welcome.md"
+            "command": "npx mookme run -t pre-commit"
         }
     ]
 }

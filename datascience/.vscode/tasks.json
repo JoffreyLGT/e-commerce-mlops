@@ -1,7 +1,6 @@
 {
     "version": "2.0.0",
     "presentation": {
-        "echo": false,
         "panel": "dedicated",
         "showReuseMessage": true
     },
@@ -16,6 +15,18 @@
                 "panel": "dedicated",
                 "reveal": "silent",
                 "focus": false
+            }
+        },
+        {
+            "label": "Check Tensorflow GPU support",
+            "detail": "Check if GPU is supported when using Tensorflow.",
+            "type": "shell",
+            "command": "poetry run python ../scripts/utilities/check_tensorflow_GPU_support.py",
+            "promptOnClose": false,
+            "presentation": {
+                "panel": "shared",
+                "reveal": "always",
+                "focus": true,
             }
         }
     ]

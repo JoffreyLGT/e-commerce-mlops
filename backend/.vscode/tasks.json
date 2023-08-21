@@ -7,7 +7,7 @@
     },
     "tasks": [
         {
-            "label": "Start API",
+            "label": "Start API in reload mode",
             "detail": "Start API in reload mode using `./scripts/start-reload.sh` in virtual environment.",
             "type": "shell",
             "command": "source .venv/bin/activate && ./scripts/start-reload.sh",
@@ -16,6 +16,18 @@
                 "panel": "dedicated",
                 "reveal": "silent",
                 "focus": false
+            }
+        },
+        {
+            "label": "Check Tensorflow GPU support",
+            "detail": "Check if GPU is supported when using Tensorflow.",
+            "type": "shell",
+            "command": "poetry run python ../scripts/utilities/check_tensorflow_GPU_support.py",
+            "promptOnClose": false,
+            "presentation": {
+                "panel": "shared",
+                "reveal": "always",
+                "focus": true,
             }
         }
     ]

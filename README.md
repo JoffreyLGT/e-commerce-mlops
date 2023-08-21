@@ -1,5 +1,12 @@
 # Catégorisation des produits d'un boutique en ligne
 
+![Python version](https://img.shields.io/badge/Python-3.11-blue.svg)
+[![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Linting: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+![Static Badge](https://img.shields.io/badge/checked-mypy?label=mypy)
+[![VS Code Container](https://img.shields.io/static/v1?label=VS+Code&message=Container&logo=visualstudiocode&color=007ACC&logoColor=007ACC&labelColor=2C2C32)](https://open.vscode.dev/JoffreyLGT/e-commerce-mlops)
+
 Fourni une API permettant de prédire la catégorie d'un produit en fonction de sa désignation, description et d'une image.
 
 ## Structure du projet
@@ -29,7 +36,36 @@ E-COMMERCE-MLOPS/
 
 ## Configuration de l'environnement de développement
 
-Un conteneur de développement a été préparé.  
+### Local
+
+Utilisation de votre système pour le développement permettant l'utilisation du **GPU pour les tâches Tensorflow**.
+*Actuellement configuré pour les utilisateurs de MacOS.*
+
+Prérequis :
+- Système UNIX-like (Linux, MacOS). Les utilisateurs de Windows peuvent soit utiliser le [conteneur de développement](#conteneur-de-développement) mis à disposition, soit installer un système Linux sur [WSL2](https://learn.microsoft.com/fr-fr/windows/wsl/install).
+- [Visual Studio Code](https://code.visualstudio.com)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- [Python 3.11](https://www.python.org/downloads/)
+- [Poetry](https://python-poetry.org/docs/#installing-with-pipx) (installation via [pipx](https://pypa.github.io/pipx/) recommandée)
+- [NodeJS & NPM](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm#using-a-node-version-manager-to-install-nodejs-and-npm)
+
+Mise en place :
+1. Cloner le repo :
+```shell
+git clone https://github.com/JoffreyLGT/e-commerce-mlops.git
+```
+2. Ouvrir VSCode
+3. Cliquer sur `File`, `Open Workspace from File...`
+4. Sélectionner le fichier `e-commerce-mlops.code-workspace`
+5. Une fois le projet ouvert, ouvrir un terminal dans le dossier `root`, et saisir la commande ci-dessous :
+```shell
+./scripts/environment-setup.sh
+```
+
+### Conteneur de développement
+
+Utilisation d'un conteneur Docker possédant tous les outils de développement.
+
 Voici les prérequis : 
 - [Visual Studio Code](https://code.visualstudio.com)
 - Extension VSCode [Dev Container](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
@@ -50,9 +86,34 @@ La fenêtre de VSCode va se recharger et le conteneur de développement va se me
 
 Les extensions VSCode peuvent afficher des notifications lors de leur installation, notamment Pylance indiquant que l'extension Python n'est pas détectée. Il faut simplement les fermer sans les prendre en compte.
 
-## Backend
+## Information sur les projets
 
-### Lancement de l'API
+Un workspace VSCode est mis à disposition à la racine du projet sous le nom *[e-commerce-mlops.code-workspace](e-commerce-mlops.code-workspace)*. Il est fortement recommandé de l'utiliser.
+
+Il s'agit d'un multi-root workspace configuré pour permettre un fonctionnement optimal des sous-projets.
+
+Chaque sous-projet contient des tâches VSCode permettant d'exécuter les fonctions principales.
+
+### Root (racine du projet)
+
+Contient les fichiers commun à tout le projet, les sous-projets ainsi que des fichiers utilisés dans les sous-projets.
+
+Attention, certains fichiers sont référencés comme symlinks dans les sous-projets:
+| File      | Sub-projects                  |
+| --        | --                            | 
+| mypy.ini  | backend, datascience          |
+| .env      | backend, datascience          |
+
+Les tâches ci-dessous sont disponibles :
+| Nom       | Description                |
+| --        | --                            | 
+| Run pre-commit hooks  | Permet de lancer les hooks de pre-commit sans avoir à faire de commit.          |
+
+### Backend
+
+Permet de lancer l'API de catégorisation des produits.
+
+#### Démarrage en mode développement
 
 Le lancement de l'API en mode développement sur le conteneur se fait avec le script `start-reload.sh` :
 
@@ -65,7 +126,9 @@ Ouvrir l’adresse ci-dessous dans un navigateur Web sur la machine hôte pour a
 
 http://localhost:8000/docs
 
-### Monitoring
+Une tâche portant le nom `Start API in reload mode` permet de lancer l'API en mode développement.
+
+#### Monitoring et démarrage en mode staging / production
 
 Le monitoring est mise en place avec la librairie [OpenTelemetry](https://opentelemetry.io) permettant l'envoi des évènements sur plusieurs solutions du marché. 
 Dans ce projet, nous utilisons la version Open Source de [SigNoz](https://signoz.io).
@@ -78,11 +141,16 @@ Pour démarrer l'application avec la télémétrie, il faut exécuter le script 
 
 A noter que Signoz doit être installé sur votre machine et connecté sur le même réseau que le devcontainer.
 
-### Modification d'une table en BDD
+#### Tests automatisés
 
-Suivre les étapes de la section [Ajout d'une table en BDD](#ajout-d-une-table-en-bdd).
+Les tests sont exécutés par [Pytest](https://docs.pytest.org/en/7.4.x/). Ils se lancent soit via la fonction [Testing de VSCode](https://code.visualstudio.com/docs/python/testing#_run-tests), soit en exécutant la commande suivante :
+```shell
+./scripts/start-tests.sh
+```
 
-### Ajout d'une table en BDD
+#### Questions et réponses
+
+##### Comment ajouter ou modifier une table en BDD ?
 
 >> TLDR : Ajouter ou modifier les modèles SQLAlchemy dans `/app/models/`, les schemas Pydantic dans `/app/schemas/` et les outils CRUD d'interaction avec la BDD dans `/app/crud/`. Attention à bien mettre à jour les fichier `__init__.py` de ces modules ! Pour terminer, générer la migration alembic.
 >> Utiliser **prediction_feedback** comme exemple.
@@ -116,12 +184,12 @@ Importer la variable dans le fichier `/app/crud/__init__.py`. Cela permet d'avoi
 
 Ouvrir un nouveau terminal et saisir la commande suivante :
 ```shell
-$ alembic revision --autogenerate -m "{{description of what you did}}"
+alembic revision --autogenerate -m "{{description of what you did}}"
 ```
 
 La migration s'appliquera automatiquement lors du prochain redémarrage du dev container. Pour l'appliquer directement et, donc, mettre à jour la BDD, saisir la commande suivante :
 ```shell
-$ alembic upgrade head
+alembic upgrade head
 ```
 
 Si besoin, il est possible de revenir en arrière sur les migrations en utilisant la commande :
