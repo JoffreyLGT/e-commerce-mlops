@@ -6,8 +6,8 @@ PYTHON_EXE=python3.11
 set -e
 
 # echo "Install mookme and setup Git hooks"
-# npm install @escape.tech/mookme
-# npx mookme init --only-hook --skip-types-selection
+npm install
+npx mookme init --only-hook --skip-types-selection
 
 # Get the full path to this script's directory
 current_dir=$(dirname $(readlink -f "${BASH_SOURCE:-$0}"))

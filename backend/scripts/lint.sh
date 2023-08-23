@@ -7,21 +7,27 @@ backend_dir="$(dirname "$current_dir")"
 
 cd $backend_dir
 
-# Print a trace of simple commands
-set -x
-
 folders="$backend_dir/app $backend_dir/scripts"
 
+# Count the amount of command that returned an error
+# Each command will increment this value if they fail
+ss=0
+
 # Formatter
-black $folders --check
+echo "----- Black -----"
+black -q --check $folders && echo -e "Done.\n" || ((ss++))
 
 # Linter
+echo "----- Ruff -----"
 if [[ $IS_GH_ACTION = "True" ]]
 then
-    ruff check --format=github $folders
+    ruff check --format=github $folders && echo -e "Done.\n"  || ((ss++))
 else
-    ruff check $folders
+    ruff check $folders && echo -e "Done.\n" || ((ss++))
 fi
 
 # Type checker
-mypy $folders
+echo "----- Mypy -----"
+mypy $folders && echo -e "Done.\n" || ((ss++))
+
+exit $ss
