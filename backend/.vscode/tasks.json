@@ -1,10 +1,5 @@
 {
     "version": "2.0.0",
-    "presentation": {
-        "echo": false,
-        "panel": "dedicated",
-        "showReuseMessage": true
-    },
     "tasks": [
         {
             "label": "Start API in reload mode",
@@ -27,8 +22,36 @@
             "presentation": {
                 "panel": "shared",
                 "reveal": "always",
-                "focus": true,
+                "focus": true
             }
+        },
+        {
+            "label": "Start PostgreSQL DB container",
+            "detail": "Use docker-compose to start only the DB container, avoiding the usage of local PostgreSQL.",
+            "type": "shell",
+            "command": "TARGET=development docker compose -f ${workspaceFolder:root}/docker-compose.yaml up -d db",
+            "isBackground": true,
+            "presentation": {
+                "focus": false,
+                "close": true,
+                "reveal": "never",
+                "panel": "shared",
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Stop PostgreSQL DB container",
+            "detail": "Use docker-compose to stop DB container, avoiding the usage of local PostgreSQL.",
+            "type": "shell",
+            "command": "TARGET=development docker compose -f ${workspaceFolder:root}/docker-compose.yaml stop db",
+            "isBackground": true,
+            "presentation": {
+                "focus": false,
+                "close": true,
+                "reveal": "never",
+                "panel": "shared",
+            },
+            "problemMatcher": []
         }
     ]
 }
