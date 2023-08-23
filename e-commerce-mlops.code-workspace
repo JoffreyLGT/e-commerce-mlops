@@ -1,0 +1,29 @@
+{
+	"folders": [
+		{
+			"name": "root",
+			"path": "."
+		},
+		{
+			"path": "backend"
+		},
+		{
+			"path": "datascience"
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			// Do not display backend and datascience since they are in workspace
+			"backend":true,
+			"datascience":true,
+		},
+		"terminal.integrated.defaultProfile.linux": "zsh",
+		"files.exclude": {
+			"**/__pycache__": true,
+			".pytest_cache": true,
+			".ruff_cache": true,
+			".mypy_cache": true,
+			"node_modules": true
+		},
+	}
+}

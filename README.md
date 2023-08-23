@@ -6,12 +6,17 @@ Fourni une API permettant de prédire la catégorie d'un produit en fonction de 
 
 ```
 E-COMMERCE-MLOPS/  
+├─ .devcontainer/ : fichiers du conteneur de dev
 ├─ .github/workflow/ : Github Actions  
-├─ .vscode/settings.json : configurations du workspace VSCode  
-├─ backend/ : API et modèle de prédiction  
-├─ frontend/ : (plus tard) application WEB pour interagir avec l'API  
-├─ scripts/ : liste des scripts permettant de lancer les tests ou de faire le déploiement 
+├─ .vscode/tasks.json : tâches du project global
+├─ backend/ : API de prédiction (sous-projet)
+├─ datascience/ : MLOPS via MLFlow (sous-projet)
+├─ frontend/ : placeholder pour une éventuelle application WEB pour interagir avec l'API  
+├─ scripts/ : liste des scripts globaux du projet 
 │ ├─ ressources/ : contient les ressources nécessaires aux scripts
+│ ├─ tests/ : sous-scripts utilisés par `run-tests.sh`
+├─ .env : définition des variables d'environnement
+├─ Welcome.md : page d'accueil ouverte automatiquement avec le projet
 ```
 
 ## Mise en place avec Docker
@@ -21,9 +26,8 @@ E-COMMERCE-MLOPS/
 3. Exécuter `scripts/docker-deploy.sh` pour créer les conteneurs.
 4. Lancer les conteneurs via Docker Desktop ou via ligne de commande.
 
-## Backend
 
-### Configuration de l'environnement de développement
+## Configuration de l'environnement de développement
 
 Un conteneur de développement a été préparé.  
 Voici les prérequis : 
@@ -31,23 +35,22 @@ Voici les prérequis :
 - Extension VSCode [Dev Container](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
-Une fois les extensions installées, veuillez-suivre les étapes suivantes :  
+Une fois les prérequis installées, veuillez-suivre les étapes suivantes : 
+
 1. Cloner le repo :
 ```shell
 git clone https://github.com/JoffreyLGT/e-commerce-mlops.git
 ```
 2. Ouvrir le projet dans VSCode.
 3. Ouvrir la palette des commandes (`Cmd+Shift+p`).
-4. Saisir **dev container open** et sélectionner l'option **Dev Containers: Open folder in Container...**.
-5. Sélectionner le dossier **e-commerce-mlops**.
+4. Saisir `dev open workspace` et sélectionner l'option `Dev Containers: Open Workspace in Container...`.
+5. Sélectionner le fichier `e-commerce-mlops.code-workspace`.
 
-La fenêtre de VSCode va se recharger. Une fois l'installation du dev container terminée, plusieurs terminaux vont s'ouvrir :
-- backend : terminal se trouvant dans le dossier backend avec l'environnement virtuel du projet backend.
-- datascience : terminal se trouvant dans le dossier backend avec l'environnement virtuel du projet datascience.
-- API reload : lance l'API en mode rechargement.
-- MLFlow UI : lance l'interface Web de MLFlow.
+La fenêtre de VSCode va se recharger et le conteneur de développement va se mettre en place.
 
-Les extensions peuvent afficher des notifications lors de la configuration, notamment Pylance indiquant que l'extension Python n'est pas détectée. Il faut simplement les fermer sans les prendre en compte.
+Les extensions VSCode peuvent afficher des notifications lors de leur installation, notamment Pylance indiquant que l'extension Python n'est pas détectée. Il faut simplement les fermer sans les prendre en compte.
+
+## Backend
 
 ### Lancement de l'API
 
