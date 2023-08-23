@@ -16,19 +16,19 @@ ss=0
 
 # Formatter
 echo "----- Black -----"
-poetry run black --check $folders && echo -e "Done.\n" || echo -e "Error.\n" && ((ss++))
+poetry run black --check $folders && echo -e "Done.\n" || ((ss++)) && echo -e "Error.\n"
 
 # Linter
 echo "----- Ruff -----"
 if [[ $IS_GH_ACTION = "True" ]]; then
-    poetry run ruff check --format=github $folders && echo -e "Done.\n" || echo -e "Error.\n" && ((ss++))
+    poetry run ruff check --format=github $folders && echo -e "Done.\n" || ((ss++)) && echo -e "Error.\n"
 else
-    poetry run ruff check $folders && echo -e "Done.\n" || echo -e "Error.\n" && ((ss++))
+    poetry run ruff check $folders && echo -e "Done.\n" || ((ss++)) && echo -e "Error.\n"
 fi
 
 # Type checker
 echo "----- Mypy -----"
-poetry run mypy $folders && echo -e "Done.\n" || echo -e "Error.\n" && ((ss++))
+poetry run mypy $folders && echo -e "Done.\n" || ((ss++)) && echo -e "Error.\n"
 
 # Return the number of functions returning an error
 exit $ss
