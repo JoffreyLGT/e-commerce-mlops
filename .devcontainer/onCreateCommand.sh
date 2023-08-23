@@ -1,20 +1,8 @@
 #!/usr/bin/env bash
 
 
-# Setup p10k
-echo "Setup p10k"
-git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
-cp -f .devcontainer/resources/.p10k.zsh ~/.p10k.zsh
-
-# Setup zsh plugins
-echo "Setup zsh plugins"
-git clone https://github.com/k-sriram/zsh-auto-venv ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-auto-venv --depth=1
-git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
-git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
-
-# Copy zsh configs
-echo "Setup Zsh"
-cp -f .devcontainer/resources/.zshrc ~/.zshrc
+# Fix npm issues
+sudo chown -R 1000:1000 "/home/vscode/.npm"  
 
 # Trigger environment setup
 ./scripts/environment-setup.sh
