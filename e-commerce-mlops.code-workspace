@@ -16,8 +16,6 @@
 		"testing.automaticallyOpenPeekView": "never",
 		"files.exclude": {
 			// Do not display backend and datascience since they are in workspace
-			"backend":true,
-			"datascience":true,
 			"**/__pycache__": true,
 			".pytest_cache": true,
 			".ruff_cache": true,

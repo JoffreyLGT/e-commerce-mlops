@@ -1,15 +1,22 @@
 #! /usr/bin/env bash
 
-dir_fullpath=$(dirname $(readlink -f "${BASH_SOURCE:-$0}"))
+# Prestart script ensuring the API is reading to be started.
+
+# Get script and backend directory
+script_dir=$(dirname $(readlink -f "${BASH_SOURCE:-$0}"))
+backend_dir=$(dirname $script_dir)
+
+# Ensure the execution is from the backend dir
+cd $backend_dir
 
 # Let the DB start
-python $dir_fullpath/backend_pre_start.py
+poetry run python scripts/backend_pre_start.py
 
 # Run migrations
-alembic upgrade head
+poetry run alembic upgrade head
 
 # Create initial data in DB
-python $dir_fullpath/seed_data.py
+poetry run python scripts/seed_data.py
 
 # Download model saves
-python $dir_fullpath/download_models.py
+poetry run python scripts/download_models.py

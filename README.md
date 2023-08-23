@@ -86,6 +86,18 @@ La fenêtre de VSCode va se recharger et le conteneur de développement va se me
 
 Les extensions VSCode peuvent afficher des notifications lors de leur installation, notamment Pylance indiquant que l'extension Python n'est pas détectée. Il faut simplement les fermer sans les prendre en compte.
 
+### Comment tester le projet sur d'autres architectures
+
+Nous utilisons principalement des machines ARM (Apple Silicon) pour le développement du projet.
+Afin de pouvoir tester sur des machines de type AMD64, nous utilisons le conteneur de développement.
+
+Pour cela, il faut :
+- Ouvrir le fichier [.devcontainer/Dockerfile](.devcontainer/Dockerfile)
+- Modifier la première ligne pour y ajouter `--platform=linux/amd64` comme ceci :
+```dockerfile
+FROM --platform=linux/amd64 mcr.microsoft.com/devcontainers/python:1-3.11-bullseye
+```
+
 ## Information sur les projets
 
 Un workspace VSCode est mis à disposition à la racine du projet sous le nom *[e-commerce-mlops.code-workspace](e-commerce-mlops.code-workspace)*. Il est fortement recommandé de l'utiliser.
@@ -98,16 +110,33 @@ Chaque sous-projet contient des tâches VSCode permettant d'exécuter les foncti
 
 Contient les fichiers commun à tout le projet, les sous-projets ainsi que des fichiers utilisés dans les sous-projets.
 
+#### Symlinks
+
 Attention, certains fichiers sont référencés comme symlinks dans les sous-projets:
 | File      | Sub-projects                  |
 | --        | --                            | 
 | mypy.ini  | backend, datascience          |
 | .env      | backend, datascience          |
 
+#### VSCode Tasks
+
 Les tâches ci-dessous sont disponibles :
 | Nom       | Description                |
 | --        | --                            | 
 | Run pre-commit hooks  | Permet de lancer les hooks de pre-commit sans avoir à faire de commit.          |
+
+#### Questions et réponses
+
+##### Docker m'indique que je le disque de la VM est plein
+
+Docker stocke les images, containers et volumes dans un disque virtuel. Celui-ci a une taille définie dans les paramêtres de Docker Desktop.
+
+Pour solutionner cette erreur, deux solutions :
+1. Augmenter la taille du disque via Docker Desktop, rubrique `Settings`.
+2. Vider tout le contenu du disque et repartir de zéro avec la commande ci-dessous :
+```shell
+docker system prune -a --volumes
+```
 
 ### Backend
 
@@ -145,8 +174,30 @@ A noter que Signoz doit être installé sur votre machine et connecté sur le m�
 
 Les tests sont exécutés par [Pytest](https://docs.pytest.org/en/7.4.x/). Ils se lancent soit via la fonction [Testing de VSCode](https://code.visualstudio.com/docs/python/testing#_run-tests), soit en exécutant la commande suivante :
 ```shell
-./scripts/start-tests.sh
+poetry run ./scripts/start-tests.sh
 ```
+
+#### Git pre-commit hook
+
+Les hooks sont génétés automatiquement dans le dossier [.git/hooks](.git/hooks/) par l'utilitaire [Mookme](https://mookme.org) lors de l'exécution de [scripts/environment-setup.sh](scripts/environment-setup.sh).
+
+| Nom | Règle | Description |
+| -- | -- | -- |
+| Ruff linter | **/*.py | Lance Ruff sur les fichiers Python modifiés dans le commit. | 
+| Black formatter | **/*.py | Lance Black en mode vérification pour s'assurer que les fichier Python modifiés dans le commit sont correctement formattés. |
+| Mypy type checker | **/*.py | Lance Mypy sur les fichiers Python modifiés dans le commit pour vérifier que les types sont respectés. | 
+| Pytest tests | app/*.py | Exécute tous les tests unitaires lorsqu'un fichier Python est modifié dans le dossier app.
+
+#### VSCode Tasks
+
+Les tâches ci-dessous sont disponibles :
+| Nom       | Description                |
+| --        | --                            | 
+| Start API in reload mode | Lance l'API en mode reload, permettant de recharger automatiquement le code lorsqu'il est modifié. |
+| Check Tensorflow GPU support | Affiche un message pour indiquer si Tensorflow supporte des GPU dans l'environnement. |
+| Start PostgreSQL DB container | Démarre le conteneur *db* depuis le fichier [docker-compose.yaml](docker-compose.yaml). |
+| Stop PostgreSQL DB container | Stop le conteneur *db* démarré depuis la tâche Start PostgreSQL DB container. |
+
 
 #### Questions et réponses
 

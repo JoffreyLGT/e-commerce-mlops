@@ -3,12 +3,27 @@
     "venvActivate": ".venv/bin/activate",
     "steps": [
         {
-            "name": "Run lint.sh",
-            "command": "./scripts/lint.sh"
+            "name": "Ruff linter",
+            "command": "ruff {matchedFiles}",
+            "onlyOn": "**/*.py"
         },
         {
-            "name": "Run start-tests.sh",
-            "command": "./scripts/start-tests.sh"
+            "name": "Black formatter",
+            "command": "black -q --check {matchedFiles}",
+            "onlyOn": "**/*.py"
+        },
+        {
+            "name": "Mypy type checker",
+            "command": "mypy {matchedFiles}",
+            "onlyOn": "**/*.py"
+        },
+        {
+            "name": "Pytest tests",
+            "command": "scripts/start-tests.sh",
+            "onlyOn": [
+                "app/**/*.py",
+                "datascience/**/*.py"
+            ]
         }
     ]
 }
