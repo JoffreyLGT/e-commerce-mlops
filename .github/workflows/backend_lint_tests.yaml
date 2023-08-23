@@ -1,0 +1,120 @@
+name: "Backend: static code analysis and testing"
+on: 
+  workflow_dispatch:
+  pull_request:
+  push:
+
+jobs:
+  linter:
+    name: Run linter
+    runs-on: ubuntu-latest
+    environment: development
+    env:
+      working-directory: ./backend
+    steps:
+    - name: Check out repository code
+      uses: actions/checkout@v3
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    - name: Set PYTHONPATH
+      run: echo "PYTHONPATH=./" >> "$GITHUB_ENV"
+      working-directory: ${{env.working-directory}}
+
+    - name: Install poetry
+      uses: abatilo/actions-poetry@v2
+    - name: Setup a local virtual environment (.venv)
+      run: |
+        poetry config virtualenvs.create true --local
+        poetry config virtualenvs.in-project true --local
+      working-directory: ${{env.working-directory}}
+    - uses: actions/cache@v3
+      name: Define a cache for the virtual environment based on the dependencies lock file
+      with:
+        path: ${{env.working-directory}}/.venv
+        key: venv-${{ hashFiles('poetry.lock') }}
+
+    - name: Install the project dependencies
+      run: poetry install
+      working-directory: ${{env.working-directory}}
+
+    - name: Run linter
+      working-directory: ${{env.working-directory}}
+      if: always()
+      run: poetry run scripts/lint.sh
+
+  unit-tests:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+    environment: development
+    env:
+      working-directory: ./backend
+    services:
+      db:
+        image: postgres:latest
+        env:
+          POSTGRES_SERVER: localhost
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: changethis
+          POSTGRES_DB: product-classification
+        ports:
+          - 5432:5432
+
+    steps:
+    - name: Check out repository code
+      uses: actions/checkout@v3
+      
+    - name: Import environment variables from ./backend/.env
+      uses: falti/dotenv-action@v1.0.4
+      with:
+        export-variables: true
+        keys-case: bypass
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    - name: Set PYTHONPATH
+      run: echo "PYTHONPATH=./" >> "$GITHUB_ENV"
+      working-directory: ${{env.working-directory}}
+
+    - name: Install poetry
+      uses: abatilo/actions-poetry@v2
+    - name: Setup a local virtual environment (.venv)
+      run: |
+        poetry config virtualenvs.create true --local
+        poetry config virtualenvs.in-project true --local
+      working-directory: ${{env.working-directory}}
+      # Changes in poetry.lock triggers a cache refresh
+    - uses: actions/cache@v3
+      name: Define a cache for the virtual environment based on the dependencies lock file
+      with:
+        path: ${{env.working-directory}}/.venv
+        key: venv-${{ hashFiles('poetry.lock') }}
+    - name: Install the project dependencies
+      run: poetry install
+      working-directory: ${{env.working-directory}}
+
+    - name: Cache saved models
+      uses: actions/cache@v3.2.4
+      id: cache-models
+      with:
+        path: ${{env.working-directory}}/data
+        # Editing the script to download the model saves triggers a cache refresh
+        key: -${{ hashFiles('./backend/scripts/download_models.py') }}
+    - name: Download saved models
+      if: steps.cache-models.outputs.cache-hit != 'true'
+      run: poetry run python scripts/download_models.py 
+      working-directory: ${{env.working-directory}}
+
+    - name: Run unit tests
+      working-directory: ${{env.working-directory}}
+      if: always()
+      run: poetry run scripts/start-tests.sh
+      env:
+        POSTGRES_SERVER: localhost
+        POSTGRES_USER: admin
+        POSTGRES_PASSWORD: changethis
+        POSTGRES_DB: product-classification

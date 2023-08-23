@@ -7,10 +7,23 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.12"
+
+# Tensorflow is not using standard dependencies declaration, so we must use markers
+# To understand them, see https://github.com/tensorflow/tensorflow/blob/25ac2a5882f1f225a33671e76a209ff99e2bdf4f/tensorflow/tools/pip_package/setup.py#L153
 tensorflow = {version = "2.13.0"}
-tensorflow-cpu-aws = {version = "2.13.0", platform = "linux"}
-tensorflow-macos = {version = "2.13.0", platform = "darwin"}
+# Install the TensorFlow package built by AWS if the user is running
+# Linux on an Aarch64 machine.
+tensorflow-cpu-aws = {version = "2.13.0", markers = "platform_system=='Linux' and (platform_machine=='arm64' or platform_machine=='aarch64')"}
+# Install the TensorFlow package built by Apple if the user is running
+# macOS on an Apple Silicon machine.
+tensorflow-macos = {version = "2.13.0", markers = "platform_system=='Darwin' and platform_machine=='arm64'"}
+# Metal for macOS users
 tensorflow-metal = {version = "1.0.0", platform = "darwin"}
+# Install the TensorFlow package built by Intel if the user is on a
+# Windows machine.
+# Not tested yet
+tensorflow-intel = {version = "2.13.0", markers = "platform_system=='Windows'"}
+
 fastapi = "^0.101.1"
 sqlalchemy = "^2.0.20"
 alembic = "^1.11.3"
@@ -149,3 +162,7 @@ filterwarnings = [
     "ignore::DeprecationWarning:passlib",
     "ignore::DeprecationWarning:tensorflow",
 ]
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
