@@ -60,6 +60,7 @@ if [[ $IS_DEV_CONTAINER != "true" && $USE_DB_CONTAINER == "true" ]]; then
     cd $root_dir
     echo "Start db container"
     TARGET=development docker-compose -f docker-compose.yaml up -d db
+    $root_dir/backend/scripts/prestart.sh
 fi
 
 echo "Environment successfully configured"
