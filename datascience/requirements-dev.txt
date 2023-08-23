@@ -1,7 +1,0 @@
--r requirements.txt
-
-pytest==7.4.0
-ruff==0.0.283
-black==23.7.0
-mypy==1.4.1
-pre-commit==3.3.3
