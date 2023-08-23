@@ -49,7 +49,7 @@ class CRUDPredictionFeedback(
         *,
         model_version: str | None = None,
         skip: int = 0,
-        limit: int = 100
+        limit: int = 100,
     ) -> list[PredictionFeedback]:
         """Fetch all entries for a model version.
 
