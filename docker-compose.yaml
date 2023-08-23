@@ -2,8 +2,8 @@ name: product-classification
 services:
   api:
     build:
-      context: ./backend
-      dockerfile: backend.Dockerfile
+      context: .
+      dockerfile: backend/backend.Dockerfile
       target: ${TARGET?Variable not set}
 
     ports:
