@@ -9,7 +9,7 @@
         },
         {
             "name": "Black formatter",
-            "command": "black -q --check {matchedFiles}",
+            "command": "black --check {matchedFiles}",
             "onlyOn": "**/*.py"
         },
         {
