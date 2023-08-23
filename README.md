@@ -9,6 +9,8 @@
 
 API permettant de prédire la catégorie d'un produit en fonction de sa désignation, description et d'une image.
 
+![Déploiement](https://gist.githubusercontent.com/JoffreyLGT/b0b0fed9dd9b77c46727a67c2eed583a/raw/84df86a25031d6c8d7f366329fe62561ee21d56a/docker-deploy.svg)
+
 ## Structure du projet
 
 ```txt
