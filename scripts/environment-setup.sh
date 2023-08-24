@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 
-PYTHON_EXE=python3.11
 # Exit if an error occurs
 set -e
 
-# echo "Install mookme and setup Git hooks"
+echo "Install mookme and setup Git hooks"
 npm install
 npx mookme init --only-hook --skip-types-selection
+
+echo "Install poetry-plugin-dotenv to load .env on run"
+poetry self add poetry-plugin-dotenv
 
 # Get the full path to this script's directory
 current_dir=$(dirname $(readlink -f "${BASH_SOURCE:-$0}"))

@@ -4,6 +4,9 @@
 # Made to facilitate development.
 # Warning: telemetry is not activated, no event will be sent to SigNoz.
 
+# Stop execution if an error occurs
+set -e
+
 # Get the full path to this script's directory and the path to backend dir
 current_dir=$(dirname $(readlink -f "${BASH_SOURCE:-$0}"))
 backend_dir="$(dirname "$current_dir")"
