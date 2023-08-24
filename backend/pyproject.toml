@@ -1,3 +1,90 @@
+[tool.poetry]
+name = "backend"
+version = "0.1.0"
+description = "API to predict a product category"
+authors = ["Joffrey Lagut <j.lagut@live.fr>", "Landry <landry@test.com>", "Arnaud <arnaud@test.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.12"
+
+# Tensorflow is not using standard dependencies declaration, so we must use markers
+# To understand them, see https://github.com/tensorflow/tensorflow/blob/25ac2a5882f1f225a33671e76a209ff99e2bdf4f/tensorflow/tools/pip_package/setup.py#L153
+tensorflow = {version = "2.13.0"}
+# Install the TensorFlow package built by AWS if the user is running
+# Linux on an Aarch64 machine.
+tensorflow-cpu-aws = {version = "2.13.0", markers = "platform_system=='Linux' and (platform_machine=='arm64' or platform_machine=='aarch64')"}
+# Install the TensorFlow package built by Apple if the user is running
+# macOS on an Apple Silicon machine.
+tensorflow-macos = {version = "2.13.0", markers = "platform_system=='Darwin' and platform_machine=='arm64'"}
+# Metal for macOS users
+tensorflow-metal = {version = "1.0.0", platform = "darwin"}
+# Install the TensorFlow package built by Intel if the user is on a
+# Windows machine.
+# Not tested yet
+tensorflow-intel = {version = "2.13.0", markers = "platform_system=='Windows'"}
+
+fastapi = "^0.101.1"
+sqlalchemy = "^2.0.20"
+alembic = "^1.11.3"
+uvicorn = "^0.23.2"
+tenacity = "^8.2.3"
+gdown = "^4.7.1"
+email-validator = "^2.0.0.post2"
+psycopg2 = "^2.9.7"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-multipart = "^0.0.6"
+pillow = "^10.0.0"
+nltk = "^3.8.1"
+pandas = "^2.0.3"
+scipy = "^1.11.2"
+scikit-learn = "^1.3.0"
+opentelemetry-distro = "^0.40b0"
+opentelemetry-exporter-otlp = "^1.19.0"
+opentelemetry-instrumentation-aws-lambda = "^0.40b0"
+opentelemetry-instrumentation-dbapi = "^0.40b0"
+opentelemetry-instrumentation-logging = "^0.40b0"
+opentelemetry-instrumentation-sqlite3 = "^0.40b0"
+opentelemetry-instrumentation-urllib = "^0.40b0"
+opentelemetry-instrumentation-wsgi = "^0.40b0"
+opentelemetry-instrumentation-asgi = "^0.40b0"
+opentelemetry-instrumentation-fastapi = "^0.40b0"
+opentelemetry-instrumentation-grpc = "^0.40b0"
+opentelemetry-instrumentation-jinja2 = "^0.40b0"
+opentelemetry-instrumentation-psycopg2 = "^0.40b0"
+opentelemetry-instrumentation-requests = "^0.40b0"
+opentelemetry-instrumentation-sqlalchemy = "^0.40b0"
+opentelemetry-instrumentation-system-metrics = "^0.40b0"
+opentelemetry-instrumentation-tornado = "^0.40b0"
+opentelemetry-instrumentation-tortoiseorm = "^0.40b0"
+opentelemetry-instrumentation-urllib3 = "^0.40b0"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+httpx = "^0.24.1"
+ruff = "^0.0.285"
+black = "^23.7.0"
+mypy = "^1.5.1"
+pandas-stubs = "*"
+types-pillow = "*"
+types-pytz = "*"
+types-passlib = "*"
+types-python-jose = "*"
+types-tensorflow = "*"
+types-pygments = "*"
+types-colorama = "*"
+types-decorator = "*"
+types-jsonschema = "*"
+types-openpyxl = "*"
+types-six = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+# TODO @JoffreyLGT: study if it would be worth it to move ruff configs into a separate toml file in root dir to symlink it in sub projects and use the same configurations everywhere #64
 [tool.ruff]
 # Set max line length to 88 to match Black
 line-length = 88
@@ -10,6 +97,24 @@ select = [
     "I",   # isort
     "D",   # pydocstyle
     "AIR", # airflow
+    # TODO @JoffreyLGT: uncomment and ensure we meet the rules bellow #64
+    # "N",   # pep8-naming
+    # "PT",  # flake8-pytest-style
+    # "SIM", # flake8-simplify
+    # "PTH", # flake8-use-pathlib
+    # "TD",  # flake8-todos
+    # "Q",   # flake8-quotes
+    # "RSE", # flake8-raise
+    # "RTE", # flake8-return
+    # "ERA", # eradicate
+    # "PD",  # pandas-vet
+    # "PL",  # pylint
+    # "TRY", # triceratops
+    # "FLY", # flynt
+    # "NPY", # NumPy-specific rules
+    # "AIR", # airflow
+    # "PERF",# perflint
+
 ]
 ignore = []
 
@@ -76,3 +181,7 @@ filterwarnings = [
     "ignore::DeprecationWarning:passlib",
     "ignore::DeprecationWarning:tensorflow",
 ]
+
+[tool.black]
+line-length = 88
+target-version = ['py311']

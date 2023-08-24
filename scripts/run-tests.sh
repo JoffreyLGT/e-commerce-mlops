@@ -1,9 +1,15 @@
 #! /usr/bin/env sh
 
+# Get the full path to this script's directory and to the backend dir
+current_dir=$(dirname $(readlink -f "${BASH_SOURCE:-$0}"))
+root_dir=$(dirname $current_dir)
 
-./scripts/tests/start-containers.sh
+cd $current_dir
+tests/start-containers.sh
 
-docker compose -f docker-stack.yaml exec -T api bash /backend/scripts/lint.sh
-docker compose -f docker-stack.yaml exec -T api bash /backend/scripts/start-tests.sh "$@"
+cd $current_dir
+docker compose -f tests/docker-stack.yaml up -d
+docker compose -f tests/docker-stack.yaml exec -T api bash scripts/lint.sh
+docker compose -f tests/docker-stack.yaml exec -T api bash scripts/start-tests.sh
 
-./scripts/tests/stop-containers.sh
+tests/stop-containers.sh

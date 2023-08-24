@@ -27,6 +27,7 @@ services:
       - SERVER_HOST=https://${DOMAIN:-localhost}
       - ENV_TARGET=development
       - RESET_VENV=${RESET_VENV:-false}
+      - IS_DEV_CONTAINER=true
 
   db:
     image: postgres:latest

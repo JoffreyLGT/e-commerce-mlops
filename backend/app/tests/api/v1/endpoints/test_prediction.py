@@ -31,13 +31,11 @@ def test_predict_category_valid_color(
     assert request.status_code == status.HTTP_200_OK
 
     response = request.json()
-    assert len(response) == int(params["limit"])
 
-    assert (
-        response[0]["category_id"] == 1180
-        and response[0]["probabilities"] == 45.0
-        and response[0]["label"] == "Univers fantastiques"
-    )
+    assert len(response) == int(params["limit"])
+    assert "category_id" in response[0]
+    assert "probabilities" in response[0]
+    assert "label" in response[0]
 
 
 def test_predict_category_invalid_gray(

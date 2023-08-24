@@ -1,14 +1,41 @@
-[project]
+[tool.poetry]
 name = "datascience"
 version = "0.1.0"
 description = "Create and test product classification models and track their performance using MLFlow."
-# authors = ["Joffrey Lagut <j.lagut@live.fr>", "Landry <landry@test.com>", "Arnaud <arnaud@test.com>"]
+authors = ["Joffrey Lagut <j.lagut@live.fr>", "Landry <landry@test.com>", "Arnaud <arnaud@test.com>"]
 readme = "README.md"
-requires-python = ">3.11"
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.12"
+
+# Tensorflow is not using standard dependencies declaration, so we must use markers
+# To understand them, see https://github.com/tensorflow/tensorflow/blob/25ac2a5882f1f225a33671e76a209ff99e2bdf4f/tensorflow/tools/pip_package/setup.py#L153
+tensorflow = {version = "2.13.0"}
+# Install the TensorFlow package built by AWS if the user is running
+# Linux on an Aarch64 machine.
+tensorflow-cpu-aws = {version = "2.13.0", markers = "platform_system=='Linux' and (platform_machine=='arm64' or platform_machine=='aarch64')"}
+# Install the TensorFlow package built by Apple if the user is running
+# macOS on an Apple Silicon machine.
+tensorflow-macos = {version = "2.13.0", markers = "platform_system=='Darwin' and platform_machine=='arm64'"}
+# Metal for macOS users
+tensorflow-metal = {version = "1.0.0", platform = "darwin"}
+# Install the TensorFlow package built by Intel if the user is on a
+# Windows machine.
+# Not tested yet
+tensorflow-intel = {version = "2.13.0", markers = "platform_system=='Windows'"}
+
+mlflow = "^2.6.0"
+pydantic = "*"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+ruff = "0.*"
+black = "^23.7.0"
+mypy = "^1.5.1"
 
 [build-system]
-# Minimum requirements for the build system to execute.
-requires = ["setuptools", "wheel"]  # PEP 508 specifications.
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 # Set max line length to 88 to match Black
