@@ -120,6 +120,51 @@ Pour cela, il faut :
     FROM --platform=linux/amd64 mcr.microsoft.com/devcontainers/python:1-3.11-bullseye
     ```
 
+## Questions et réponses
+
+Cette section concerne les outils en général. Chaque sous-projet a sa propre section :
+
+- [root](#questions-et-réponses-root)
+- [backend](#questions-et-réponses-backend)
+- [datascience](#questions-et-réponses-datascience)
+
+### Docker m'indique que je le disque de la VM est plein
+
+Docker stocke les images, containers et volumes dans un disque virtuel. Celui-ci a une taille définie dans les paramêtres de Docker Desktop.
+
+Pour solutionner cette erreur, deux solutions :
+
+1. Augmenter la taille du disque via Docker Desktop, rubrique `Settings`.
+2. Vider tout le contenu du disque et repartir de zéro avec la commande ci-dessous :
+
+```shell
+docker system prune -a --volumes
+```
+
+### Mon ordinateur surchauffe pendant le développement
+
+- Ouvrir le moniteur d'activité pour repérer le processus utilisant le CPU.
+- S'il s'agit de `code helper (plugin)`, noter le PID.
+- Quitter complètement VSCode (`Cmd + Q`` sur MacOS)
+
+    Si le processus disparait, relancer VSCode et attendre quelques minutes. Si le processus ne revient pas, tout est de nouveau en ordre. Sinon, continuer les étapes ci-dessous.
+
+- Ouvrir un terminal et saisir la commande suivante en replaçant 67377 par le PID noté précédemment :
+
+    ```shell
+    ps aux | grep 67377
+    ```
+
+- Le résultat de la commande à le format suivant :
+
+    ```text
+    joffrey 67377 110.4  8.1 1587151776 1351248   ??  R     4:35PM  29:40.37 [...] /Users/joffrey/.vscode/extensions/ms-python.vscode-pylance-2023.8.30/dist [...]
+    ```
+
+    *Note : [...] indique que le contenu a été tronqué.*
+
+    En analysant la ligne, nous constatons la mention `/.vscode/extensions/ms-python.vscode-pylance-2023.8.30/` : [Pylance](#language-server--pylance) est donc le coupable.
+
 ## Information sur les projets
 
 Un workspace VSCode est mis à disposition à la racine du projet sous le nom *[e-commerce-mlops.code-workspace](e-commerce-mlops.code-workspace)*. **Il est fortement recommandé de l'utiliser.**
@@ -147,18 +192,7 @@ Les tâches ci-dessous sont disponibles :
 
 #### Questions et réponses (root)
 
-##### Docker m'indique que je le disque de la VM est plein
-
-Docker stocke les images, containers et volumes dans un disque virtuel. Celui-ci a une taille définie dans les paramêtres de Docker Desktop.
-
-Pour solutionner cette erreur, deux solutions :
-
-1. Augmenter la taille du disque via Docker Desktop, rubrique `Settings`.
-2. Vider tout le contenu du disque et repartir de zéro avec la commande ci-dessous :
-
-```shell
-docker system prune -a --volumes
-```
+Rien pour le moment.
 
 ### backend
 
@@ -280,6 +314,12 @@ Les tâches ci-dessous sont disponibles :
     ```shell
     alembic downgrade base
     ```
+
+### datascience
+
+#### Questions et réponses (datascience)
+
+Rien pour le moment
 
 ## Normes de développement
 
