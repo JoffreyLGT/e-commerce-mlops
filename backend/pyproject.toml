@@ -96,7 +96,15 @@ build-backend = "poetry.core.masonry.api"
 pythonVersion = "3.11"
 typeCheckingMode = "strict"
 include = ["app"]
-exclude = ["**/.pytest_cache", "**/__pycache__", ".ruff_cache"]
+exclude = [
+    "**/node_modules",
+    "**/venv",
+    "**/.venv",
+    "**/.pytest_cache",
+    "**/__pycache__",
+    ".ruff_cache",
+    "**/Python.framework/**",
+]
 
 [tool.pytest.ini_options]
 filterwarnings = [
