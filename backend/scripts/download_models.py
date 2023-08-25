@@ -29,9 +29,17 @@ files = [
     ),
 ]
 
-for url, destination, filename in files:
-    if not Path.exists(destination):
-        Path(destination).mkdir(parents=True)
-    full_path = Path(destination) / filename
-    if not Path.is_file(full_path):
-        gdown.download(url, full_path, quiet=False)
+
+def main() -> None:
+    """Main function triggered only when the script is called."""
+    for url, destination, filename in files:
+        if not Path.exists(destination):
+            Path(destination).mkdir(parents=True)
+        full_path = Path(destination) / filename
+        if not Path.is_file(full_path):
+            gdown.download(url, str(full_path), quiet=False)
+
+
+# Safety net to call main only when the script is called by Python interpreter
+if __name__ == "__main__":
+    main()
