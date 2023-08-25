@@ -23,7 +23,7 @@ select = [
     "RET", # flake8-return
     "ERA", # eradicate
     "PD",  # pandas-vet
-    # "PL",   # pylint
+    "PL",  # pylint
     # "TRY",  # triceratops
     # "FLY",  # flynt
     # "NPY",  # NumPy-specific rules
