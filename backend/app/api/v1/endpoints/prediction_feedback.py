@@ -44,6 +44,9 @@ def create_feedback(
     if feedback:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="A prediction feedback with this product id already exists in the system.",  # noqa: E501
+            detail=(
+                "A prediction feedback with this product id "
+                "already exists in the system."
+            ),
         )
     return crud.prediction_feedback.create(db, obj_in=feedback_in)
