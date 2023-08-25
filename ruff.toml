@@ -6,29 +6,29 @@ line-length = 88
 # Information regarding rules are available here: https://beta.ruff.rs/docs/rules/
 ignore = []
 select = [
-    "RUF", # ruff-specific
-    "E",   # pycodestyle
-    "F",   # pyflakes
-    "UP",  # pyupgrade
-    "I",   # isort
-    "D",   # pydocstyle
-    "AIR", # airflow
-    "N",   # pep8-naming
-    "PT",  # flake8-pytest-style
-    "SIM", # flake8-simplify
-    "PTH", # flake8-use-pathlib
-    "TD",  # flake8-todos
-    "Q",   # flake8-quotes
-    "RSE", # flake8-raise
-    "RET", # flake8-return
-    "ERA", # eradicate
-    "PD",  # pandas-vet
-    "PL",  # pylint
-    "TRY", # triceratops
-    "FLY", # flynt
-    # "NPY",  # NumPy-specific rules
-    # "AIR",  # airflow
-    # "PERF", # perflint
+    "RUF",  # ruff-specific
+    "E",    # pycodestyle
+    "F",    # pyflakes
+    "UP",   # pyupgrade
+    "I",    # isort
+    "D",    # pydocstyle
+    "AIR",  # airflow
+    "N",    # pep8-naming
+    "PT",   # flake8-pytest-style
+    "SIM",  # flake8-simplify
+    "PTH",  # flake8-use-pathlib
+    "TD",   # flake8-todos
+    "Q",    # flake8-quotes
+    "RSE",  # flake8-raise
+    "RET",  # flake8-return
+    "ERA",  # eradicate
+    "PD",   # pandas-vet
+    "PL",   # pylint
+    "TRY",  # triceratops
+    "FLY",  # flynt
+    "NPY",  # NumPy-specific rules
+    "AIR",  # airflow
+    "PERF", # perflint
 ]
 
 # Allow autofix for all enabled rules (when `--fix`) is provided.
