@@ -1,9 +1,10 @@
-# Schema: https://json.schemastore.org/ruff.json
+#:schema https://json.schemastore.org/ruff.json
 
 # For a list of available settings, see https://beta.ruff.rs/docs/settings/
 line-length = 88
 
 # Information regarding rules are available here: https://beta.ruff.rs/docs/rules/
+ignore = []
 select = [
     "RUF", # ruff-specific
     "E",   # pycodestyle
@@ -16,7 +17,7 @@ select = [
     "PT",  # flake8-pytest-style
     "SIM", # flake8-simplify
     "PTH", # flake8-use-pathlib
-    # "TD",   # flake8-todos
+    "TD",  # flake8-todos
     # "Q",    # flake8-quotes
     # "RSE",  # flake8-raise
     # "RET",  # flake8-return
@@ -29,7 +30,6 @@ select = [
     # "AIR",  # airflow
     # "PERF", # perflint
 ]
-ignore = []
 
 # Allow autofix for all enabled rules (when `--fix`) is provided.
 fixable = ["ALL"]
@@ -75,6 +75,9 @@ ignore-init-module-imports = true
 
 [pydocstyle]
 convention = "google"
+
+[pycodestyle]
+ignore-overlong-task-comments = true
 
 [per-file-ignores]
 "__init__.py" = [

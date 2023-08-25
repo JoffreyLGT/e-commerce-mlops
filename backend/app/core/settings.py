@@ -86,7 +86,8 @@ class Settings(BaseSettings):
 
     RESET_TOKEN_EXPIRE_HOURS: int = 48
 
-    # FIXME set dynamically to not update codebase when updating models
+    # TODO @JoffreyLGT: set MODEL_VERSION dynamically to not update codebase when updating models
+    # https://github.com/JoffreyLGT/e-commerce-mlops/issues/68
     MODEL_VERSION: str = "1.0"
 
     class Config:
