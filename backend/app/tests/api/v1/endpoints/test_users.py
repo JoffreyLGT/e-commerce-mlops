@@ -16,7 +16,7 @@ def test_get_users_admin_me(
 ) -> None:
     """Test the route to retrieve admin user's own information."""
     request = client.get(f"{settings.API_V1_STR}/users/me", headers=admin_token_headers)
-    assert status.HTTP_200_OK == request.status_code
+    assert request.status_code == status.HTTP_200_OK
     current_user = request.json()
     assert current_user
     assert current_user["is_active"] is True
@@ -31,7 +31,7 @@ def test_get_users_normal_user_me(
     request = client.get(
         f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers
     )
-    assert status.HTTP_200_OK == request.status_code
+    assert request.status_code == status.HTTP_200_OK
 
     current_user = request.json()
     assert current_user
@@ -72,7 +72,7 @@ def test_get_existing_user(
         f"{settings.API_V1_STR}/users/{user_id}",
         headers=admin_token_headers,
     )
-    assert status.HTTP_200_OK == request.status_code
+    assert request.status_code == status.HTTP_200_OK
     api_user = request.json()
     existing_user = crud.user.get_by_email(db, email=username)
     assert existing_user
@@ -143,7 +143,7 @@ def test_retrieve_users(
     crud.user.create(db, obj_in=user_in2)
 
     request = client.get(f"{settings.API_V1_STR}/users/", headers=admin_token_headers)
-    assert status.HTTP_200_OK == request.status_code
+    assert request.status_code == status.HTTP_200_OK
     all_users = request.json()
 
     assert len(all_users) > 1

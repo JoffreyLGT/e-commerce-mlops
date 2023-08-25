@@ -14,7 +14,7 @@ select = [
     "AIR", # airflow
     "N",   # pep8-naming
     "PT",  # flake8-pytest-style
-    # "SIM",  # flake8-simplify
+    "SIM", # flake8-simplify
     "PTH", # flake8-use-pathlib
     # "TD",   # flake8-todos
     # "Q",    # flake8-quotes
