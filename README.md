@@ -29,7 +29,7 @@ E-COMMERCE-MLOPS/
 
 ## Mise en place avec Docker
 
-1. Remplir le fichier [`.env`](.env) avec vos informations.
+1. Remplir le fichier [`.env`](.env) avec les informations du projet.
 2. Toujours dans [`.env`](.env), vérifier que la valeur de la variable `ENV_TARGET` est renseignée.
 3. Exécuter [`scripts/docker-deploy.sh`](scripts/docker-deploy.sh) pour créer les conteneurs.
 4. Lancer les conteneurs via Docker Desktop ou via ligne de commande :
@@ -42,7 +42,7 @@ docker compose -f docker-compose.yaml up -d
 
 ### Local
 
-Utilisation de votre système pour le développement permettant l'utilisation du **GPU pour les tâches Tensorflow**.
+Utilisation de la machine locale pour le développement permettant l'utilisation du **GPU pour les tâches Tensorflow**.
 *Actuellement configuré pour les utilisateurs de MacOS.*
 
 Prérequis :
@@ -192,8 +192,9 @@ Contient les fichiers commun à tout le projet, les sous-projets ainsi que des f
 Attention, certains fichiers sont référencés comme symlinks dans les sous-projets:
 | File      | Sub-projects                  |
 | --        | --                            |
-| mypy.ini  | backend, datascience          |
 | .env      | backend, datascience          |
+| mypy.ini  | backend, datascience          |
+| ruff.toml | backend, datascience          |
 
 #### VSCode Tasks (root)
 
@@ -399,16 +400,22 @@ L'extension autoDocstring, intégrée au dev container, permet de générer les 
 
 [Ruff](https://beta.ruff.rs/docs/) effectue l'analyse de code statique du fichier en direct et fait des recommandations. Il combine des règles provenant de plusieurs autres linter du marché et réorganise les imports en utillisant les règles [iSort](https://beta.ruff.rs/docs/faq/#how-does-ruffs-import-sorting-compare-to-isort).
 
-Pour visualiser les règles activées dans le projet, ouvrir le fichier `/backend/pyproject.toml`.
+Les configurations, incluant les règles activées, se trouvent dans le fichier des configuration Ruff : [`ruff.toml`](ruff.toml).
 
-Certaines recommandations peuvent être érronées. Pour les désactiver, je vous invite à consulter la page  [Ruff error suppression](https://beta.ruff.rs/docs/configuration/#error-suppression).
+Certaines recommandations peuvent être érronées. Pour les désactiver, consulter la page  [Ruff error suppression](https://beta.ruff.rs/docs/configuration/#error-suppression).  
+
+Il est recommandé d'ajouter un message pour expliquer pourquoi la règle est désactivée.
 
 #### Formateur Python: Black
 
 [Black](https://black.readthedocs.io/en/stable/) formate automatiquement le code lors de l'enregistrement du fichier.
+
+Les configurations se trouvent dans les fichier `pyproject.toml` de chaque sous-projet.
 
 #### Vérificateur de type : Mypy
 
 [Mypy](https://mypy.readthedocs.io/en/stable/) s'occupe de mettre en avant les potentiels problèmes liés aux types.
 
 Il s'exécute à l'enregistrement du fichier.
+
+Les configurations se trouvent dans le fichier [`mypy.ini`](mypy.ini).
