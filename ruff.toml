@@ -22,7 +22,7 @@ select = [
     "RSE", # flake8-raise
     "RET", # flake8-return
     "ERA", # eradicate
-    # "PD",   # pandas-vet
+    "PD",  # pandas-vet
     # "PL",   # pylint
     # "TRY",  # triceratops
     # "FLY",  # flynt
