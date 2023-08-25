@@ -87,7 +87,6 @@ def test_create_user_existing_username(
     An error must be returned since ids are unique.
     """
     username = random_email()
-    # username = email
     password = random_lower_string()
     user_in = UserCreate(email=username, password=password)
     crud.user.create(db, obj_in=user_in)

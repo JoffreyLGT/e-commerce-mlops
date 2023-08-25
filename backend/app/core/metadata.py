@@ -16,11 +16,9 @@ class FastAPIMetadata(TypedDict):
 
 
 title = f"{settings.PROJECT_NAME} API"
-# description = ""
 
 app_metadata: FastAPIMetadata = {
     "title": title,
-    # "description": description,
     "summary": f"{title} predicts the category of your products.",
     "version": "1.0.0",
     "contact": {

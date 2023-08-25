@@ -21,7 +21,7 @@ select = [
     "Q",   # flake8-quotes
     "RSE", # flake8-raise
     "RET", # flake8-return
-    # "ERA",  # eradicate
+    "ERA", # eradicate
     # "PD",   # pandas-vet
     # "PL",   # pylint
     # "TRY",  # triceratops
