@@ -5,7 +5,7 @@
             "label": "Start API in reload mode",
             "detail": "Start API in reload mode using `./scripts/start-reload.sh` in virtual environment.",
             "type": "shell",
-            "command": "source .venv/bin/activate && ./scripts/start-reload.sh",
+            "command": "poetry run ./scripts/start-reload.sh",
             "promptOnClose": false,
             "presentation": {
                 "panel": "dedicated",
