@@ -22,7 +22,8 @@ def fixture_db() -> Generator[Session, None, None]:
     Yields:
         Generator of a DB session.
     """
-    yield SessionLocal()
+    with SessionLocal() as session:
+        yield session
 
 
 @pytest.fixture(name="client", scope="module")
