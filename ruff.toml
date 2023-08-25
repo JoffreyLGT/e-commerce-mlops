@@ -25,7 +25,7 @@ select = [
     "PD",  # pandas-vet
     "PL",  # pylint
     "TRY", # triceratops
-    # "FLY",  # flynt
+    "FLY", # flynt
     # "NPY",  # NumPy-specific rules
     # "AIR",  # airflow
     # "PERF", # perflint
