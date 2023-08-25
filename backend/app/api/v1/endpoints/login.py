@@ -37,7 +37,7 @@ def login_access_token(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
         )
-    elif not crud.user.is_active(user):
+    if not crud.user.is_active(user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Inactive user"
         )
