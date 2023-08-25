@@ -7,7 +7,6 @@
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "ruff.args": [
-        "--config=./pyproject.toml",
         "--extend-exclude=/**/Python.framework/**/*.py",
     ],
     "mypy-type-checker.args": [
@@ -20,4 +19,5 @@
         "**/.mypy_cache": true,
         ".venv": true,
     },
+    "black-formatter.importStrategy": "fromEnvironment",
 }

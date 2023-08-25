@@ -10,4 +10,5 @@
         "backend": true,
         "datascience": true,
     },
+    "black-formatter.importStrategy": "useBundled",
 }
