@@ -24,7 +24,7 @@ select = [
     "ERA", # eradicate
     "PD",  # pandas-vet
     "PL",  # pylint
-    # "TRY",  # triceratops
+    "TRY", # triceratops
     # "FLY",  # flynt
     # "NPY",  # NumPy-specific rules
     # "AIR",  # airflow

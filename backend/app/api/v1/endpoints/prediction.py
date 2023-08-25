@@ -52,17 +52,24 @@ async def predict_category(
         try:
             # Open the image with PIL
             image_data = np.asarray(Image.open(BytesIO(await image.read())))
-            # Case where the image is in Black and white or with another format
-            if (
-                len(image_data.shape) != expected_shape_len
-                or image_data.shape[2] != expected_shape_len
-            ):
-                raise UnidentifiedImageError
         except UnidentifiedImageError as exc:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid image format. Image must be in JPEG or JPG format and colored.",  # noqa: E501
+                detail=(
+                    "Invalid image format. Image must be "
+                    "in JPEG or JPG format and colored."
+                ),
             ) from exc
+
+        # Case where the image is in Black and white or with another format
+        if (
+            len(image_data.shape) != expected_shape_len
+            or image_data.shape[2] != expected_shape_len
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=("Invalid image: should be a coloured JPEG or JPG."),
+            )
 
     if limit is not None and limit <= 0:
         raise HTTPException(

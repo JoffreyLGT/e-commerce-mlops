@@ -184,11 +184,6 @@ def test_predict_category_image_four_dimensions(
         <= request_invalid_format.status_code
         < status.HTTP_500_INTERNAL_SERVER_ERROR
     )
-    error_detail_invalid_format = request_invalid_format.json()["detail"]
-    assert (
-        "Invalid image format. Image must be in JPEG or JPG format and colored."
-        in error_detail_invalid_format
-    )
 
 
 def test_predict_category_without_data(

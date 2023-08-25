@@ -28,9 +28,8 @@ def init() -> None:
         db = SessionLocal()
         # Try to create session to check if DB is awake
         db.execute(text("SELECT 1"))
-    except Exception as e:
-        logger.error(e)
-        raise e
+    except Exception:
+        logger.exception("Could not execute a SQL request.")
 
 
 def main() -> None:

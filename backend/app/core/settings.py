@@ -100,7 +100,7 @@ def _get_backend_dir() -> str:
     """Get full path to backend directory."""
     current_path = Path(__file__)
     if "backend" not in str(current_path):
-        raise FileNotFoundError("Impossible to find 'backend' directory.")
+        raise FileNotFoundError("backend")
     while current_path.name != "backend":
         current_path = current_path.parent
     return str(current_path)
