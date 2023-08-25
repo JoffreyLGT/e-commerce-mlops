@@ -18,8 +18,8 @@ select = [
     "SIM", # flake8-simplify
     "PTH", # flake8-use-pathlib
     "TD",  # flake8-todos
-    # "Q",    # flake8-quotes
-    # "RSE",  # flake8-raise
+    "Q",   # flake8-quotes
+    # "RSE", # flake8-raise
     # "RET",  # flake8-return
     # "ERA",  # eradicate
     # "PD",   # pandas-vet
