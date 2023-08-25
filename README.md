@@ -141,7 +141,7 @@ Pour solutionner cette erreur, deux solutions :
 docker system prune -a --volumes
 ```
 
-### Mon ordinateur surchauffe pendant le développement
+### Mon ordinateur surchauffe pendant le développement / utilisation intensive du CPU
 
 - Ouvrir le moniteur d'activité pour repérer le processus utilisant le CPU.
 - S'il s'agit de `code helper (plugin)`, noter le PID.
@@ -164,6 +164,18 @@ docker system prune -a --volumes
     *Note : [...] indique que le contenu a été tronqué.*
 
     En analysant la ligne, nous constatons la mention `/.vscode/extensions/ms-python.vscode-pylance-2023.8.30/` : [Pylance](#language-server--pylance) est donc le coupable.
+
+### Comment renseigner le schéma d'un fichier TOML pour bénéficier de l'auto-completion ?
+
+- Ouvrir le site [Schemastore.org](https://www.schemastore.org/json/) et rechercher le schéma correspondant à votre fichier.
+- Ouvrir votre fichier TOML.
+- Insérer la valeur ci-dessous en première ligne du fichier :
+
+    ```toml
+    #:schema https://json.schemastore.org/ruff.json
+
+    # Add your values after
+    ```
 
 ## Information sur les projets
 
