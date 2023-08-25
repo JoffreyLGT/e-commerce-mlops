@@ -12,7 +12,7 @@ select = [
     "I",   # isort
     "D",   # pydocstyle
     "AIR", # airflow
-    # "N",    # pep8-naming
+    "N",   # pep8-naming
     # "PT",   # flake8-pytest-style
     # "SIM",  # flake8-simplify
     "PTH", # flake8-use-pathlib

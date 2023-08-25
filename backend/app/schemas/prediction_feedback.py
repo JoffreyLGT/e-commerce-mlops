@@ -69,7 +69,10 @@ class PredictionFeedbackInDBBase(PredictionFeedbackBase):
     pred_category_id: int
 
     @validator("model_version")
-    def set_model_version(cls, model_version: str) -> str:
+    def set_model_version(
+        cls,  # noqa: N805 false positive, first argument must be cls for validator
+        model_version: str,
+    ) -> str:
         """Assign a default value to model_version if set to None."""
         return model_version or settings.MODEL_VERSION
 

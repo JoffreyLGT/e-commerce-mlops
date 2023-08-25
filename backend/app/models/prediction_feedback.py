@@ -15,7 +15,9 @@ class PredictionFeedback(Base):
     """Contains the feedback we got from our client regarding our prediction."""
 
     @declared_attr.directive
-    def __tablename__(cls) -> str:
+    def __tablename__(
+        cls,  # noqa: N805 false positive, first argument must be cls for validator
+    ) -> str:
         """Indicate table name to SQLAlchemy."""
         return "prediction_feedback"
 

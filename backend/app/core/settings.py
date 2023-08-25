@@ -32,7 +32,11 @@ class Settings(BaseSettings):
     SQLALCHEMY_DATABASE_URI: PostgresDsn | None = None
 
     @validator("SQLALCHEMY_DATABASE_URI", pre=True)
-    def assemble_db_connection(cls, v: str | None, values: dict[str, Any]) -> Any:
+    def assemble_db_connection(
+        cls,  # noqa: N805 false positive, first argument must be cls for validator
+        v: str | None,
+        values: dict[str, Any],
+    ) -> Any:
         """Ensure we have a valid DB connection.
 
         Validate the information provided through env variable to ensure we are able to
@@ -57,7 +61,10 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: list[AnyHttpUrl] = []
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
-    def assemble_cors_origins(cls, v: str | list[str]) -> list[str] | str:
+    def assemble_cors_origins(
+        cls,  # noqa: N805 false positive, first argument must be cls for validator
+        v: str | list[str],
+    ) -> list[str] | str:
         """Validate the format of BACKEND_CORS_ORIGINS.
 
         Raises:
