@@ -12,11 +12,10 @@ select = [
     "I",   # isort
     "D",   # pydocstyle
     "AIR", # airflow
-    # TODO @JoffreyLGT: uncomment and ensure we meet the rules bellow #64
     # "N",    # pep8-naming
     # "PT",   # flake8-pytest-style
     # "SIM",  # flake8-simplify
-    # "PTH",  # flake8-use-pathlib
+    "PTH", # flake8-use-pathlib
     # "TD",   # flake8-todos
     # "Q",    # flake8-quotes
     # "RSE",  # flake8-raise
@@ -78,5 +77,10 @@ ignore-init-module-imports = true
 convention = "google"
 
 [per-file-ignores]
-"__init__.py" = ["F401"]
-"app/database/base.py" = ["F401"]
+"__init__.py" = [
+    "F401",    # unused-import
+    "PLC0414", # useless-import-alias
+]
+"app/database/base.py" = [
+    "F401", # unused-import
+]
