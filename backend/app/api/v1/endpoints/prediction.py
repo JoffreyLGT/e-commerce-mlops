@@ -53,7 +53,7 @@ async def predict_category(
             image_data = np.asarray(Image.open(BytesIO(await image.read())))
             # Case where the image is in Black and white or with another format
             if len(image_data.shape) != 3 or image_data.shape[2] != 3:
-                raise UnidentifiedImageError()
+                raise UnidentifiedImageError
         except UnidentifiedImageError as exc:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
