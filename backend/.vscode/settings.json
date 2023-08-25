@@ -1,5 +1,5 @@
 {
-    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+    "python.defaultInterpreterPath": "${workspaceFolder:backend}/.venv/bin/python",
     "python.terminal.activateEnvInCurrentTerminal": true,
     "python.testing.pytestArgs": [
         "app"
