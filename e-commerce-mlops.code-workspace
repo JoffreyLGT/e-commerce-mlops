@@ -11,8 +11,31 @@
 			"path": "datascience"
 		}
 	],
+	"extensions": {
+		"recommendations": [
+			"njpwerner.autodocstring", // To generate docstrings easily
+			"ms-python.python", // Python support
+			"ms-python.vscode-pylance", // Python LSP
+			"ms-python.black-formatter", // Python formatter
+			"ms-python.mypy-type-checker", // Python type checker
+			"charliermarsh.ruff", // Python linter
+			"ms-vscode-remote.remote-containers", // To use dev container
+			"IronGeek.vscode-env", // .ENV files formatter
+			"tamasfe.even-better-toml", // TOML LSP and formater
+			"bierner.github-markdown-preview", // Markdown flavor of Github
+			"GitHub.vscode-pull-request-github", // Manage GH directly in VSCode
+			"eamodio.gitlens", // Manage git repo
+			"foxundermoon.shell-format", // Shell file formatter
+			"mtxr.sqltools", // Open and do request on DB
+			"mtxr.sqltools-driver-pg", // Driver for PostgreSQL
+			"Gruntfuggly.todo-tree", // See all TODO in project
+			"redhat.vscode-yaml", // YAML LSP
+			"DavidAnson.vscode-markdownlint", // Markdown linter
+			"aaron-bond.better-comments", // Set colored comments
+			"vscode-icons-team.vscode-icons", // Display icon next to files depending on type
+		]
+	},
 	"settings": {
-		"python.envFile": "${workspaceFolder}/.env",
 		"testing.automaticallyOpenPeekView": "never",
 		"files.exclude": {
 			// Do not display backend and datascience since they are in workspace
@@ -23,6 +46,67 @@
 			"node_modules": true
 		},
 		"terminal.integrated.defaultProfile.linux": "zsh",
+		"python.languageServer": "Pylance",
+		"python.envFile": "${workspaceFolder}/.env",
 		"python.terminal.activateEnvInCurrentTerminal": true,
+		"python.analysis.diagnosticMode": "openFilesOnly",
+		"python.analysis.typeCheckingMode": "basic",
+		"python.testing.unittestEnabled": false,
+		"python.testing.pytestEnabled": true,
+		"editor.formatOnSave": true,
+		"python.analysis.autoFormatStrings": true,
+		"[python]": {
+			"editor.defaultFormatter": "ms-python.black-formatter", //! Ignore warning
+			"editor.formatOnSave": true,
+			"editor.codeActionsOnSave": {
+				"source.organizeImports": true
+			}
+		},
+		"ruff.organizeImports": true,
+		"ruff.run": "onType",
+		// 88 is the default number chosen by Black formatter
+		"editor.wordWrapColumn": 88,
+		"editor.rulers": [
+			88
+		],
+		"[json]": {
+			"editor.defaultFormatter": "vscode.json-language-features"
+		},
+		"[ignore]": {
+			"editor.defaultFormatter": "foxundermoon.shell-format"
+		},
+		"[markdown]": {
+			"editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+		},
+		"files.associations": {
+			".env": "env"
+		},
+		"[env]": {
+			"editor.defaultFormatter": "IronGeek.vscode-env"
+		},
+		"[toml]": {
+			"editor.defaultFormatter": "tamasfe.even-better-toml"
+		},
+		"[jsonc]": {
+			"editor.defaultFormatter": "vscode.json-language-features"
+		},
+		"evenBetterToml.formatter.reorderKeys": true,
+		"autoDocstring.docstringFormat": "google-notypes",
+		"sqltools.connections": [
+			{
+				"previewLimit": 50,
+				"server": "localhost",
+				"port": 5432,
+				"driver": "PostgreSQL",
+				"name": "App",
+				"database": "product-classification",
+				"username": "admin",
+				"password": "changethis"
+			}
+		],
+		"workbench.iconTheme": "vscode-icons",
+		"mypy-type-checker.importStrategy": "fromEnvironment",
+		"files.trimTrailingWhitespace": true,
+		"files.insertFinalNewline": true,
 	},
 }

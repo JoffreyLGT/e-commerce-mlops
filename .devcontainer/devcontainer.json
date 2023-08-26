@@ -9,76 +9,36 @@
 	"onCreateCommand": ".devcontainer/onCreateCommand.sh",
 	// Set workspace directory as safe
 	"postAttachCommand": "git config --global --add safe.directory /workspaces",
-	"shutdownAction":"stopCompose",
+	"shutdownAction": "stopCompose",
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"ms-python.python",
-				"ms-azuretools.vscode-docker",
-				"mtxr.sqltools",
-				"mtxr.sqltools-driver-pg",
-				"ms-toolsai.jupyter",
-				"ms-python.black-formatter",
-				"njpwerner.autodocstring",
-				"charliermarsh.ruff",
-				"tamasfe.even-better-toml",
-				"ms-python.mypy-type-checker",
-				"bierner.github-markdown-preview"
+				"njpwerner.autodocstring", // To generate docstrings easily
+				"ms-python.python", // Python support
+				"ms-python.vscode-pylance", // Python LSP
+				"ms-python.black-formatter", // Python formatter
+				"ms-python.mypy-type-checker", // Python type checker
+				"charliermarsh.ruff", // Python linter
+				"ms-vscode-remote.remote-containers", // To use dev container
+				"IronGeek.vscode-env", // .ENV files formatter
+				"tamasfe.even-better-toml", // TOML LSP and formater
+				"bierner.github-markdown-preview", // Markdown flavor of Github
+				"GitHub.vscode-pull-request-github", // Manage GH directly in VSCode
+				"eamodio.gitlens", // Manage git repo
+				"foxundermoon.shell-format", // Shell file formatter
+				"mtxr.sqltools", // Open and do request on DB
+				"mtxr.sqltools-driver-pg", // Driver for PostgreSQL
+				"Gruntfuggly.todo-tree", // See all TODO in project
+				"redhat.vscode-yaml", // YAML LSP
+				"DavidAnson.vscode-markdownlint", // Markdown linter
+				"aaron-bond.better-comments", // Set colored comments
+				"vscode-icons-team.vscode-icons", // Display icon next to files depending on type
 			],
 			"settings": {
 				"task.allowAutomaticTasks": "on",
 				"terminal.integrated.defaultProfile.linux": "zsh",
-				"files.exclude": {
-					"**/__pycache__": true,
-					".pytest_cache": true,
-					".ruff_cache": true,
-					".mypy_cache": true,
-					"node_modules": true
-				},
-				"sqltools.connections": [
-					{
-						"previewLimit": 50,
-						"server": "localhost",
-						"port": 5432,
-						"driver": "PostgreSQL",
-						"name": "App",
-						"database": "product-classification",
-						"username": "admin",
-						"password": "changethis"
-					}
-				],
-				"python.interpreter.infoVisibility": "always",
-				"python.analysis.diagnosticMode": "openFilesOnly",
 				"python.analysis.downloadStubs": true,
 				"python.envFile": "/workspaces/.env",
-				"python.testing.pytestArgs": [
-					"/workspaces/backend/app"
-				],
-				"python.testing.unittestEnabled": false,
-				"python.testing.pytestEnabled": true,
-				"python.analysis.typeCheckingMode": "basic",
-				"editor.formatOnSave": true,
-				"python.analysis.autoFormatStrings": true,
-				"[python]": {
-					"editor.defaultFormatter": "ms-python.black-formatter",
-					"editor.formatOnSave": true,
-					"editor.codeActionsOnSave": {
-						"source.organizeImports": true
-					}
-				  },
-				"editor.defaultFormatter": "ms-python.black-formatter",
-				"black-formatter.importStrategy": "fromEnvironment",
-				"ruff.organizeImports": true,
-				"ruff.args": [
-					"--config=./pyproject.toml"
-				],
-				// 88 is the number chosen by Black formatter
-				"editor.wordWrapColumn": 88,
-				"editor.rulers": [
-					88
-				],
-				"python.languageServer": "Pylance",
-				"autoDocstring.docstringFormat": "google-notypes"
 			}
 		}
 	},

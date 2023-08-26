@@ -9,9 +9,6 @@
     "ruff.args": [
         "--extend-exclude=/**/Python.framework/**/*.py",
     ],
-    "mypy-type-checker.args": [
-        "--config-file=./mypy.ini"
-    ],
     "files.exclude": {
         "**/__pycache__": true,
         "**/.pytest_cache": true,
