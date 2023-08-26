@@ -1,0 +1,89 @@
+#:schema https://json.schemastore.org/ruff.json
+
+# For a list of available settings, see https://beta.ruff.rs/docs/settings/
+line-length = 88
+
+# Information regarding rules are available here: https://beta.ruff.rs/docs/rules/
+ignore = []
+select = [
+    "RUF",  # ruff-specific
+    "E",    # pycodestyle
+    "F",    # pyflakes
+    "UP",   # pyupgrade
+    "I",    # isort
+    "D",    # pydocstyle
+    "AIR",  # airflow
+    "N",    # pep8-naming
+    "PT",   # flake8-pytest-style
+    "SIM",  # flake8-simplify
+    "PTH",  # flake8-use-pathlib
+    "TD",   # flake8-todos
+    "Q",    # flake8-quotes
+    "RSE",  # flake8-raise
+    "RET",  # flake8-return
+    "ERA",  # eradicate
+    "PD",   # pandas-vet
+    "PL",   # pylint
+    "TRY",  # triceratops
+    "FLY",  # flynt
+    "NPY",  # NumPy-specific rules
+    "AIR",  # airflow
+    "PERF", # perflint
+]
+
+# Allow autofix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+    "alembic",
+    "**/.pytest_cache",
+    "**/__pycache__",
+    "/usr/local/lib/**",
+]
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# Assume Python 3.11.
+target-version = "py311"
+
+# Avoid auto removal of unused imports in __init__.py
+ignore-init-module-imports = true
+
+[pydocstyle]
+convention = "google"
+
+[pycodestyle]
+ignore-overlong-task-comments = true
+
+[per-file-ignores]
+"__init__.py" = [
+    "F401",    # unused-import
+    "PLC0414", # useless-import-alias
+]
+"app/database/base.py" = [
+    "F401", # unused-import
+]

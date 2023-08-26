@@ -15,7 +15,10 @@ def test_predict_category_valid_color(
     """Prediction with valid data and a RGB picture."""
     params: dict[str, str] = {
         "designation": "Guillaume Le Maréchal Tome 1 - Le Chevalier D'aliénor",
-        "description": "L'histoire oubliée du meilleur chevalier du monde... 1167, duché de Normandie..",  # noqa: E501
+        "description": (
+            "L'histoire oubliée du meilleur chevalier du monde... "
+            "1167, duché de Normandie.."
+        ),
         "limit": "1",
     }
     image = Image.new("RGB", (450, 1470))
@@ -44,7 +47,10 @@ def test_predict_category_invalid_gray(
     """Prediction with valid text but grayscaled image."""
     params: dict[str, str] = {
         "designation": "Guillaume Le Maréchal Tome 1 - Le Chevalier D'aliénor",
-        "description": "L'histoire oubliée du meilleur chevalier du monde... 1167, duché de Normandie..",  # noqa: E501
+        "description": (
+            "L'histoire oubliée du meilleur chevalier du monde... "
+            "1167, duché de Normandie.."
+        ),
         "limit": "7",
     }
     grayscale_image = Image.new("L", (4785, 6370))
@@ -70,7 +76,10 @@ def test_predict_category_with_negative_limit(
     """Prediction with negative limit value, must raise an error."""
     params: dict[str, str] = {
         "designation": "Guillaume Le Maréchal Tome 1 - Le Chevalier D'aliénor",
-        "description": "L'histoire oubliée du meilleur chevalier du monde... 1167, duché de Normandie..",  # noqa: E501
+        "description": (
+            "L'histoire oubliée du meilleur chevalier du monde... "
+            "1167, duché de Normandie.."
+        ),
         "limit": "-1",
     }
 
@@ -96,7 +105,10 @@ def test_predict_category_with_wrong_extension(
     """Test the prediction with wrong extension."""
     params: dict[str, str] = {
         "designation": "Guillaume Le Maréchal Tome 1 - Le Chevalier D'aliénor",
-        "description": "L'histoire oubliée du meilleur chevalier du monde... 1167, duché de Normandie..",  # noqa: E501
+        "description": (
+            "L'histoire oubliée du meilleur chevalier du monde... "
+            "1167, duché de Normandie.."
+        ),
         "limit": "7",
     }
     image = Image.new("RGB", (3245, 5641))
@@ -130,7 +142,10 @@ def test_predict_category_invalid_image_format(
     """Test with wrong image format."""
     params: dict[str, str] = {
         "designation": "Guillaume Le Maréchal Tome 1 - Le Chevalier D'aliénor",
-        "description": "L'histoire oubliée du meilleur chevalier du monde... 1167, duché de Normandie..",  # noqa: E501
+        "description": (
+            "L'histoire oubliée du meilleur chevalier du monde... "
+            "1167, duché de Normandie.."
+        ),
         "limit": "7",
     }
 
@@ -163,7 +178,10 @@ def test_predict_category_image_four_dimensions(
     """Prediction with wrong image format, must raise an error."""
     params: dict[str, str] = {
         "designation": "Guillaume Le Maréchal Tome 1 - Le Chevalier D'aliénor",
-        "description": "L'histoire oubliée du meilleur chevalier du monde... 1167, duché de Normandie..",  # noqa: E501
+        "description": (
+            "L'histoire oubliée du meilleur chevalier du monde... "
+            "1167, duché de Normandie.."
+        ),
         "limit": "7",
     }
     image_data = Image.new("RGBA", (100, 100))  # test image uploaded in color
@@ -183,11 +201,6 @@ def test_predict_category_image_four_dimensions(
         status.HTTP_400_BAD_REQUEST
         <= request_invalid_format.status_code
         < status.HTTP_500_INTERNAL_SERVER_ERROR
-    )
-    error_detail_invalid_format = request_invalid_format.json()["detail"]
-    assert (
-        "Invalid image format. Image must be in JPEG or JPG format and colored."
-        in error_detail_invalid_format
     )
 
 

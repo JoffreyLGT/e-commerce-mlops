@@ -22,8 +22,7 @@ def read_users(
     _current_user: models.User = Depends(dependencies.get_current_active_admin),
 ) -> Any:
     """Retrieve users information."""
-    users = crud.user.get_multi(db, skip=skip, limit=limit)
-    return users
+    return crud.user.get_multi(db, skip=skip, limit=limit)
 
 
 @router.post("/", response_model=schemas.User, status_code=status.HTTP_201_CREATED)
@@ -48,8 +47,7 @@ def create_user(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="The user with this username already exists in the system.",
         )
-    user = crud.user.create(db, obj_in=user_in)
-    return user
+    return crud.user.create(db, obj_in=user_in)
 
 
 @router.put("/me", response_model=schemas.User)
@@ -71,8 +69,7 @@ def update_user_me(
         user_in.password = password
     if email is not None:
         user_in.email = email
-    user = crud.user.update(db, db_obj=current_user, obj_in=user_in)
-    return user
+    return crud.user.update(db, db_obj=current_user, obj_in=user_in)
 
 
 @router.get("/me", response_model=schemas.User)
@@ -130,5 +127,4 @@ def update_user(
             status_code=404,
             detail="The user with this username does not exist in the system",
         )
-    user = crud.user.update(db, db_obj=user, obj_in=user_in)
-    return user
+    return crud.user.update(db, db_obj=user, obj_in=user_in)

@@ -16,11 +16,9 @@ class FastAPIMetadata(TypedDict):
 
 
 title = f"{settings.PROJECT_NAME} API"
-# description = ""
 
 app_metadata: FastAPIMetadata = {
     "title": title,
-    # "description": description,
     "summary": f"{title} predicts the category of your products.",
     "version": "1.0.0",
     "contact": {
@@ -30,7 +28,6 @@ app_metadata: FastAPIMetadata = {
     "openapi_url": f"{settings.API_V1_STR}/openapi.json",
 }
 
-# ruff: noqa: E501
 tags_metadata = [
     {
         "name": "Public",
@@ -42,11 +39,17 @@ tags_metadata = [
     },
     {
         "name": "Predictions",
-        "description": "Get the category of your product of the probabilities to be in each category.",
+        "description": (
+            "Get the category of your product of the probabilities to be "
+            "in each category."
+        ),
     },
     {
         "name": "Feedbacks",
-        "description": "Send back our prediction and the category selected by your customer so we can monitor the model accuracy.",
+        "description": (
+            "Send back our prediction and the category selected by your "
+            "customer so we can monitor the model accuracy."
+        ),
     },
     {
         "name": "Users",

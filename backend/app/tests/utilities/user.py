@@ -28,8 +28,7 @@ def get_user_authentication_headers(
 
     request = client.post(f"{settings.API_V1_STR}/login/access-token", data=data)
     response = Token(**request.json())
-    headers = {"Authorization": f"Bearer {response.access_token}"}
-    return headers
+    return {"Authorization": f"Bearer {response.access_token}"}
 
 
 def create_random_user(db: Session) -> User:
@@ -44,8 +43,7 @@ def create_random_user(db: Session) -> User:
     email = random_email()
     password = random_lower_string()
     user_in = UserCreate(email=email, password=password)
-    user = crud.user.create(db=db, obj_in=user_in)
-    return user
+    return crud.user.create(db=db, obj_in=user_in)
 
 
 def authentication_token_from_email(

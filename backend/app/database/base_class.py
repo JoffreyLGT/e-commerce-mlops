@@ -12,6 +12,8 @@ class Base(DeclarativeBase):
     id: Any
 
     @declared_attr.directive
-    def __tablename__(cls) -> str:
+    def __tablename__(
+        cls,  # noqa: N805 false positive, first argument must be cls for validator
+    ) -> str:
         """Generate __tablename__ automatically based on __name__."""
         return cls.__name__.lower()

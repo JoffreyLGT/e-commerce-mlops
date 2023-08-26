@@ -1,6 +1,6 @@
 """Download the models and preprocessing saves from Google Drive."""
 
-import os
+from pathlib import Path
 
 import gdown
 
@@ -9,29 +9,37 @@ from app.core.settings import backend_dir
 files = [
     (
         "https://drive.google.com/uc?id=1BeeAydZtfeqW1PIoM2O6SuD7lSKOr84S",
-        os.path.join(backend_dir, "datascience", "data", "models", "text"),
+        Path(backend_dir) / "datascience" / "data" / "models" / "text",
         "mlp_model_v2.h5",
     ),
     (
         "https://drive.google.com/uc?id=1eCW7UZ6oKyLvt_cn5Ek4vzNa55YZAU70",
-        os.path.join(backend_dir, "datascience", "data", "models", "image"),
+        Path(backend_dir) / "datascience" / "data" / "models" / "image",
         "cnn_mobilenetv2.h5",
     ),
     (
         "https://drive.google.com/uc?id=1CwMWDs6Sb7EDNoOM4tzC5Eyo2DOP2G8M",
-        os.path.join(backend_dir, "datascience", "data", "models", "fusion"),
+        Path(backend_dir) / "datascience" / "data" / "models" / "fusion",
         "fusion_text_image.h5",
     ),
     (
         "https://drive.google.com/uc?id=1koGV4Zk0gWDeUSedrQFJsIZZTQsByV78",
-        os.path.join(backend_dir, "datascience", "data", "pickles"),
+        Path(backend_dir) / "datascience" / "data" / "pickles",
         "text_preprocessor.pkl",
     ),
 ]
 
-for url, destination, filename in files:
-    if not os.path.exists(destination):
-        os.makedirs(destination)
-    full_path = os.path.join(destination, filename)
-    if not os.path.isfile(full_path):
-        gdown.download(url, full_path, quiet=False)
+
+def main() -> None:
+    """Main function triggered only when the script is called."""
+    for url, destination, filename in files:
+        if not Path.exists(destination):
+            Path(destination).mkdir(parents=True)
+        full_path = Path(destination) / filename
+        if not Path.is_file(full_path):
+            gdown.download(url, str(full_path), quiet=False)
+
+
+# Safety net to call main only when the script is called by Python interpreter
+if __name__ == "__main__":
+    main()
