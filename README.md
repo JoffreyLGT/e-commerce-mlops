@@ -79,6 +79,8 @@ Mise en place :
     ./scripts/environment-setup.sh
     ```
 
+7. Installer les [extensions recommandées dans le workspace.](#extensions)
+
 ### Conteneur de développement
 
 Utilisation d'un conteneur Docker possédant tous les outils de développement.
@@ -104,21 +106,13 @@ Une fois les prérequis installées, veuillez-suivre les étapes suivantes :
 
 La fenêtre de VSCode va se recharger et le conteneur de développement va se mettre en place.
 
-Les extensions VSCode peuvent afficher des notifications lors de leur installation, notamment Pylance indiquant que l'extension Python n'est pas détectée. Il faut simplement les fermer sans les prendre en compte.
+Les [extensions recommandées dans le workspace](#extensions) sont installées automatiquement. Cependant, VSCode peuvent afficher des notifications lors de leur installation, notamment Pylance indiquant que l'extension Python n'est pas détectée. Il faut simplement les fermer sans les prendre en compte.
 
-### Comment tester le projet sur d'autres architectures
+### Extensions
 
-Nous utilisons principalement des machines ARM (Apple Silicon) pour le développement du projet.
-Afin de pouvoir tester sur des machines de type AMD64, nous utilisons le conteneur de développement.
+Le workspace contient une liste d'extensions recommandées. Pour les installer, ouvrir la Command Palette (`CMD + Shift + p` ou via le menu `View > Command Palette...`) et rechercher `Extensions: Show Recommended Extensions`.
 
-Pour cela, il faut :
-
-- Ouvrir le fichier [.devcontainer/Dockerfile](.devcontainer/Dockerfile)
-- Modifier la première ligne pour y ajouter `--platform=linux/amd64` comme ceci :
-
-    ```dockerfile
-    FROM --platform=linux/amd64 mcr.microsoft.com/devcontainers/python:1-3.11-bullseye
-    ```
+Sur la ligne `WORKSPACE RECOMMENDATION`, cliquer sur `Install workspace Recommended Extensions`.
 
 ## Questions et réponses
 
@@ -175,6 +169,20 @@ docker system prune -a --volumes
     #:schema https://json.schemastore.org/ruff.json
 
     # Add your values after
+    ```
+
+### Comment tester le projet sur d'autres architectures
+
+Nous utilisons principalement des machines ARM (Apple Silicon) pour le développement du projet.
+Afin de pouvoir tester sur des machines de type AMD64, nous utilisons le conteneur de développement.
+
+Pour cela, il faut :
+
+- Ouvrir le fichier [.devcontainer/Dockerfile](.devcontainer/Dockerfile)
+- Modifier la première ligne pour y ajouter `--platform=linux/amd64` comme ceci :
+
+    ```dockerfile
+    FROM --platform=linux/amd64 mcr.microsoft.com/devcontainers/python:1-3.11-bullseye
     ```
 
 ## Information sur les projets
