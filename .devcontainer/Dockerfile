@@ -16,8 +16,8 @@ COPY --chown=vscode .devcontainer/resources/.p10k.zsh $HOME/.p10k.zsh
 
 # ZSH plugins
 RUN git clone https://github.com/k-sriram/zsh-auto-venv ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-auto-venv --depth=1 \ 
-&& git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions \
-&& git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+    && git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions \
+    && git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
 
 # ZSH config
 COPY --chown=vscode .devcontainer/resources/.zshrc $HOME/.zshrc
@@ -26,6 +26,8 @@ COPY --chown=vscode .devcontainer/resources/.zshrc $HOME/.zshrc
 RUN pipx install poetry
 RUN mkdir -p ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/poetry \
     && poetry completions zsh > ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/poetry/_poetry
+# dotenv-plugin to load .env file before run
+RUN poetry self add poetry-plugin-dotenv
 
 # Cache all packages
 # The goal here is to cache all packages in the docker image, so setup is fast
