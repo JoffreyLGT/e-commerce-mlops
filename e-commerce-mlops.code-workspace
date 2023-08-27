@@ -90,7 +90,6 @@
 		"[jsonc]": {
 			"editor.defaultFormatter": "vscode.json-language-features"
 		},
-		"evenBetterToml.formatter.reorderKeys": true,
 		"autoDocstring.docstringFormat": "google-notypes",
 		"sqltools.connections": [
 			{
