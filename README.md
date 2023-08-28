@@ -14,14 +14,14 @@ API permettant de prédire la catégorie d'un produit en fonction de sa désigna
 ## Structure du projet
 
 ```txt
-E-COMMERCE-MLOPS/  
+E-COMMERCE-MLOPS/
 ├─ .devcontainer/ : fichiers du conteneur de dev
-├─ .github/workflow/ : Github Actions  
+├─ .github/workflow/ : Github Actions
 ├─ .vscode/tasks.json : tâches du project global
 ├─ backend/ : API de prédiction (sous-projet)
 ├─ datascience/ : MLOPS via MLFlow (sous-projet)
-├─ frontend/ : placeholder pour une éventuelle application WEB pour interagir avec l'API  
-├─ scripts/ : liste des scripts globaux du projet 
+├─ frontend/ : placeholder pour une éventuelle application WEB pour interagir avec l'API
+├─ scripts/ : liste des scripts globaux du projet
 │ ├─ ressources/ : contient les ressources nécessaires aux scripts
 │ ├─ tests/ : sous-scripts utilisés par `run-tests.sh`
 ├─ .env : définition des variables d'environnement
@@ -79,6 +79,8 @@ Mise en place :
     ./scripts/environment-setup.sh
     ```
 
+7. Installer les [extensions recommandées dans le workspace.](#extensions)
+
 ### Conteneur de développement
 
 Utilisation d'un conteneur Docker possédant tous les outils de développement.
@@ -104,21 +106,13 @@ Une fois les prérequis installées, veuillez-suivre les étapes suivantes :
 
 La fenêtre de VSCode va se recharger et le conteneur de développement va se mettre en place.
 
-Les extensions VSCode peuvent afficher des notifications lors de leur installation, notamment Pylance indiquant que l'extension Python n'est pas détectée. Il faut simplement les fermer sans les prendre en compte.
+Les [extensions recommandées dans le workspace](#extensions) sont installées automatiquement. Cependant, VSCode peut afficher des notifications lors de leur installation, notamment Pylance indiquant que l'extension Python n'est pas détectée. Il faut simplement les fermer sans les prendre en compte.
 
-### Comment tester le projet sur d'autres architectures
+### Extensions
 
-Nous utilisons principalement des machines ARM (Apple Silicon) pour le développement du projet.
-Afin de pouvoir tester sur des machines de type AMD64, nous utilisons le conteneur de développement.
+Le workspace contient une liste d'extensions recommandées. Pour les installer, ouvrir la Command Palette (`CMD + Shift + p` ou via le menu `View > Command Palette...`) et rechercher `Extensions: Show Recommended Extensions`.
 
-Pour cela, il faut :
-
-- Ouvrir le fichier [.devcontainer/Dockerfile](.devcontainer/Dockerfile)
-- Modifier la première ligne pour y ajouter `--platform=linux/amd64` comme ceci :
-
-    ```dockerfile
-    FROM --platform=linux/amd64 mcr.microsoft.com/devcontainers/python:1-3.11-bullseye
-    ```
+Sur la ligne `WORKSPACE RECOMMENDATION`, cliquer sur `Install workspace Recommended Extensions`.
 
 ## Questions et réponses
 
@@ -177,6 +171,20 @@ docker system prune -a --volumes
     # Add your values after
     ```
 
+### Comment tester le projet sur d'autres architectures
+
+Nous utilisons principalement des machines ARM (Apple Silicon) pour le développement du projet.
+Afin de pouvoir tester sur des machines de type AMD64, nous utilisons le conteneur de développement.
+
+Pour cela, il faut :
+
+- Ouvrir le fichier [.devcontainer/Dockerfile](.devcontainer/Dockerfile)
+- Modifier la première ligne pour y ajouter `--platform=linux/amd64` comme ceci :
+
+    ```dockerfile
+    FROM --platform=linux/amd64 mcr.microsoft.com/devcontainers/python:1-3.11-bullseye
+    ```
+
 ## Information sur les projets
 
 Un workspace VSCode est mis à disposition à la racine du projet sous le nom *[e-commerce-mlops.code-workspace](e-commerce-mlops.code-workspace)*. **Il est fortement recommandé de l'utiliser.**
@@ -219,7 +227,7 @@ Le lancement de l'API en mode développement sur le conteneur se fait avec le sc
 ./scripts/start-reload.sh
 ```
 
-VSCode s'occupe automatiquement de la redirection du port 8000.  
+VSCode s'occupe automatiquement de la redirection du port 8000.
 Ouvrir l’adresse ci-dessous dans un navigateur Web sur la machine hôte pour afficher la documentation :
 
 <http://localhost:8000/docs>
@@ -279,7 +287,7 @@ Les tâches ci-dessous sont disponibles :
 
 1. Création du modèle SQLAlchemy
 
-    Créer un nouveau fichier `{{tableobjet}}.py` dans le dossier`/app/models`.  
+    Créer un nouveau fichier `{{tableobjet}}.py` dans le dossier`/app/models`.
     Définir la classe en utilisant SQLAlchemy et en la faisant hériter de la classe`app.database.base_class.Base`.
 
     Importer la classe dans le fichier `/app/models/__init__.py`. Cela permet d'avoir une meilleure syntaxe d'import dans les autres fichiers.
@@ -402,7 +410,7 @@ L'extension autoDocstring, intégrée au dev container, permet de générer les 
 
 Les configurations, incluant les règles activées, se trouvent dans le fichier des configuration Ruff : [`ruff.toml`](ruff.toml).
 
-Certaines recommandations peuvent être érronées. Pour les désactiver, consulter la page  [Ruff error suppression](https://beta.ruff.rs/docs/configuration/#error-suppression).  
+Certaines recommandations peuvent être érronées. Pour les désactiver, consulter la page  [Ruff error suppression](https://beta.ruff.rs/docs/configuration/#error-suppression).
 
 Il est recommandé d'ajouter un message pour expliquer pourquoi la règle est désactivée.
 
