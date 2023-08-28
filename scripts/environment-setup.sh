@@ -10,26 +10,31 @@ root_dir="$(dirname "$current_dir")"
 # Get current user name
 user="$(id -un)"
 
-echo "Do you want to install git pre-commit hooks? Using worktrees with them will generate errors."
-while read -n1 -p " [y]es | [n]o | [q]uit : "; do
-    if [[ $REPLY == q ]]; then
-        exit 1
-    fi
-    if [[ $REPLY == y ]]; then
-        echo " -> Install mookme and setup Git hooks"
-        npm install
-        npx mookme init --only-hook --skip-types-selection
-        cd $root_dir/.git/hooks
-        ls | grep -Ev "(\.sample|pre-commit)$" | xargs rm
-        break
-    fi
-    if [[ $REPLY == n ]]; then
-        echo " -> Remove Git hooks"
-        rm -f $root_dir/.git/hooks/*
-        break
-    fi
-    echo " -> Invalid answer, only "y", "n" and "q" are allowed."
-done
+if [[ "$(pwd)" == "$(dirname "$(git rev-parse --path-format=absolute --git-dir)")" ]]; then
+    echo "Do you want to install git pre-commit hooks? Using worktrees with them will generate errors."
+    while read -n1 -p " [y]es | [n]o | [q]uit : "; do
+        if [[ $REPLY == q ]]; then
+            exit 1
+        fi
+        if [[ $REPLY == y ]]; then
+            echo " -> Install mookme and setup Git hooks"
+            npm install
+            npx mookme init --only-hook --skip-types-selection
+            cd "$(git rev-parse --path-format=absolute --git-common-dir)"/hooks
+            ls | grep -Ev "(\.sample|pre-commit)$" | xargs rm -v -f
+            break
+        fi
+        if [[ $REPLY == n ]]; then
+            echo " -> Remove Git hooks"
+            rm -v -f "$(git rev-parse --path-format=absolute --git-common-dir)"/hooks/*
+            break
+        fi
+        echo " -> Invalid answer, only "y", "n" and "q" are allowed."
+    done
+else
+    echo "In a git worktree, remove Git hooks to avoid issues."
+    rm -v -f "$(git rev-parse --path-format=absolute --git-common-dir)"/hooks/*
+fi
 
 echo "Install poetry-plugin-dotenv to load .env on run"
 poetry self add poetry-plugin-dotenv
