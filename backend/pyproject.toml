@@ -1,13 +1,17 @@
+#:schema https://json.schemastore.org/pyproject.json
+
 [tool.poetry]
 name = "backend"
-version = "0.1.0"
+version = "1.0.0"
 description = "API to predict a product category"
-authors = [
-    "Joffrey Lagut <j.lagut@live.fr>",
-    "Landry <landry@test.com>",
-    "Arnaud <arnaud@test.com>",
-]
-readme = "README.md"
+authors = ["Joffrey Lagut <j.lagut@live.fr>"]
+readme = "../README.md"
+license = "MIT"
+repository = "https://github.com/JoffreyLGT/e-commerce-mlops"
+documentation = "https://github.com/JoffreyLGT/e-commerce-mlops#readme"
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/JoffreyLGT/e-commerce-mlops/issues"
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.12"
