@@ -47,7 +47,6 @@
 		},
 		"terminal.integrated.defaultProfile.linux": "zsh",
 		"python.languageServer": "Pylance",
-		"python.envFile": "${workspaceFolder}/.env",
 		"python.terminal.activateEnvInCurrentTerminal": true,
 		"python.analysis.diagnosticMode": "openFilesOnly",
 		"python.analysis.typeCheckingMode": "basic",

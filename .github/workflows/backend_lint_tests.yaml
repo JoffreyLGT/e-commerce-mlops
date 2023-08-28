@@ -1,5 +1,5 @@
 name: "Backend: static code analysis and testing"
-on: 
+on:
   workflow_dispatch:
   pull_request:
 
@@ -42,7 +42,7 @@ jobs:
     - name: Run linter
       working-directory: ${{env.working-directory}}
       if: always()
-      run: poetry run scripts/lint.sh
+      run: poetry run python -m scripts.code_checking
 
   unit-tests:
     name: Run unit tests
@@ -64,7 +64,7 @@ jobs:
     steps:
     - name: Check out repository code
       uses: actions/checkout@v3
-      
+
     - name: Import environment variables from ./backend/.env
       uses: falti/dotenv-action@v1.0.4
       with:
@@ -105,7 +105,7 @@ jobs:
         key: -${{ hashFiles('./backend/scripts/download_models.py') }}
     - name: Download saved models
       if: steps.cache-models.outputs.cache-hit != 'true'
-      run: poetry run python scripts/download_models.py 
+      run: poetry run python scripts/download_models.py
       working-directory: ${{env.working-directory}}
 
     - name: Run unit tests
