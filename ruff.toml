@@ -34,6 +34,8 @@ select = [
 # Allow autofix for all enabled rules (when `--fix`) is provided.
 fixable = ["ALL"]
 unfixable = []
+# pyproject.toml must be included to load configuration
+include = ["app/*.py", "scripts/*.py", "**/pyproject.toml"]
 
 # Exclude a variety of commonly ignored directories.
 exclude = [
@@ -62,6 +64,7 @@ exclude = [
     "**/.pytest_cache",
     "**/__pycache__",
     "/usr/local/lib/**",
+    "/opt/homebrew/Cellar/**",
 ]
 
 # Allow unused variables when underscore-prefixed.
