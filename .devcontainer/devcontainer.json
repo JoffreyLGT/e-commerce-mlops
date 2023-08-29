@@ -37,8 +37,7 @@
 			"settings": {
 				"task.allowAutomaticTasks": "on",
 				"terminal.integrated.defaultProfile.linux": "zsh",
-				"python.analysis.downloadStubs": true,
-				"python.envFile": "/workspaces/.env",
+				"python.analysis.downloadStubs": true
 			}
 		}
 	},
@@ -49,8 +48,6 @@
 		8000
 	],
 	"features": {
-		// NodeJs
-		"ghcr.io/devcontainers/features/node:1": {},
 		// DirEnv to automatically load .env files
 		"ghcr.io/christophermacgown/devcontainer-features/direnv:1": {}
 	}
