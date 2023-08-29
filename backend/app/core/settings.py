@@ -90,10 +90,14 @@ class Settings(BaseSettings):
     # https://github.com/JoffreyLGT/e-commerce-mlops/issues/68
     MODEL_VERSION: str = "1.0"
 
+    # Defined as ENV variable on Github Actions. Used for specific conditions.
+    IS_GH_ACTION: bool = False
+
     class Config:
         """Pydantic configuration."""
 
-        case_sensitive = True
+        env_file = ".env"
+        case_sensitive = False
 
 
 def _get_backend_dir() -> str:

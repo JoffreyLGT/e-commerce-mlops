@@ -10,13 +10,13 @@ backend_dir=$(dirname $script_dir)
 cd $backend_dir
 
 # Let the DB start
-poetry run python scripts/backend_pre_start.py
+poetry run python -m scripts.backend_pre_start
 
 # Run migrations
 poetry run alembic upgrade head
 
 # Create initial data in DB
-poetry run python scripts/seed_data.py
+poetry run python -m scripts.seed_data
 
 # Download model saves
-poetry run python scripts/download_models.py
+poetry run python -m scripts.download_models

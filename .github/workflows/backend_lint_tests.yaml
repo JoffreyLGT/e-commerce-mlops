@@ -1,5 +1,5 @@
 name: "Backend: static code analysis and testing"
-on: 
+on:
   workflow_dispatch:
   pull_request:
 
@@ -9,40 +9,38 @@ jobs:
     runs-on: ubuntu-latest
     environment: development
     env:
-      working-directory: ./backend
+      working-directory: backend
     steps:
+
     - name: Check out repository code
       uses: actions/checkout@v3
-
     - name: Setup Python
       uses: actions/setup-python@v4
+      id: setup-python
       with:
         python-version: '3.11'
-    - name: Set PYTHONPATH
-      run: echo "PYTHONPATH=./" >> "$GITHUB_ENV"
-      working-directory: ${{env.working-directory}}
 
     - name: Install poetry
-      uses: abatilo/actions-poetry@v2
-    - name: Setup a local virtual environment (.venv)
-      run: |
-        poetry config virtualenvs.create true --local
-        poetry config virtualenvs.in-project true --local
-      working-directory: ${{env.working-directory}}
+      uses: snok/install-poetry@v1
+      with:
+        version: latest
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+
     - uses: actions/cache@v3
       name: Define a cache for the virtual environment based on the dependencies lock file
       with:
         path: ${{env.working-directory}}/.venv
-        key: venv-${{ hashFiles('poetry.lock') }}
+        key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles(format('{0}/poetry.lock', env.working-directory )) }}
 
     - name: Install the project dependencies
-      run: poetry install
+      run: poetry install --no-root --no-directory
       working-directory: ${{env.working-directory}}
 
     - name: Run linter
       working-directory: ${{env.working-directory}}
-      if: always()
-      run: poetry run scripts/lint.sh
+      if: success()
+      run: pwd && poetry run python -m scripts.code_checking
 
   unit-tests:
     name: Run unit tests
@@ -64,36 +62,27 @@ jobs:
     steps:
     - name: Check out repository code
       uses: actions/checkout@v3
-      
-    - name: Import environment variables from ./backend/.env
-      uses: falti/dotenv-action@v1.0.4
-      with:
-        export-variables: true
-        keys-case: bypass
-
     - name: Setup Python
       uses: actions/setup-python@v4
+      id: setup-python
       with:
         python-version: '3.11'
-    - name: Set PYTHONPATH
-      run: echo "PYTHONPATH=./" >> "$GITHUB_ENV"
-      working-directory: ${{env.working-directory}}
 
     - name: Install poetry
-      uses: abatilo/actions-poetry@v2
-    - name: Setup a local virtual environment (.venv)
-      run: |
-        poetry config virtualenvs.create true --local
-        poetry config virtualenvs.in-project true --local
-      working-directory: ${{env.working-directory}}
-      # Changes in poetry.lock triggers a cache refresh
+      uses: snok/install-poetry@v1
+      with:
+        version: latest
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+
     - uses: actions/cache@v3
       name: Define a cache for the virtual environment based on the dependencies lock file
       with:
         path: ${{env.working-directory}}/.venv
-        key: venv-${{ hashFiles('poetry.lock') }}
+        key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles(format('{0}/poetry.lock', env.working-directory )) }}
+
     - name: Install the project dependencies
-      run: poetry install
+      run: poetry install --no-root --no-directory
       working-directory: ${{env.working-directory}}
 
     - name: Cache saved models
@@ -102,10 +91,11 @@ jobs:
       with:
         path: ${{env.working-directory}}/data
         # Editing the script to download the model saves triggers a cache refresh
-        key: -${{ hashFiles('./backend/scripts/download_models.py') }}
+        key: models-${{ hashFiles('./backend/scripts/download_models.py') }}
+
     - name: Download saved models
       if: steps.cache-models.outputs.cache-hit != 'true'
-      run: poetry run python scripts/download_models.py 
+      run: poetry run python -m scripts.download_models
       working-directory: ${{env.working-directory}}
 
     - name: Run unit tests

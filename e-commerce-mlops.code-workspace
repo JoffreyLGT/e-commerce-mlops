@@ -47,7 +47,6 @@
 		},
 		"terminal.integrated.defaultProfile.linux": "zsh",
 		"python.languageServer": "Pylance",
-		"python.envFile": "${workspaceFolder}/.env",
 		"python.terminal.activateEnvInCurrentTerminal": true,
 		"python.analysis.diagnosticMode": "openFilesOnly",
 		"python.analysis.typeCheckingMode": "basic",
@@ -104,7 +103,7 @@
 			}
 		],
 		"workbench.iconTheme": "vscode-icons",
-		"mypy-type-checker.importStrategy": "fromEnvironment",
+		"mypy-type-checker.importStrategy": "useBundled",
 		"files.trimTrailingWhitespace": true,
 		"files.insertFinalNewline": true,
 	},

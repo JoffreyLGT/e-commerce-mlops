@@ -9,7 +9,7 @@ tests/start-containers.sh
 
 cd $current_dir
 docker compose -f tests/docker-stack.yaml up -d
-docker compose -f tests/docker-stack.yaml exec -T api bash scripts/lint.sh
+docker compose -f tests/docker-stack.yaml exec -T api bash poetry run python -m scripts.code_checking
 docker compose -f tests/docker-stack.yaml exec -T api bash scripts/start-tests.sh
 
 tests/stop-containers.sh
