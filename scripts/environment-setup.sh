@@ -75,6 +75,9 @@ else
     echo "Done"
 fi
 
+echo "Remove existing Git hooks"
+rm -v -f "$(git rev-parse --path-format=absolute --git-common-dir)"/hooks/*
+
 echo "Install pre-commit hooks"
 cd $root_dir
 poetry run pre-commit install

@@ -209,7 +209,9 @@ Attention, certains fichiers sont référencés comme symlinks dans les sous-pro
 Les tâches ci-dessous sont disponibles :
 | Nom       | Description                |
 | --        | --                            |
-| Run pre-commit hooks  | Permet de lancer les hooks de pre-commit sans avoir à faire de commit.          |
+| Run all Git hooks  | Permet de lancer tous les hook Git sans faire d'action Git.          |
+| Run Git pre-commit hooks  | Permet de lancer les hook git de pre-commit sans avoir à faire de commit.          |
+| Run Git pre-push hooks  | Permet de lancer les hook Git de pre-push sans avoir à faire de commit.          |
 
 #### Questions et réponses (root)
 
@@ -257,16 +259,13 @@ poetry run ./scripts/start-tests.sh
 
 #### Git hook
 
-Les hooks sont génétés automatiquement dans le dossier [.git/hooks](.git/hooks/) par l'utilitaire [Mookme](https://mookme.org) lors de l'exécution de [scripts/environment-setup.sh](scripts/environment-setup.sh).
+Les hook sont générés automatiquement dans le dossier [.git/hooks](.git/hooks/) par l'utilitaire [pre-commit](https://pre-commit.com) lors de l'exécution de [scripts/environment-setup.sh](scripts/environment-setup.sh).
+Ceux-ci ont été sélectionnés pour être rapides et le moins intrusifs possible pour ne pas géner le workflow des développeurs.
 
-##### Pré-commit
+Le projet en utilise deux types :
 
-| Nom | Règle | Description |
-| -- | -- | -- |
-| Ruff linter | **/*.py | Lance Ruff sur les fichiers Python modifiés dans le commit. |
-| Black formatter | **/*.py | Lance Black en mode vérification pour s'assurer que les fichier Python modifiés dans le commit sont correctement formattés. |
-| Mypy type checker | **/*.py | Lance Mypy sur les fichiers Python modifiés dans le commit pour vérifier que les types sont respectés. |
-| Pytest tests | app/*.py | Exécute tous les tests unitaires lorsqu'un fichier Python est modifié dans le dossier app.
+- pre-commit : principalement le formatage des fichiers et des vérifications statiques.
+- pre-push : analyse de code statique.
 
 #### VSCode Tasks (backend)
 
