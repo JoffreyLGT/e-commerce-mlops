@@ -13,4 +13,4 @@ set -e
 # Run prestart.sh to create DB
 scripts/prestart.sh
 # Start tests
-poetry run pytest $backend_dir/app/tests --disable-warnings -q
+poetry run pytest $backend_dir/app/tests --disable-warnings
