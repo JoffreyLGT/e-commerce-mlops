@@ -96,7 +96,8 @@ class Settings(BaseSettings):
     class Config:
         """Pydantic configuration."""
 
-        case_sensitive = True
+        env_file = ".env"
+        case_sensitive = False
 
 
 def _get_backend_dir() -> str:

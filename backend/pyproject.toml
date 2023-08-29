@@ -66,6 +66,7 @@ opentelemetry-instrumentation-system-metrics = "^0.40b0"
 opentelemetry-instrumentation-tornado = "^0.40b0"
 opentelemetry-instrumentation-tortoiseorm = "^0.40b0"
 opentelemetry-instrumentation-urllib3 = "^0.40b0"
+pydantic = {version = "*", extras = ["dotenv"]}
 
 
 [tool.poetry.group.dev.dependencies]
