@@ -11,19 +11,19 @@
             "label": "Run Git pre-commit hooks",
             "detail": "Run hooks without doing a git commit.",
             "type": "shell",
-            "command": "poetry run pre-commit run --hook-stage pre-commit"
+            "command": "poetry run pre-commit run --hook-stage pre-commit --verbose"
         },
         {
             "label": "Run Git pre-push hooks",
             "detail": "Run hooks without doing a git push.",
             "type": "shell",
-            "command": "poetry run pre-commit run --hook-stage pre-push"
+            "command": "poetry run pre-commit run --hook-stage pre-push --verbose"
         },
         {
             "label": "Run all Git hooks",
             "detail": "Run all Git hooks without any action.",
             "type": "shell",
-            "command": "poetry run pre-commit run"
+            "command": "poetry run pre-commit run --hook-stage pre-commit --hook-stage pre-push --verbose"
         }
     ]
 }
