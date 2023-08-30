@@ -1,6 +1,6 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
-default_install_hook_types: [pre-commit, pre-push]
+default_install_hook_types: [pre-commit, pre-push, commit-msg]
 default_stages:
   - pre-commit
 default_language_version:
@@ -24,6 +24,11 @@ repos:
   - id: check-yaml
     stages: [pre-push]
   - id: check-added-large-files
+- repo: https://github.com/compilerla/conventional-pre-commit
+  rev: v2.4.0
+  hooks:
+  - id: conventional-pre-commit
+    stages: [commit-msg]
 - repo: local
   hooks:
   - id: codecheck-backend

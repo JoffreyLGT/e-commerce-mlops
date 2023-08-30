@@ -33,6 +33,7 @@
 			"DavidAnson.vscode-markdownlint", // Markdown linter
 			"aaron-bond.better-comments", // Set colored comments
 			"vscode-icons-team.vscode-icons", // Display icon next to files depending on type
+			"vivaxy.vscode-conventional-commits" // Commit message helper
 		]
 	},
 	"settings": {
@@ -107,5 +108,14 @@
 		"files.trimTrailingWhitespace": true,
 		"files.insertFinalNewline": true,
 		"git.allowNoVerifyCommit": true,
+		"git.branchProtection": [
+			"main"
+		],
+		"conventionalCommits.scopes": [
+			"all",
+			"backend",
+			"datascience"
+		],
+		"conventionalCommits.autoCommit": false,
 	},
 }
