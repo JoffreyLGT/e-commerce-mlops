@@ -13,26 +13,27 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"njpwerner.autodocstring", // To generate docstrings easily
-				"ms-python.python", // Python support
-				"ms-python.vscode-pylance", // Python LSP
-				"ms-python.black-formatter", // Python formatter
-				"ms-python.mypy-type-checker", // Python type checker
-				"charliermarsh.ruff", // Python linter
-				"ms-vscode-remote.remote-containers", // To use dev container
-				"IronGeek.vscode-env", // .ENV files formatter
-				"tamasfe.even-better-toml", // TOML LSP and formater
-				"bierner.github-markdown-preview", // Markdown flavor of Github
-				"GitHub.vscode-pull-request-github", // Manage GH directly in VSCode
-				"eamodio.gitlens", // Manage git repo
-				"foxundermoon.shell-format", // Shell file formatter
-				"mtxr.sqltools", // Open and do request on DB
-				"mtxr.sqltools-driver-pg", // Driver for PostgreSQL
-				"Gruntfuggly.todo-tree", // See all TODO in project
-				"redhat.vscode-yaml", // YAML LSP
-				"DavidAnson.vscode-markdownlint", // Markdown linter
-				"aaron-bond.better-comments", // Set colored comments
-				"vscode-icons-team.vscode-icons", // Display icon next to files depending on type
+				"njpwerner.autodocstring",
+				"ms-python.python",
+				"ms-python.vscode-pylance",
+				"ms-python.black-formatter",
+				"ms-python.mypy-type-checker",
+				"charliermarsh.ruff",
+				"ms-vscode-remote.remote-containers",
+				"IronGeek.vscode-env",
+				"tamasfe.even-better-toml",
+				"bierner.github-markdown-preview",
+				"GitHub.vscode-pull-request-github",
+				"eamodio.gitlens",
+				"foxundermoon.shell-format",
+				"mtxr.sqltools",
+				"mtxr.sqltools-driver-pg",
+				"Gruntfuggly.todo-tree",
+				"redhat.vscode-yaml",
+				"DavidAnson.vscode-markdownlint",
+				"aaron-bond.better-comments",
+				"vscode-icons-team.vscode-icons",
+				"vivaxy.vscode-conventional-commits"
 			],
 			"settings": {
 				"task.allowAutomaticTasks": "on",
