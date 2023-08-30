@@ -15,7 +15,7 @@ RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTO
 COPY --chown=vscode .devcontainer/resources/.p10k.zsh $HOME/.p10k.zsh
 
 # ZSH plugins
-RUN git clone https://github.com/k-sriram/zsh-auto-venv ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-auto-venv --depth=1 \ 
+RUN git clone https://github.com/k-sriram/zsh-auto-venv ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-auto-venv --depth=1 \
     && git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions \
     && git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
 
