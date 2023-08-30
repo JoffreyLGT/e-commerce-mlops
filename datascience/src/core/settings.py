@@ -6,9 +6,9 @@ add them in _ConstantSettings.
 Note: important variable must have a validator using pydantic.
 """
 import logging
-import os
 from functools import lru_cache
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any, Literal
 
 from pydantic import BaseSettings, DirectoryPath, validator
@@ -22,36 +22,38 @@ class _ConstantSettings:
 
     # TODO @JoffreyLGT: Should we have a package handling configurations since they are common to all projects?
     # https://github.com/JoffreyLGT/e-commerce-mlops/issues/80
-    ROOT_DIR: DirectoryPath = Path(os.path.dirname(src.__file__)).parent
-    CATEGORIES_DIC = {
-        10: "Livre",
-        1140: "Figurine et produits dérivés",
-        1160: "Carte à collectionner",
-        1180: "Univers fantastiques",
-        1280: "Jouet pour enfant",
-        1281: "Jeu de société",
-        1300: "Miniature de collection",
-        1301: "Loisir",
-        1302: "Activité d'extérieur",
-        1320: "Accessoire bébé",
-        1560: "Meuble d'intérieur",
-        1920: "Litterie, rideaux",
-        1940: "Epicerie",
-        2060: "Décoration d'intérieur",
-        2220: "Accessoire animaux de compagnie",
-        2280: "Magazine et BD",
-        2403: "Livres anciens",
-        2462: "Jeu vidéo - Pack",
-        2522: "Fourniture de bureau",
-        2582: "Meubles extérieur",
-        2583: "Piscine",
-        2585: "Bricolage",
-        2705: "Livre",
-        2905: "Jeu vidéo - Jeu",
-        40: "Jeu vidéo - Jeu",
-        50: "Jeu vidéo - Accessoire",
-        60: "Jeu vidéo - Console",
-    }
+    ROOT_DIR: DirectoryPath = Path(Path(src.__file__).parent).parent
+    CATEGORIES_DIC = MappingProxyType(
+        {
+            10: "Livre",
+            1140: "Figurine et produits dérivés",
+            1160: "Carte à collectionner",
+            1180: "Univers fantastiques",
+            1280: "Jouet pour enfant",
+            1281: "Jeu de société",
+            1300: "Miniature de collection",
+            1301: "Loisir",
+            1302: "Activité d'extérieur",
+            1320: "Accessoire bébé",
+            1560: "Meuble d'intérieur",
+            1920: "Litterie, rideaux",
+            1940: "Epicerie",
+            2060: "Décoration d'intérieur",
+            2220: "Accessoire animaux de compagnie",
+            2280: "Magazine et BD",
+            2403: "Livres anciens",
+            2462: "Jeu vidéo - Pack",
+            2522: "Fourniture de bureau",
+            2582: "Meubles extérieur",
+            2583: "Piscine",
+            2585: "Bricolage",
+            2705: "Livre",
+            2905: "Jeu vidéo - Jeu",
+            40: "Jeu vidéo - Jeu",
+            50: "Jeu vidéo - Accessoire",
+            60: "Jeu vidéo - Console",
+        }
+    )
 
 
 class _CommonSettings(BaseSettings, _ConstantSettings):
@@ -64,14 +66,21 @@ class _CommonSettings(BaseSettings, _ConstantSettings):
     LOGS_DIR: str = "logs"
 
     @validator("LOGS_DIR")
-    def create_log_dir(cls, path: str) -> DirectoryPath:
+    def create_log_dir(
+        cls,  # noqa: N805 false positive, first argument must be cls for validator
+        path: str,
+    ) -> DirectoryPath:
         """Ensure the directory contains the necessary values."""
-        full_path: str
-        full_path = path if os.path.isabs(path) else os.path.join(cls.ROOT_DIR, path)
-        os.makedirs(full_path, exist_ok=True)
-        return Path(full_path)
+        full_path: Path = (
+            Path(path) if Path(path).is_absolute() else Path(cls.ROOT_DIR) / path
+        )
+        full_path.mkdir(parents=True, exist_ok=True)
+        return full_path
 
     LOGS_FILE_NAME: str = "datascience.log.json"
+
+    # Defined as ENV variable on Github Actions. Used for specific conditions.
+    IS_GH_ACTION: bool = False
 
     class Config:
         """Pydantic configuration."""
@@ -94,7 +103,10 @@ class _DatasetSettings(BaseSettings, _ConstantSettings):
     ORIGINAL_DATA_DIR: DirectoryPath | None = None
 
     @validator("ORIGINAL_DATA_DIR")
-    def must_contain_data(cls, path: DirectoryPath | None) -> str | None:
+    def must_contain_data(
+        cls,  # noqa: N805 false positive, first argument must be cls for validator
+        path: DirectoryPath | None,
+    ) -> str | None:
         """Ensure the directory contains the necessary values."""
         logger = logging.getLogger(__name__)
 
@@ -113,11 +125,11 @@ ORIGINAL_DATA_DIR
             return None
 
         full_path: str
-        if os.path.isabs(path):
+        if Path(path).is_absolute():
             logger.info("ORIGINAL_DATA_DIR is an absolute path.")
             full_path = str(path)
         else:
-            full_path = os.path.join(cls.ROOT_DIR, path)
+            full_path = str(Path(cls.ROOT_DIR) / path)
             logger.info(
                 "ORIGINAL_DATA_DIR is a relative path. "
                 + f"Therefore, its absolute path is {full_path}."
@@ -138,7 +150,11 @@ ORIGINAL_DATA_DIR
     REMAINING_DATA_DIR: str | None = None
 
     @validator("REMAINING_DATA_DIR")
-    def create_if_possible(cls, path: str | None, values: dict[str, Any]) -> str | None:
+    def create_if_possible(
+        cls,  # noqa: N805 false positive, first argument must be cls for validator
+        path: str | None,
+        values: dict[str, Any],
+    ) -> str | None:
         """Ensure the directory is created."""
         logger = logging.getLogger(__name__)
         full_path: str
@@ -148,15 +164,15 @@ ORIGINAL_DATA_DIR
                     "REMAINING_DATA_DIR and ORIGINAL_DATA_DIR are not defined."
                 )
                 return None
-            else:
-                parent = Path(values["ORIGINAL_DATA_DIR"]).parent
-                full_path = os.path.join(parent, "_remaining")
-                logger.info(
-                    f"REMAINING_DATA_DIR not defined, create it in the parent folder of ORIGINAL_DATA_DIR: {full_path}."  # noqa: E501
-                )
+
+            parent = Path(values["ORIGINAL_DATA_DIR"]).parent
+            full_path = str(Path(parent) / "_remaining")
+            logger.info(
+                f"REMAINING_DATA_DIR not defined, create it in the parent folder of ORIGINAL_DATA_DIR: {full_path}."  # noqa: E501
+            )
         else:
             full_path = path
-        os.makedirs(full_path, exist_ok=True)
+        Path(full_path).mkdir(parents=True, exist_ok=True)
         return full_path
 
 

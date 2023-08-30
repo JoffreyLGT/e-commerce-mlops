@@ -1,8 +1,8 @@
 """Logging configurations."""
 
-import os
 import sys
 from logging import config
+from pathlib import Path
 
 from src.core.settings import get_common_settings
 
@@ -33,7 +33,7 @@ logging_config = {
             "level": f'{"DEBUG" if TARGET_ENV == "development" else "INFO"}',
             "class": "logging.handlers.TimedRotatingFileHandler",
             "formatter": "json",
-            "filename": os.path.join(settings.LOGS_DIR, settings.LOGS_FILE_NAME),
+            "filename": str(Path(settings.LOGS_DIR) / settings.LOGS_FILE_NAME),
             "encoding": "utf-8",
             "when": "midnight",
             "interval": 1,

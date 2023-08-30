@@ -2,7 +2,6 @@
 
 
 import logging
-import os
 from pathlib import Path
 
 import pandas as pd
@@ -23,8 +22,8 @@ def load_dataset(datadir: DirectoryPath) -> tuple[pd.DataFrame, pd.DataFrame]:
         (features, target) with the content of the dataset.
     """  # noqa: E501
     return (
-        pd.read_csv(f"{datadir}/X.csv", index_col=0),  # type: ignore
-        pd.read_csv(f"{datadir}/y.csv", index_col=0),  # type: ignore
+        pd.read_csv(f"{datadir}/X.csv", index_col=0),
+        pd.read_csv(f"{datadir}/y.csv", index_col=0),
     )
 
 
@@ -38,11 +37,11 @@ def get_dataset_missing_files(path: str) -> list[str]:
     - images directory.
     """
     missing_files: list[str] = []
-    if not os.path.isfile(f"{path}/X.csv"):
+    if not Path(f"{path}/X.csv").is_file():
         missing_files.append("X.csv")
-    if not os.path.isfile(f"{path}/y.csv"):
+    if not Path(f"{path}/y.csv").is_file():
         missing_files.append("y.csv")
-    if not os.path.isdir(f"{path}/images"):
+    if not Path(f"{path}/images").is_dir():
         missing_files.append("images")
     return missing_files
 
@@ -68,10 +67,10 @@ def get_remaining_dataset_path() -> Path:
 
     settings = get_dataset_settings()
     if settings.REMAINING_DATA_DIR is None:
-        raise MissingEnvironmentVariableError("REMAINING_DATA_DIR must be defined!")
+        raise MissingEnvironmentVariableError("REMAINING_DATA_DIR")
 
     # Create the directory if it doesn't exist
-    os.makedirs(settings.REMAINING_DATA_DIR, exist_ok=True)
+    Path(settings.REMAINING_DATA_DIR).mkdir(parents=True, exist_ok=True)
     if len(get_dataset_missing_files(settings.REMAINING_DATA_DIR)) > 0:
         if (
             settings.ORIGINAL_DATA_DIR is not None
@@ -82,7 +81,7 @@ def get_remaining_dataset_path() -> Path:
             )
             return Path(settings.ORIGINAL_DATA_DIR)
 
-        raise MissingDataError(
+        raise MissingDataError(  # noqa: TRY003
             f"Data missing in REMAINING_DATA_DIR ({settings.REMAINING_DATA_DIR}) and ORIGINAL_DATA_DIR ({settings.ORIGINAL_DATA_DIR})."  # noqa: E501
         )
 
