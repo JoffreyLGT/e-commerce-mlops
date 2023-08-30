@@ -13,27 +13,6 @@ user="$(id -un)"
 echo "Install poetry-plugin-dotenv to load .env on run"
 poetry self add poetry-plugin-dotenv
 
-echo "Setup root venv"
-root_venv=$root_dir/.venv
-# Check if root_venv exists and if RESET_VENV is true
-if [[ -d "$root_venv" && "$RESET_VENV" == "true" ]]; then
-    echo "RESET_VENV is set to true, delete root venv to recreate it."
-    rm -rf $root_venv
-elif [[ -d "$root_venv" && ! -e "$root_venv/$user" ]]; then
-    echo "root venv exists but was created by another user, delete it."
-    rm -rf $root_venv
-fi
-# Create the venv only if it doesn't exists.
-if [ -d "$root_venv" ]; then
-    echo "root venv already exists."
-else
-    echo "Setup root venv."
-    cd $root_dir
-    poetry install
-    touch "$root_venv/$user"
-    echo "Done"
-fi
-
 echo "Setup backend venv"
 backend_venv=$root_dir/backend/.venv
 # Check if backend_venv exists and if RESET_VENV is true
@@ -48,7 +27,6 @@ fi
 if [ -d "$backend_venv" ]; then
     echo "Backend venv already exists."
 else
-    echo "Setup backend venv."
     cd $root_dir/backend
     poetry install
     touch "$backend_venv/$user"
@@ -79,8 +57,12 @@ echo "Remove existing Git hooks"
 rm -v -f "$(git rev-parse --path-format=absolute --git-common-dir)"/hooks/*
 
 echo "Install pre-commit hooks"
-cd $root_dir
-poetry run pre-commit install
+if command -v pre-commit &>/dev/null; then
+    cd $root_dir
+    pre-commit install
+else
+    echo "pre-commit command not found. Please install it and execute pre-commit install."
+fi
 
 # Start DB container for local environment
 if [[ $IS_DEV_CONTAINER != "true" && $USE_DB_CONTAINER == "true" ]]; then

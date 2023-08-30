@@ -49,6 +49,7 @@
 	],
 	"features": {
 		// DirEnv to automatically load .env files
-		"ghcr.io/christophermacgown/devcontainer-features/direnv:1": {}
+		"ghcr.io/christophermacgown/devcontainer-features/direnv:1": {},
+		"ghcr.io/devcontainers-contrib/features/pre-commit:2": {}
 	}
 }
