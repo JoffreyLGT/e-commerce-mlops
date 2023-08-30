@@ -35,7 +35,7 @@ select = [
 fixable = ["ALL"]
 unfixable = []
 # pyproject.toml must be included to load configuration
-include = ["app/*.py", "scripts/*.py", "**/pyproject.toml"]
+include = ["app/*.py", "scripts/*.py", "**/pyproject.toml", "src/*.py"]
 
 # Exclude a variety of commonly ignored directories.
 exclude = [

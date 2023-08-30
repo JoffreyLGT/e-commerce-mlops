@@ -1327,6 +1327,21 @@ test = ["hypothesis (>=6.34.2)", "pytest (>=7.3.2)", "pytest-asyncio (>=0.17.0)"
 xml = ["lxml (>=4.6.3)"]
 
 [[package]]
+name = "pandas-stubs"
+version = "2.0.2.230605"
+description = "Type annotations for pandas"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pandas_stubs-2.0.2.230605-py3-none-any.whl", hash = "sha256:39106b602f3cb6dc5f728b84e1b32bde6ecf41ee34ee714c66228009609fbada"},
+    {file = "pandas_stubs-2.0.2.230605.tar.gz", hash = "sha256:624c7bb06d38145a44b61be459ccd19b038e0bf20364a025ecaab78fea65e858"},
+]
+
+[package.dependencies]
+numpy = ">=1.24.3"
+types-pytz = ">=2022.1.1"
+
+[[package]]
 name = "pathspec"
 version = "0.11.2"
 description = "Utility library for gitignore style pattern matching of file paths."
@@ -1636,6 +1651,17 @@ files = [
 
 [package.dependencies]
 six = ">=1.5"
+
+[[package]]
+name = "python-json-logger"
+version = "2.0.7"
+description = "A python library adding a json log formatter"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "python-json-logger-2.0.7.tar.gz", hash = "sha256:23e7ec02d34237c5aa1e29a070193a4ea87583bb4e7f8fd06d3de8264c4b2e1c"},
+    {file = "python_json_logger-2.0.7-py3-none-any.whl", hash = "sha256:f380b826a991ebbe3de4d897aeec42760035ac760345e57b812938dc8b35e2bd"},
+]
 
 [[package]]
 name = "pytz"
@@ -2325,6 +2351,43 @@ files = [
 ]
 
 [[package]]
+name = "types-protobuf"
+version = "4.24.0.1"
+description = "Typing stubs for protobuf"
+optional = false
+python-versions = "*"
+files = [
+    {file = "types-protobuf-4.24.0.1.tar.gz", hash = "sha256:90adea3b693d6a40d8ef075c58fe6b5cc6e01fe1496301a7e6fc70398dcff92e"},
+    {file = "types_protobuf-4.24.0.1-py3-none-any.whl", hash = "sha256:df203a204e4ae97d4cca4c9cf725262579dd7857a19f9e7fc74871ccfa073c01"},
+]
+
+[[package]]
+name = "types-pytz"
+version = "2023.3.0.1"
+description = "Typing stubs for pytz"
+optional = false
+python-versions = "*"
+files = [
+    {file = "types-pytz-2023.3.0.1.tar.gz", hash = "sha256:1a7b8d4aac70981cfa24478a41eadfcd96a087c986d6f150d77e3ceb3c2bdfab"},
+    {file = "types_pytz-2023.3.0.1-py3-none-any.whl", hash = "sha256:65152e872137926bb67a8fe6cc9cfd794365df86650c5d5fdc7b167b0f38892e"},
+]
+
+[[package]]
+name = "types-tensorflow"
+version = "2.12.0.7"
+description = "Typing stubs for tensorflow"
+optional = false
+python-versions = "*"
+files = [
+    {file = "types-tensorflow-2.12.0.7.tar.gz", hash = "sha256:de703593b3c87e3c89600f5670e0e3fc5fd4cd6aa724143399b45bf32cef479e"},
+    {file = "types_tensorflow-2.12.0.7-py3-none-any.whl", hash = "sha256:90eebca8ce48b694b4b9dfb084049c9ed931285575de33b2f50f5363511c8962"},
+]
+
+[package.dependencies]
+numpy = ">=1.20"
+types-protobuf = "*"
+
+[[package]]
 name = "typing-extensions"
 version = "4.5.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
@@ -2526,4 +2589,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
-content-hash = "bc8a28ff4cf0ec24e0c052d43970c334498cf13cf0c5eae13721ea202bece01d"
+content-hash = "740ccd5908215e413db966239cbb9d5f0525dc9afca4e61433b23b14b472c88c"
