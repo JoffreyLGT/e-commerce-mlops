@@ -7,6 +7,7 @@
 ![mypy](https://img.shields.io/badge/checked-mypy?label=mypy)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
 [![VS Code Container](https://img.shields.io/static/v1?label=VS+Code&message=Container&logo=visualstudiocode&color=007ACC&logoColor=007ACC&labelColor=2C2C32)](https://open.vscode.dev/JoffreyLGT/e-commerce-mlops)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
 
 API permettant de prédire la catégorie d'un produit en fonction de sa désignation, description et d'une image.
 
@@ -262,10 +263,11 @@ poetry run ./scripts/start-tests.sh
 Les hook sont générés automatiquement dans le dossier [.git/hooks](.git/hooks/) par l'utilitaire [pre-commit](https://pre-commit.com) lors de l'exécution de [scripts/environment-setup.sh](scripts/environment-setup.sh).
 Ceux-ci ont été sélectionnés pour être rapides et le moins intrusifs possible pour ne pas géner le workflow des développeurs.
 
-Le projet en utilise deux types :
+Le projet en utilise trois types :
 
 - pre-commit : principalement le formatage des fichiers et des vérifications statiques.
 - pre-push : analyse de code statique.
+- commit-msg : vérifie le message de commit pour s'assurer que celui-ci correspond à nos [standards.](#messages-de-commit)
 
 #### VSCode Tasks (backend)
 
