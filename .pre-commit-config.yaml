@@ -26,10 +26,17 @@ repos:
   - id: check-added-large-files
 - repo: local
   hooks:
-  - id: codecheck
+  - id: codecheck-backend
     language: system
     name: Code checking
     types: [file]
     files: 'backend/.*\.(py)$'
     entry: bash -c 'cd backend && poetry run python -m scripts.code_checking --fix'
+    stages: [pre-push]
+  - id: codecheck-datascience
+    language: system
+    name: Code checking
+    types: [file]
+    files: 'datascience/.*\.(py)$'
+    entry: bash -c 'cd datascience && poetry run python -m scripts.code_checking --fix'
     stages: [pre-push]
