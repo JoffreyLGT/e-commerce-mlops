@@ -21,7 +21,7 @@ services:
     restart: unless-stopped
     volumes:
       - postgres-data:/var/lib/postgresql/data
-    
+
     env_file:
       - .env
 
@@ -31,6 +31,6 @@ services:
 volumes:
   postgres-data:
 
-networks: 
-  default: 
+networks:
+  default:
     name: product-classification

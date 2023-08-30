@@ -106,5 +106,6 @@
 		"mypy-type-checker.importStrategy": "useBundled",
 		"files.trimTrailingWhitespace": true,
 		"files.insertFinalNewline": true,
+		"git.allowNoVerifyCommit": true,
 	},
 }

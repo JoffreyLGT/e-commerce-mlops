@@ -41,4 +41,3 @@ COPY ./backend/ ../mypy.ini /backend/
 COPY .env mypy.ini /backend/
 RUN chmod +x /backend/scripts/start-with-telemetry.sh
 CMD [ "./scripts/start-with-telemetry.sh" ]
-

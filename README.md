@@ -4,7 +4,8 @@
 [![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Linting: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-![Static Badge](https://img.shields.io/badge/checked-mypy?label=mypy)
+![mypy](https://img.shields.io/badge/checked-mypy?label=mypy)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
 [![VS Code Container](https://img.shields.io/static/v1?label=VS+Code&message=Container&logo=visualstudiocode&color=007ACC&logoColor=007ACC&labelColor=2C2C32)](https://open.vscode.dev/JoffreyLGT/e-commerce-mlops)
 
 API permettant de prédire la catégorie d'un produit en fonction de sa désignation, description et d'une image.
@@ -52,7 +53,7 @@ Prérequis :
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 - [Python 3.11](https://www.python.org/downloads/)
 - [Poetry](https://python-poetry.org/docs/#installing-with-pipx) (installation via [pipx](https://pypa.github.io/pipx/) recommandée)
-- [NodeJS & NPM](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm#using-a-node-version-manager-to-install-nodejs-and-npm)
+- [Pre-commit](https://pre-commit.com) pour la gestion des hook Git.
 
 Mise en place :
 
@@ -68,7 +69,6 @@ Mise en place :
 5. Ouvrir le fichier [.env](.env) et vérifier que les variables d'environnement ci-dessous sont configurées avec ces valeurs :
 
     ```env
-    POETRY_VIRTUALENVS_IN_PROJECT=true
     USE_DB_CONTAINER=true
     POSTGRES_SERVER=localhost
     ```
@@ -209,7 +209,9 @@ Attention, certains fichiers sont référencés comme symlinks dans les sous-pro
 Les tâches ci-dessous sont disponibles :
 | Nom       | Description                |
 | --        | --                            |
-| Run pre-commit hooks  | Permet de lancer les hooks de pre-commit sans avoir à faire de commit.          |
+| Run all Git hooks  | Permet de lancer tous les hook Git sans faire d'action Git.          |
+| Run Git pre-commit hooks  | Permet de lancer les hook git de pre-commit sans avoir à faire de commit.          |
+| Run Git pre-push hooks  | Permet de lancer les hook Git de pre-push sans avoir à faire de commit.          |
 
 #### Questions et réponses (root)
 
@@ -257,16 +259,13 @@ poetry run ./scripts/start-tests.sh
 
 #### Git hook
 
-Les hooks sont génétés automatiquement dans le dossier [.git/hooks](.git/hooks/) par l'utilitaire [Mookme](https://mookme.org) lors de l'exécution de [scripts/environment-setup.sh](scripts/environment-setup.sh).
+Les hook sont générés automatiquement dans le dossier [.git/hooks](.git/hooks/) par l'utilitaire [pre-commit](https://pre-commit.com) lors de l'exécution de [scripts/environment-setup.sh](scripts/environment-setup.sh).
+Ceux-ci ont été sélectionnés pour être rapides et le moins intrusifs possible pour ne pas géner le workflow des développeurs.
 
-##### Pré-commit
+Le projet en utilise deux types :
 
-| Nom | Règle | Description |
-| -- | -- | -- |
-| Ruff linter | **/*.py | Lance Ruff sur les fichiers Python modifiés dans le commit. |
-| Black formatter | **/*.py | Lance Black en mode vérification pour s'assurer que les fichier Python modifiés dans le commit sont correctement formattés. |
-| Mypy type checker | **/*.py | Lance Mypy sur les fichiers Python modifiés dans le commit pour vérifier que les types sont respectés. |
-| Pytest tests | app/*.py | Exécute tous les tests unitaires lorsqu'un fichier Python est modifié dans le dossier app.
+- pre-commit : principalement le formatage des fichiers et des vérifications statiques.
+- pre-push : analyse de code statique.
 
 #### VSCode Tasks (backend)
 

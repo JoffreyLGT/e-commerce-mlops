@@ -1,0 +1,35 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+default_install_hook_types: [pre-commit, pre-push]
+default_stages:
+  - pre-commit
+default_language_version:
+  python: python3.11
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.4.0
+  hooks:
+  - id: check-added-large-files
+  - id: check-case-conflict
+  - id: check-executables-have-shebangs
+  - id: check-merge-conflict
+  - id: check-shebang-scripts-are-executable
+  - id: check-symlinks
+  - id: check-toml
+    stages: [pre-push]
+  - id: mixed-line-ending
+  - id: trailing-whitespace
+    args: [--markdown-linebreak-ext=md]
+  - id: end-of-file-fixer
+  - id: check-yaml
+    stages: [pre-push]
+  - id: check-added-large-files
+- repo: local
+  hooks:
+  - id: codecheck
+    language: system
+    name: Code checking
+    types: [file]
+    files: 'backend/.*\.(py)$'
+    entry: bash -c 'cd backend && poetry run python -m scripts.code_checking --fix'
+    stages: [pre-push]
