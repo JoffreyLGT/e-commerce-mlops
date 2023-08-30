@@ -4,18 +4,22 @@ import os
 import sys
 from logging import config
 
-CONSOLE_LOG_LEVEL = os.getenv("CONSOLE_LOG_LEVEL", "WARNING")
-TARGET_ENV = os.getenv("TARGET_ENV", "development")
+from src.core.settings import get_common_settings
+
+settings = get_common_settings()
+
+CONSOLE_LOG_LEVEL = settings.CONSOLE_LOG_LEVEL
+TARGET_ENV = settings.TARGET_ENV
 
 logging_config = {
     "version": 1,
     "formatters": {
         "json": {
             "class": "pythonjsonlogger.jsonlogger.JsonFormatter",
-            "format": "%(asctime)s %(process)s %(levelname)s %(name)s %(funcName)s %(lineno)s %(message)s",
+            "format": "%(asctime)s %(process)s %(levelname)s %(name)s %(funcName)s %(lineno)s %(filename)s %(message)s",  # noqa: E501
         },
         "normal": {
-            "format": "%(asctime)s %(levelname)s %(name)s, line %(lineno)s in %(funcName)s(): %(message)s"
+            "format": "%(asctime)s %(levelname)s %(pathname)s, line %(lineno)s in %(funcName)s():\n%(message)s\n"  # noqa: E501
         },
     },
     "handlers": {
@@ -29,7 +33,7 @@ logging_config = {
             "level": f'{"DEBUG" if TARGET_ENV == "development" else "INFO"}',
             "class": "logging.handlers.TimedRotatingFileHandler",
             "formatter": "json",
-            "filename": "./logs/datascience-log.json",
+            "filename": os.path.join(settings.LOGS_DIR, settings.LOGS_FILE_NAME),
             "encoding": "utf-8",
             "when": "midnight",
             "interval": 1,
