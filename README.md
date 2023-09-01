@@ -427,3 +427,5 @@ Les configurations se trouvent dans les fichier `pyproject.toml` de chaque sous-
 Il s'exécute à l'enregistrement du fichier.
 
 Les configurations se trouvent dans le fichier [`mypy.ini`](mypy.ini).
+
+# ceci est une de test modif à retirer plutatd
