@@ -90,6 +90,14 @@
 		"[jsonc]": {
 			"editor.defaultFormatter": "vscode.json-language-features"
 		},
+		"[git-commit]": {
+			"editor.rulers": [
+				72,
+				100
+			],
+			"workbench.editor.restoreViewState": false,
+			"files.insertFinalNewline": false,
+		},
 		"autoDocstring.docstringFormat": "google-notypes",
 		"sqltools.connections": [
 			{
@@ -112,10 +120,13 @@
 			"main"
 		],
 		"conventionalCommits.scopes": [
-			"all",
 			"backend",
 			"datascience"
 		],
 		"conventionalCommits.autoCommit": false,
+		"git.inputValidationLength": 100,
+		"git.inputValidationSubjectLength": 72,
+		"conventionalCommits.gitmoji": false,
+		"conventionalCommits.showEditor": true,
 	},
 }
