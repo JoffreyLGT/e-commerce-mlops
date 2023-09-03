@@ -13,6 +13,8 @@ def test_predict_category_valid_color(
     client: TestClient, normal_user_token_headers: dict[str, str]
 ) -> None:
     """Prediction with valid data and a RGB picture."""
+    # TODO @JoffreyLGT: create a fixture for params to avoid code duplication
+    #  https://github.com/JoffreyLGT/e-commerce-mlops/issues/97
     params: dict[str, str] = {
         "designation": "Guillaume Le Maréchal Tome 1 - Le Chevalier D'aliénor",
         "description": (
