@@ -1,0 +1,20 @@
+{
+    "include": [
+        "**/scripts",
+        "**/app",
+        "**/src",
+    ],
+    "exclude": [
+        "**/node_modules",
+        "**/.venv",
+        "**/.pytest_cache",
+        "**/__pycache__",
+        ".ruff_cache",
+        "**/Python.framework/**",
+    ],
+    "ignore": [
+        "backend/datascience"
+    ],
+    "typeCheckingMode": "strict",
+    "pythonVersion": "3.11"
+}
