@@ -35,8 +35,6 @@ tensorflow-intel = { version = "2.13.0", markers = "platform_system=='Windows'" 
 mlflow = "^2.6.0"
 pydantic = { version = "*", extras = ["dotenv"] }
 python-json-logger = "^2.0.7"
-imagesize = "^1.4.1"
-pillow = "^10.0.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "0.*"
