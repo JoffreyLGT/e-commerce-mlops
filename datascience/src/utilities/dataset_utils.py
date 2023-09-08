@@ -9,7 +9,57 @@ from pydantic.types import DirectoryPath
 
 from src.core.custom_errors import MissingDataError, MissingEnvironmentVariableError
 
-logger = logging.getLogger(__name__)
+
+def ensure_dataset_dir_content(
+    path: DirectoryPath | None,
+    root_dir: DirectoryPath,
+) -> str | None:
+    """Ensure the dataset directory contains all the file needed.
+
+    Args:
+        path: full path to the dataset directory.
+        root_dir: project root dir to define absolute path.
+
+    Returns:
+        Absolute path to the dataset directory.
+    """
+    logger = logging.getLogger(__name__)
+    explanation = """When defined, ORIGINAL_DATA_DIR must contain:
+ORIGINAL_DATA_DIR
+├── X.csv  File containing the features: [linenumber,designation,description,productid,imageid]
+├── images Folder containing one image per product named with this format: "image_[imageid]_product_[productid].jpg"
+└── y.csv  File containing the target: prdtypecode"""  # noqa: E501
+
+    if path is None:
+        logger.warning(
+            "ORIGINAL_DATA_DIR is not defined. "
+            + "An error will be raised if you try to run a script needing it.\n\n"
+            + explanation
+        )
+        return None
+
+    full_path: str
+    if Path(path).is_absolute():
+        logger.debug("ORIGINAL_DATA_DIR is an absolute path.")
+        full_path = str(path)
+    else:
+        full_path = str(Path(root_dir) / path)
+        logger.debug(
+            "ORIGINAL_DATA_DIR is a relative path. "
+            + f"Therefore, its absolute path is {full_path}."
+        )
+
+    missing_files = get_dataset_missing_files(full_path)
+
+    if len(missing_files) > 0:
+        logger.warning(
+            f"Missing file(s) in ORIGINAL_DATA_DIR set as {path}:\n- "
+            + "\n- ".join(missing_files)
+            + "\nAn error will be raised if you try to run code needing it(them).\n"
+            + explanation
+        )
+        return None
+    return full_path
 
 
 def load_dataset(datadir: DirectoryPath) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -62,6 +112,7 @@ def get_remaining_dataset_path() -> Path:
     Returns:
         Path to the remaining Dataset.
     """
+    logger = logging.getLogger(__name__)
     # Must be placed here to avoid circular import errors
     from src.core.settings import get_dataset_settings
 

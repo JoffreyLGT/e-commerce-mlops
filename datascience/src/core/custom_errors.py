@@ -11,3 +11,9 @@ class MissingDataError(Exception):
     """Raised when expected data is missing."""
 
     pass
+
+
+class ImageProcessingError(Exception):
+    """Raised when an issue occurs during image processing."""
+
+    pass
