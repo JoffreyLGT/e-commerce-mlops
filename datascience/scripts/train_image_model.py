@@ -1,4 +1,8 @@
+# type: ignore
 """Train image model, evaluate its performance and generates figures and stats.
+
+from shutil import ignore_patterns
+
 
 All logs and best checkpoints are stored in --output-dir.
 --input-dir expects a dataset with this structure is expected:

@@ -2402,6 +2402,17 @@ files = [
 ]
 
 [[package]]
+name = "types-pillow"
+version = "10.0.0.3"
+description = "Typing stubs for Pillow"
+optional = false
+python-versions = "*"
+files = [
+    {file = "types-Pillow-10.0.0.3.tar.gz", hash = "sha256:ae0c877d363da349bbb82c5463c9e78037290cc07d3714cb0ceaf5d2f7f5c825"},
+    {file = "types_Pillow-10.0.0.3-py3-none-any.whl", hash = "sha256:54a49f3c6a3f5e95ebeee396d7773dde22ce2515d594f9c0596c0a983558f0d4"},
+]
+
+[[package]]
 name = "types-protobuf"
 version = "4.24.0.1"
 description = "Typing stubs for protobuf"
@@ -2654,4 +2665,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
-content-hash = "0350a9cbd4d3c30a194f507526ef1182cfcff4aac3062d293c12e9ea54dccfca"
+content-hash = "29b87ed557dc427bbcbba406694cddeb49fb89dc98e858f2e51cd13ba1a6dedc"

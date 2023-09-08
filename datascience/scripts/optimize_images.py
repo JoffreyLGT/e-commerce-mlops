@@ -1,3 +1,5 @@
+# type: ignore
+# ruff: noqa
 """Optimize images.
 
 Open provided folder, create train and test dataset and optimize images by:
@@ -6,7 +8,6 @@ Open provided folder, create train and test dataset and optimize images by:
 - Keep the ratio (by adding white stripes if needed) or stretch images
 - Save it either grayscaled or colored
 """
-# ruff: noqa
 
 import datetime
 import os

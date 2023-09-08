@@ -3,13 +3,13 @@
 
 import logging
 from collections.abc import Callable
-from typing import Literal
+from typing import Any, Literal
 
 
 def filter_maker(
     level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
     order: Literal["Ascending", "Descending"],
-) -> Callable:
+) -> Callable[[Any], bool]:
     """Return a filter object to filter by level.
 
     Args:
@@ -19,11 +19,11 @@ def filter_maker(
     Return:
         Filter function.
     """
-    level = getattr(logging, level)
+    levelno = getattr(logging, level)
 
-    def filter(record) -> bool:
+    def filter(record: logging.LogRecord) -> bool:
         if order == "Ascending":
-            return record.levelno >= level
-        return record.levelno <= level
+            return record.levelno >= levelno
+        return record.levelno <= levelno
 
     return filter
