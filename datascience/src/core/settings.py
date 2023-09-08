@@ -14,14 +14,14 @@ from typing import Any, Literal
 from pydantic import BaseSettings, DirectoryPath, validator
 
 import src
-from src.utilities.dataset_utils import get_dataset_missing_files
+from src.utilities.dataset_utils import ensure_dataset_dir_content
 
 
 class _ConstantSettings:
     """Define constants we want embedded into the settings."""
 
     # TODO @JoffreyLGT: Should we have a package handling configurations since they are common to all projects?
-    # https://github.com/JoffreyLGT/e-commerce-mlops/issues/80
+    #  https://github.com/JoffreyLGT/e-commerce-mlops/issues/80
     ROOT_DIR: DirectoryPath = Path(Path(src.__file__).parent).parent
     CATEGORIES_DIC = MappingProxyType(
         {
@@ -60,9 +60,8 @@ class _CommonSettings(BaseSettings, _ConstantSettings):
     """Common settings of the project."""
 
     TARGET_ENV: Literal["development", "staging", "production"] = "development"
-    CONSOLE_LOG_LEVEL: Literal[
-        "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"
-    ] = "WARNING"
+    CONSOLE_LOG_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
+    FILE_LOG_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
     LOGS_DIR: str = "logs"
 
     @validator("LOGS_DIR")
@@ -92,13 +91,9 @@ class _CommonSettings(BaseSettings, _ConstantSettings):
 class _DatasetSettings(BaseSettings, _ConstantSettings):
     """Settings to manage datasets."""
 
-    # Preprocessed target images characteristics
-    IMG_WIDTH: int = 224
-    IMG_HEIGHT: int = 224
-    IMG_KEEP_RATIO: bool = True
-    IMG_GRAYSCALED: bool = False
-    # Number of threads to use when doing images conversion
-    IMG_NB_THREADS: int = 4
+    # Number of threads to use when doing images conversion in optimize_images.py
+    IMG_PROCESSING_NB_THREAD: int = 4
+
     # Directory where data used to train the models are stored.
     ORIGINAL_DATA_DIR: DirectoryPath | None = None
 
@@ -108,43 +103,7 @@ class _DatasetSettings(BaseSettings, _ConstantSettings):
         path: DirectoryPath | None,
     ) -> str | None:
         """Ensure the directory contains the necessary values."""
-        logger = logging.getLogger(__name__)
-
-        explanation = """When defined, ORIGINAL_DATA_DIR must contain:
-ORIGINAL_DATA_DIR
-├── X.csv  File containing the features: [linenumber,designation,description,productid,imageid]
-├── images Folder containing one image per product named with this format: "image_[imageid]_product_[productid].jpg"
-└── y.csv  File containing the target: prdtypecode"""  # noqa: E501
-
-        if path is None:
-            logger.warning(
-                "ORIGINAL_DATA_DIR is not defined. "
-                + "An error will be raised if you try to run a script needing it.\n\n"
-                + explanation
-            )
-            return None
-
-        full_path: str
-        if Path(path).is_absolute():
-            logger.info("ORIGINAL_DATA_DIR is an absolute path.")
-            full_path = str(path)
-        else:
-            full_path = str(Path(cls.ROOT_DIR) / path)
-            logger.info(
-                "ORIGINAL_DATA_DIR is a relative path. "
-                + f"Therefore, its absolute path is {full_path}."
-            )
-
-        missing_files = get_dataset_missing_files(full_path)
-
-        if len(missing_files) > 0:
-            logger.warning(
-                f"Missing file(s) in ORIGINAL_DATA_DIR set as {path}:\n- "
-                + "\n- ".join(missing_files)
-                + "\nAn error will be raised if you try to run code needing it(them).\n"
-                + explanation
-            )
-        return full_path
+        return ensure_dataset_dir_content(path=path, root_dir=Path(cls.ROOT_DIR))
 
     # Directory where remaining data not already in a dataset are stored.
     REMAINING_DATA_DIR: str | None = None
@@ -175,6 +134,24 @@ ORIGINAL_DATA_DIR
         Path(full_path).mkdir(parents=True, exist_ok=True)
         return full_path
 
+    class Config:
+        """Pydantic configuration."""
+
+        env_file = ".env"
+        case_sensitive = False
+
+
+class _MobileNetImageModelSettings:
+    """Define constants regarding the MobileNet image model."""
+
+    # Model images characteristics
+    IMG_WIDTH: int = 224
+    IMG_HEIGHT: int = 224
+
+    # Optimized images settings
+    IMG_KEEP_RATIO: bool = True
+    IMG_GRAYSCALED: bool = False
+
 
 @lru_cache(maxsize=1)
 def get_common_settings() -> _CommonSettings:
@@ -194,3 +171,13 @@ def get_dataset_settings() -> _DatasetSettings:
     and send it back everytime the function is called.
     """
     return _DatasetSettings()
+
+
+@lru_cache(maxsize=1)
+def get_mobilenet_image_model_settings() -> _MobileNetImageModelSettings:
+    """Return the MobileNet image model settings.
+
+    @lru_cache(maxsize=1) ensure we create only one instance, cache it,
+    and send it back everytime the function is called.
+    """
+    return _MobileNetImageModelSettings()

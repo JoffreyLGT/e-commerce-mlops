@@ -11,23 +11,46 @@ settings = get_common_settings()
 CONSOLE_LOG_LEVEL = settings.CONSOLE_LOG_LEVEL
 TARGET_ENV = settings.TARGET_ENV
 
+
 logging_config = {
     "version": 1,
+    "disable_existing_loggers": False,  # Update all previous loggers settings
     "formatters": {
         "json": {
             "class": "pythonjsonlogger.jsonlogger.JsonFormatter",
             "format": "%(asctime)s %(process)s %(levelname)s %(name)s %(funcName)s %(lineno)s %(filename)s %(message)s",  # noqa: E501
         },
         "normal": {
-            "format": "%(asctime)s %(levelname)s %(pathname)s, line %(lineno)s in %(funcName)s():\n%(message)s\n"  # noqa: E501
+            "format": "%(levelname)s in %(module)s.%(funcName)s, line %(lineno)s: %(message)s"  # noqa: E501
+        },
+        "brief": {"format": "%(message)s"},
+    },
+    "filters": {
+        "warning_and_above": {
+            "()": "src.core.logging_filters.filter_maker",
+            "level": "WARNING",
+            "order": "Ascending",
+        },
+        "info_and_bellow": {
+            "()": "src.core.logging_filters.filter_maker",
+            "level": "INFO",
+            "order": "Descending",
         },
     },
     "handlers": {
         "console": {
             "level": CONSOLE_LOG_LEVEL.upper(),
             "class": "logging.StreamHandler",
+            "formatter": "brief",
+            "stream": sys.stderr,
+            "filters": ["info_and_bellow"],
+        },
+        "console_detailed": {
+            "level": CONSOLE_LOG_LEVEL.upper(),
+            "class": "logging.StreamHandler",
             "formatter": "normal",
             "stream": sys.stderr,
+            "filters": ["warning_and_above"],
         },
         "file": {
             "level": f'{"DEBUG" if TARGET_ENV == "development" else "INFO"}',
@@ -40,7 +63,11 @@ logging_config = {
             "utc": True,
         },
     },
-    "root": {"level": "DEBUG", "handlers": ["console", "file"], "propagate": True},
+    "root": {
+        "level": "DEBUG",
+        "handlers": ["console", "console_detailed", "file"],
+        "propagate": True,
+    },
 }
 
 config.dictConfig(logging_config)
