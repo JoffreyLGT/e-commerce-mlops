@@ -1,6 +1,5 @@
 # type: ignore
-# ruff: noqa
-"""Optimize images.
+"""Optimize images provided by Rakuten to improve image model initial training.
 
 Open provided folder, create train and test dataset and optimize images by:
 - Removing the white stripes they can have around
@@ -10,8 +9,7 @@ Open provided folder, create train and test dataset and optimize images by:
 """
 
 import datetime
-import os
-import pickle
+import logging
 import shutil
 import sys
 import time
@@ -24,10 +22,9 @@ import numpy as np
 import pandas as pd
 import pydantic_argparse
 from PIL import Image, ImageOps
-from pydantic import BaseModel, DirectoryPath, validator
+from pydantic import BaseModel, DirectoryPath, Field, validator
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.model_selection import train_test_split
-from sklearn.pipeline import Pipeline
 
 from src.core.custom_errors import ImageProcessingError
 from src.core.settings import (
@@ -37,34 +34,19 @@ from src.core.settings import (
 )
 from src.utilities.dataset_utils import ensure_dataset_dir_content
 
-# TODO @joffreylgt: improvments
-#  - use proper logger to log messages
-#  - look to implement a real progress bar
-#  - fix linter issues by removing # ruff: noqa
-#  - add proper field annotation for arguments (see train_image_model)
-#  https://github.com/JoffreyLGT/e-commerce-mlops/issues/103
-
-
-def load_data(datadir: str = "data") -> pd.DataFrame:
-    return pd.concat(
-        [
-            pd.read_csv(f"{datadir}/X.csv", index_col=0),
-            pd.read_csv(f"{datadir}/y.csv", index_col=0),
-        ],
-        axis=1,
-    )
+logger = logging.getLogger(__file__)
 
 
 def get_img_name(productid: int, imageid: int) -> str:
     """Return the filename of the image.
 
-    Arguments:
-    - productid: int - "productid" field from the original DataFrame.
-    - imageid: int - "imageid" field from the original DataFrame.
+    Args:
+        productid: "productid" field from the original DataFrame.
+        imageid: "imageid" field from the original DataFrame.
 
-    Return:
-    A string containing the filename of the image. Example: image_1000076039_product_580161.jpg
-    """
+    Returns:
+        A string containing the filename of the image. Example: image_1000076039_product_580161.jpg
+    """  # noqa: E501
     return f"image_{imageid}_product_{productid}.jpg"
 
 
@@ -73,39 +55,40 @@ def get_imgs_filenames(
 ) -> list[str]:
     """Return a list of filenames from productids and imagesids.
 
-    Arguments:
-    - productids: list of product ids
-    - imageids: list of image ids
-    - folder: folder containing the images. Used only to return a full path.
+    Args:
+        productids: list of product ids
+        imageids: list of image ids
+        folder: folder containing the images. Used only to return a full path.
 
-    Return:
-    A list of the same size as productids and imageids containing the filenames.
+    Returns:
+        A list of the same size as productids and imageids containing the filenames.
     """
     if len(productids) != len(imageids):
-        raise ValueError("productids and imageids should be the same size")
+        raise ValueError(  # noqa: TRY003
+            "productids and imageids should be the same size"
+        )
     if folder is None:
         return [
             get_img_name(productid, imageid)
             for productid, imageid in zip(productids, imageids)
         ]
-    else:
-        return [
-            os.path.join(folder, get_img_name(productid, imageid))
-            for productid, imageid in zip(productids, imageids)
-        ]
+    return [
+        Path(folder) / get_img_name(productid, imageid)
+        for productid, imageid in zip(productids, imageids)
+    ]
 
 
 def remove_white_stripes(img_array: np.ndarray) -> np.ndarray:
-    """Analyse each lines and column of the array to remove the outer white stripes they might contain.
+    """Remove image outer white stripes.
 
-    Arguments:
-    - img_array: imaged loaded into a np.ndarray.
+    Args:
+        img_array: image loaded into a np.ndarray.
 
     Returns:
-    - The same array without the outer white stripes.
+        The same array without the outer white stripes.
 
     Example:
-    - remove_white_stripes(np.asarray(Image.open("my_image.png")))
+        remove_white_stripes(np.asarray(Image.open("my_image.png")))
     """
     top_line = -1
     right_line = -1
@@ -113,14 +96,16 @@ def remove_white_stripes(img_array: np.ndarray) -> np.ndarray:
     left_line = -1
 
     i = 1
+    white_color_average = 255
+
     while top_line == -1 or bottom_line == -1 or left_line == -1 or right_line == -1:
-        if top_line == -1 and img_array[:i].mean() != 255:
+        if top_line == -1 and img_array[:i].mean() != white_color_average:
             top_line = i
-        if bottom_line == -1 and img_array[-i:].mean() != 255:
+        if bottom_line == -1 and img_array[-i:].mean() != white_color_average:
             bottom_line = i
-        if left_line == -1 and img_array[:, :i].mean() != 255:
+        if left_line == -1 and img_array[:, :i].mean() != white_color_average:
             left_line = i
-        if right_line == -1 and img_array[:, -i:].mean() != 255:
+        if right_line == -1 and img_array[:, -i:].mean() != white_color_average:
             right_line = i
 
         i += 1
@@ -129,13 +114,12 @@ def remove_white_stripes(img_array: np.ndarray) -> np.ndarray:
 
     if top_line == -1 or bottom_line == -1 or left_line == -1 or right_line == -1:
         return img_array
-    else:
-        return img_array[top_line:-bottom_line, left_line:-right_line, :]
+    return img_array[top_line:-bottom_line, left_line:-right_line, :]
 
 
-def crop_resize_img(
+def crop_resize_img(  # noqa: PLR0913
     filename: str,
-    imput_img_dir: str,
+    input_img_dir: str,
     output_img_dir: str,
     width: int,
     height: int,
@@ -144,16 +128,18 @@ def crop_resize_img(
 ) -> None:
     """Crop, resize and apply a grayscale filter to the image.
 
-    Arguments:
-    - filename - str: name of the image to process. Must contain the extension.
-    - input_img_dir - str: directory containing the image.
-    - output_img_dir - str: directory to save the processed image in.
-    - width, height - int: width and height of the processed image.
-    - keep_ratio - bool: True to keep the image ratio and eventualy add some white stripes around to fill empty space. False to stretch the image.
-    - grayscale - bool: True to remove the colors and set them as grayscale.
-    """
+    Args:
+        imput_img_dir: dir containing all images.
+        filename: name of the image to process. Must contain the extension.
+        input_img_dir: directory containing the image.
+        output_img_dir: directory to save the processed image in.
+        width: width of the processed image
+        height: height of the processed image.
+        keep_ratio: True to keep the image ratio and eventualy add some white stripes around to fill empty space. False to stretch the image.
+        grayscale: True to remove the colors and set them as grayscale.
+    """  # noqa: E501
     # Remove the outer white stripes from the image
-    img_array = np.asarray(Image.open(Path(imput_img_dir) / filename))
+    img_array = np.asarray(Image.open(Path(input_img_dir) / filename))
     new_img_array = remove_white_stripes(img_array)
     new_img = Image.fromarray(new_img_array)
 
@@ -186,6 +172,7 @@ class Progression:
         """Initiate a Progression object."""
         self.start_time = time.perf_counter()
         self.total_rows = total_rows
+        self.nb_calls = 0
 
     def display(self, remaining_rows_number: int):
         """Display the image progression in the output."""
@@ -195,17 +182,28 @@ class Progression:
         time_diff = time.perf_counter() - self.start_time
         time_per_row = time_diff / current_row_number
         remaining_time = (self.total_rows - current_row_number) * time_per_row
-
-        print(
-            "Avancement : ",
-            np.round(current_row_number / self.total_rows * 100, 2),
-            "%",
+        if self.nb_calls == 0:
+            # To print an empty line
+            print("")
+        else:
+            self.nb_calls += 1
+        # Replace previously printed line
+        sys.stdout.write(
+            "\033[F"  # Go up by one line in the console
+            f"Progress: {np.round(current_row_number / self.total_rows * 100, 2)}"
+            f"%, Time remaining: {datetime.timedelta(seconds=int(remaining_time))}"
+            "\033[K"  # Clear the rest of the line
         )
-        print("Temps restant :", datetime.timedelta(seconds=int(remaining_time)))
+        sys.stdout.flush()
 
     def done(self):
-        """Clear the output and display a 100% progress."""
-        print("Avancement : 100%")
+        """Display completion time."""
+        print()  # Print an empty line since display was always writing on the same one
+        logger.info(
+            "Completed in "
+            f"{np.round(time.perf_counter() - self.start_time, 2)} seconds."
+        )
+        self.nb_calls = 0
 
 
 class ImageTransformer(BaseEstimator, TransformerMixin):
@@ -216,7 +214,7 @@ class ImageTransformer(BaseEstimator, TransformerMixin):
     Can also set it to grayscale.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         size: tuple[int, int],
         keep_ratio: bool,
@@ -224,6 +222,15 @@ class ImageTransformer(BaseEstimator, TransformerMixin):
         input_img_dir: str,
         output_img_dir: str,
     ) -> None:
+        """Store arguments into object properties.
+
+        Args:
+            size: image width and height
+            keep_ratio: true to keep image ratio (add white stripes if needed).
+            grayscale: true to set image as grayscale.
+            input_img_dir: original images directory.
+            output_img_dir: directory to store edited images.
+        """
         super().__init__()
         self.width = size[0]
         self.height = size[1]
@@ -241,9 +248,9 @@ class ImageTransformer(BaseEstimator, TransformerMixin):
             output_dir = (
                 self.output_img_dir
                 if prdtypecode is None
-                else os.path.join(self.output_img_dir, type, str(prdtypecode))
+                else Path(self.output_img_dir) / type / str(prdtypecode)
             )
-            os.makedirs(output_dir, exist_ok=True)
+            Path(output_dir).mkdir(parents=True, exist_ok=True)
             crop_resize_img(
                 filename,
                 self.input_img_dir,
@@ -254,7 +261,7 @@ class ImageTransformer(BaseEstimator, TransformerMixin):
                 self.grayscale,
             )
 
-    def _load_images_to_dataframe(self, X, filenames: list[str]):
+    def _load_images_to_dataframe(self, features, filenames: list[str]):
         images = np.array(
             [
                 np.asarray(Image.open(f"{self.output_img_dir}/{filename}"))
@@ -273,45 +280,39 @@ class ImageTransformer(BaseEstimator, TransformerMixin):
                     images.shape[0], images.shape[1] * images.shape[2] * images.shape[3]
                 )
             )
-        X = pd.concat(
-            [X.reset_index(drop=True), df_pixels.reset_index(drop=True)], axis=1
+        features = pd.concat(
+            [features.reset_index(drop=True), df_pixels.reset_index(drop=True)], axis=1
         )
-        return X.drop(["designation", "description", "imageid", "productid"], axis=1)
+        return features.drop(
+            ["designation", "description", "imageid", "productid"], axis=1
+        )
 
     def transform(self, x, y=None, type: str | None = None):
-        """Transform the images for each line of X."""
-        existing_files = []
+        """Transform the images for each line of X.
 
-        # Check if the output directory for images exists
-        if os.path.exists(self.output_img_dir):
-            # It does, check its content
-            existing_files = []
-            for _, _, files in os.walk(self.output_img_dir):
-                for name in files:
-                    existing_files.append(name)
+        Args:
+            x: features
+            y: targets. When provided, images will be placed in a subfolder. Defaults to None.
+            type: dataset type. For example: test, train, validation... Defaults to None.
 
+        Raises:
+            ImageProcessingError: when an error occurs during the processing.
+        """  # noqa: E501
         # Create the list of images to import from X
         images_filenames = get_imgs_filenames(x["productid"], x["imageid"])
 
-        # Remove the images already in the destination folder so we don't have to process them a second time
         if y is None:
             files_to_process = list(
                 filter(
                     lambda value: value is not None,
-                    [
-                        ((x, None) if x not in existing_files else None)
-                        for x in images_filenames
-                    ],
+                    [(x, None) for x in images_filenames],
                 )
             )
         else:
             files_to_process = list(
                 filter(
                     lambda value: value is not None,
-                    [
-                        ((x, y) if x not in existing_files else None)
-                        for x, y in zip(images_filenames, y)
-                    ],
+                    [(x, y) for x, y in zip(images_filenames, y)],
                 )
             )
 
@@ -319,9 +320,10 @@ class ImageTransformer(BaseEstimator, TransformerMixin):
         self.filenames_queue.queue = deque(files_to_process)
 
         # Create the threads and start them
-        threads = []
-        for _ in range(self.nb_threads):
-            threads.append(Thread(target=self._initiate_crop_resize, args={type: type}))
+        threads = [
+            Thread(target=self._initiate_crop_resize, args={type: type})
+            for _ in range(self.nb_threads)
+        ]
         for thread in threads:
             thread.start()
 
@@ -341,7 +343,7 @@ class ImageTransformer(BaseEstimator, TransformerMixin):
                 break
             # Display the progression and wait for 3 secs
             progress.display(self.filenames_queue.qsize())
-            time.sleep(3)
+            time.sleep(0.1)
 
         # Security: wait until all threads are done
         for thread in threads:
@@ -353,41 +355,28 @@ class ImageTransformer(BaseEstimator, TransformerMixin):
         # Inform the user
         progress.done()
 
-        if y is None:
-            return self._load_images_to_dataframe(x, images_filenames)
-        return x
-
-
-class ImagePipeline:
-    """Pipeline to process images."""
-
-    def __init__(  # noqa: PLR0913
-        self,
-        size: tuple[int, int],
-        keep_ratio: bool,
-        grayscale: bool,
-        input_img_dir: str,
-        output_img_dir: str,
-    ) -> None:
-        """Set properties."""
-        self.img_transformer = ImageTransformer(
-            size, keep_ratio, grayscale, input_img_dir, output_img_dir
-        )
-
-        self.pipeline = Pipeline(
-            steps=[
-                ("ImageTransformer", self.img_transformer),
-            ]
-        )
-
 
 class OptimizeImagesArgs(BaseModel):
     """Hold all scripts arguments and do type checking."""
 
-    train_size: int | float
-    test_size: int | float
-    input_dir: DirectoryPath
-    output_dir: Path
+    train_size: int | float = Field(
+        description=(
+            "Size of train dataset. Provide a float for a percentage, "
+            "an int for the number of products."
+        )
+    )
+    test_size: int | float = Field(
+        description=(
+            "Size of test dataset. Provide a float for a percentage, "
+            "an int for the number of products."
+        )
+    )
+    input_dir: DirectoryPath = Field(
+        descriptions=(
+            "Directory containing data to divide into train and test datasets."
+        )
+    )
+    output_dir: Path = Field(descriptions=("Directory to store the results"))
 
     @validator("input_dir")
     def must_contain_data(
@@ -406,16 +395,23 @@ def main(args: OptimizeImagesArgs) -> int:
     Args:
         args: settings provided as arguments.
     """
-    # Delete and recreate the directory to ensure it will contain only generated data
-    shutil.rmtree(Path(args.output_dir), ignore_errors=True)
-    Path(args.output_dir).mkdir(parents=True)
+    logger.info("\n🚀 Script started\n")
+    logger.info(
+        f"Remove csv files and images folder from {args.output_dir} "
+        "to ensure it contains only newly generated data."
+    )
+    shutil.rmtree(Path(args.output_dir) / "images", ignore_errors=True)
+    for csv in Path.glob("*.csv"):
+        Path.remove(csv)
+    (Path(args.output_dir) / "images").mkdir(parents=True)
 
     model_settings = get_mobilenet_image_model_settings()
 
-    dataframe = load_data(str(args.input_dir))
-    target = dataframe["prdtypecode"]
-    features = dataframe.drop("prdtypecode", axis=1)
+    logger.info("Import input data")
+    features = pd.read_csv(f"{args.input_dir}/X.csv", index_col=0)
+    target = pd.read_csv(f"{args.input_dir}/y.csv", index_col=0)
 
+    logger.info("Create train and test datasets")
     X_train, X_test, y_train, y_test = train_test_split(
         features,
         target,
@@ -424,7 +420,13 @@ def main(args: OptimizeImagesArgs) -> int:
         stratify=target,
     )
 
-    transformer = ImagePipeline(
+    logger.info("Save datasets")
+    X_train.to_csv(f"{args.output_dir}/X_train.csv")
+    X_test.to_csv(f"{args.output_dir}/X_test.csv")
+    y_train.to_csv(f"{args.output_dir}/y_train.csv")  # pyright: ignore
+    y_test.to_csv(f"{args.output_dir}/y_test.csv")  # pyright: ignore
+
+    pipeline = ImageTransformer(
         size=(model_settings.IMG_WIDTH, model_settings.IMG_HEIGHT),
         keep_ratio=model_settings.IMG_KEEP_RATIO,
         grayscale=model_settings.IMG_GRAYSCALED,
@@ -432,28 +434,21 @@ def main(args: OptimizeImagesArgs) -> int:
         output_img_dir=str(Path(args.output_dir) / "images"),
     )
 
-    pipeline = transformer.img_transformer
-
-    print("Transformation du jeu de données d'entrainement")
-    X_train = pipeline.transform(X_train, y_train, type="train")
-    print("Transformation du jeu de données de test")
-    X_test = pipeline.transform(X_test, y_test, type="test")
-
-    print("Enregistrement des données")
-    if not os.path.exists(args.output_dir):
-        os.makedirs(args.output_dir)
-
-    X_train.to_csv(f"{args.output_dir}/X_train.csv")
-    X_test.to_csv(f"{args.output_dir}/X_test.csv")
-    y_train.to_csv(f"{args.output_dir}/y_train.csv")  # pyright: ignore
-    y_test.to_csv(f"{args.output_dir}/y_test.csv")  # pyright: ignore
-
+    logger.info("Transform images from training dataset")
+    pipeline.transform(X_train, type="train")
+    logger.info("Transform images from test dataset")
+    pipeline.transform(X_test, type="test")
+    logger.info("\n✅ done!\n")
     return 0
 
 
 if __name__ == "__main__":
     parser = pydantic_argparse.ArgumentParser(
-        model=OptimizeImagesArgs, description="Define which data to work with"
+        model=OptimizeImagesArgs,
+        description=(
+            "Create train and test datasets based on --input-dir and "
+            "store it in --output-dir."
+        ),
     )
     args = parser.parse_typed_args()
     sys.exit(main(args))
