@@ -38,6 +38,7 @@ python-json-logger = "^2.0.7"
 imagesize = "^1.4.1"
 pillow = "^10.0.0"
 pydantic-argparse = "^0.8.0"
+nltk = "^3.8.1"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "0.*"
