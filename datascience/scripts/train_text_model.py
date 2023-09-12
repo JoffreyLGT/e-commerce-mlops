@@ -1,5 +1,5 @@
+# type: ignore
 # ruff: noqa
-
 """Train text model, evaluate its performance and generates figures and stats.
 
 All logs and best checkpoints are stored in --output-dir.
@@ -20,54 +20,46 @@ dataset_dir
 
 Use scripts/optimize_images.py to generate a dataset.
 """
-from html.parser import HTMLParser
-from src.core.settings import get_common_settings
-import numpy.typing as npt
-from src.utilities.dataset_utils import to_normal_category_id, to_simplified_category_id
 import itertools
 import logging
 import os
-import pprint
-import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer
 import pickle
-import time
-from sklearn.model_selection import learning_curve, train_test_split
-from tensorflow.keras.layers import Dense, InputLayer
-from tensorflow.keras.layers import Dropout
-
-from sklearn.pipeline import Pipeline
-from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.feature_extraction.text import CountVectorizer
-from tensorflow.keras.optimizers import Adam
-import scipy.sparse as sparse
 import re
 import sys
+from html.parser import HTMLParser
 from pathlib import Path
 
+import keras
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pydantic
 import pydantic_argparse
 import tensorflow as tf
-from nltk.stem.snowball import SnowballStemmer
-from pydantic import BaseModel, DirectoryPath
-from sklearn import metrics
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.pipeline import Pipeline
-from tensorflow.keras import Sequential, layers  # pyright: ignore
-from tensorflow.keras.callbacks import (  # pyright: ignore
+from keras.callbacks import (
     CSVLogger,
     EarlyStopping,
     ModelCheckpoint,
     TensorBoard,
 )
-from tensorflow.keras.losses import CategoricalCrossentropy  # pyright: ignore
-from tensorflow.keras.optimizers import SGD  # pyright: ignore
-from tensorflow.train import latest_checkpoint  # pyright: ignore
-import src.core.logging_config  # noqa # pyright: ignore
+from keras.layers import Dense, Dropout, InputLayer
+from keras.losses import CategoricalCrossentropy
+from keras.optimizers import (
+    Adam,
+)
+from nltk.stem.snowball import SnowballStemmer
+from pydantic import BaseModel, DirectoryPath
+from sklearn import metrics
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.feature_extraction.text import (
+    CountVectorizer,
+    TfidfVectorizer,
+)
+from sklearn.pipeline import Pipeline
+from tensorflow.train import latest_checkpoint
+
+from src.core.settings import get_common_settings
+from src.utilities.dataset_utils import to_normal_category_id, to_simplified_category_id
 
 logger = logging.getLogger(__file__)
 
@@ -79,18 +71,16 @@ class TextPreprocess:
     def fit(self, data):
         return self.pipeline.fit(data)
 
-    def fit_transform(self, data):
+    def fit_transform(self, data) -> tf.SparseTensor:
         out = self.pipeline.fit_transform(data)
         return convert_sparse_matrix_to_sparse_tensor(out)
 
-    def transform(self, data):
+    def transform(self, data) -> tf.SparseTensor:
         out = self.pipeline.transform(data)
         return convert_sparse_matrix_to_sparse_tensor(out)
 
     def get_voc(self):
-        voc = self.pipeline.get_voc()
-        logger.info(f"TextPreprocess.save_voc size {len(voc)}")
-        return voc
+        return self.pipeline.get_voc()
 
     def save_voc(self, prefix_filename):
         voc = self.get_voc()
@@ -102,13 +92,11 @@ class TextPreprocess:
 
 
 class _RakutenHTMLParser(HTMLParser):
-    """
-    Parse the text fed to it using feed() and return the content without HTML tag or encoding with get_all_content().
-    """
+    """Parse the text fed to it using feed() and return the content without HTML tag or encoding with get_all_content()."""
 
     def __init__(self):
         self.allcontent = ""
-        super(_RakutenHTMLParser, self).__init__()
+        super().__init__()
 
     def handle_data(self, data):
         self.allcontent += data + " "
@@ -118,9 +106,7 @@ class _RakutenHTMLParser(HTMLParser):
 
 
 class HTMLRemover(BaseEstimator, TransformerMixin):
-    """
-    Transformer removing HTML tags and decoding HTML special characters.
-    """
+    """Transformer removing HTML tags and decoding HTML special characters."""
 
     def _parseValue(self, value):
         if type(value) != str:
@@ -144,14 +130,15 @@ class HTMLRemover(BaseEstimator, TransformerMixin):
 
 
 class NumRemover(BaseEstimator, TransformerMixin):
-    def _parseValue(self, value):
-        if type(value) != str:
-            return value
-        value = re.sub("\s?([0-9]+)\s?", " ", value)
-        return value
+    """Remove all number from strings."""
 
-    def _parseColumn(self, column):
-        return [self._parseValue(value) for value in column]
+    def _parse_value(self, value):
+        if isinstance(type(value), int):
+            return value
+        return re.sub("\s?([0-9]+)\s?", " ", value)
+
+    def _parse_column(self, column):
+        return [self._parse_value(value) for value in column]
 
     def fit(self, X, y=None):
         # Do nothing, mandatory function for when a model is provided to the pipeline.
@@ -159,16 +146,16 @@ class NumRemover(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         if type(X) == pd.DataFrame:
-            return X.apply(lambda column: self._parseColumn(column))
+            return X.apply(lambda column: self._parse_column(column))
 
-        return X.apply(lambda column: self._parseValue(column))
+        return X.apply(lambda column: self._parse_value(column))
 
 
 class StemmedCountVectorizer(CountVectorizer):
     fr_stemmer = SnowballStemmer("french")
 
     def build_analyzer(self):
-        analyzer = super(StemmedCountVectorizer, self).build_analyzer()
+        analyzer = super().build_analyzer()
         return lambda doc: (
             StemmedCountVectorizer.fr_stemmer.stem(w) for w in analyzer(doc)
         )
@@ -178,7 +165,7 @@ class StemmedTfidfVectorizer(TfidfVectorizer):
     fr_stemmer = SnowballStemmer("french")
 
     def build_analyzer(self):
-        analyzer = super(StemmedTfidfVectorizer, self).build_analyzer()
+        analyzer = super().build_analyzer()
         return lambda doc: (
             StemmedTfidfVectorizer.fr_stemmer.stem(w) for w in analyzer(doc)
         )
@@ -198,23 +185,6 @@ class TfidfStemming(Pipeline):
         return self.steps[2][1].vocabulary_
 
 
-class BOW_Stemming(Pipeline):
-    """Bag of Words with french stemming"""
-
-    def __init__(self):
-        self.name = "BOW_Stemming"
-        steps = [
-            ("remove_html", HTMLRemover()),
-            ("remove_num", NumRemover()),
-            ("count", StemmedCountVectorizer()),
-        ]
-        Pipeline.__init__(self, steps)
-
-    def get_voc(self):
-        countvect_pos = [k for k, _ in self.steps].index("count")
-        return self.steps[countvect_pos][1].vocabulary_
-
-
 class TrainTextModelArgs(BaseModel):
     """Hold all scripts arguments and do type checking."""
 
@@ -231,14 +201,6 @@ class TrainTextModelArgs(BaseModel):
             "Set as much as your machine allows."
         ),
     )
-    seed: int = pydantic.Field(
-        123,
-        description=(
-            "Seed to use for randomisation. "
-            "Ensure batches are always de same "
-            "when executing script with the same seed."
-        ),
-    )
     train_patience: int = pydantic.Field(
         10,
         description=(
@@ -248,14 +210,14 @@ class TrainTextModelArgs(BaseModel):
     )
 
 
-def convert_sparse_matrix_to_sparse_tensor(X):
+def convert_sparse_matrix_to_sparse_tensor(X) -> tf.SparseTensor:
     coo = X.tocoo()
     indices = np.mat([coo.row, coo.col]).transpose()
     return tf.sparse.reorder(tf.SparseTensor(indices, coo.data, coo.shape))
 
 
 def main(args: TrainTextModelArgs) -> int:  # noqa: PLR0915
-    """Create and train a new MobileNetV2 based image model.
+    """Create and train a new MLP text model.
 
     All artifacts are exported into output-dir.
 
@@ -301,8 +263,9 @@ def main(args: TrainTextModelArgs) -> int:  # noqa: PLR0915
     y_train_simplified = to_simplified_category_id(y_train)
     y_test_simplified = to_simplified_category_id(y_test)
 
-    y_train_categorical = tf.keras.utils.to_categorical(y_train_simplified)
-    y_test_categorical = tf.keras.utils.to_categorical(y_test_simplified)
+    y_train_categorical = keras.utils.to_categorical(y_train_simplified)
+
+    y_test_categorical = keras.utils.to_categorical(y_test_simplified)
 
     logger.info("Create datasets")
     train_dataset = tf.data.Dataset.from_tensor_slices(
@@ -496,7 +459,7 @@ if __name__ == "__main__":
     parser = pydantic_argparse.ArgumentParser(
         model=TrainTextModelArgs,
         description=(
-            "Create and train a new image model "
+            "Create and train a new text model "
             "using dataset provided with --input-dir, "
             "then save it to --output-dir with "
             "its performance statistics."

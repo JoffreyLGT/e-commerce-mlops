@@ -96,6 +96,9 @@ ignore-overlong-task-comments = true
 
 [pep8-naming]
 ignore-names = [
+  "X",       # Standard in Data Science
   "X_train", # Standard in Data Science
   "X_test",  # Standard in Data Science
+  "*X_*",    # Standard in Data Science
+  "*X_*",    # Standard in Data Science
 ]

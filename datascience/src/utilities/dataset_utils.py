@@ -1,6 +1,7 @@
 """Functions to generate Datasets."""
 import logging
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -138,7 +139,9 @@ def get_remaining_dataset_path() -> Path:
     return Path(settings.REMAINING_DATA_DIR)
 
 
-def to_simplified_category_id(y: np.ndarray):
+def to_simplified_category_id(
+    y: np.ndarray[Any, np.dtype[np.int32]]
+) -> np.ndarray[Any, np.dtype[np.int32]]:
     """Convert the category id into a simplified equivalent ranging from 0 to 26.
 
     Args:
@@ -153,7 +156,9 @@ def to_simplified_category_id(y: np.ndarray):
     return np.array([categories[i] for i in y])
 
 
-def to_normal_category_id(y: np.ndarray) -> np.ndarray:
+def to_normal_category_id(
+    y: np.ndarray[Any, np.dtype[np.int32]]
+) -> np.ndarray[Any, np.dtype[np.int32]]:
     """Convert back a simplified category id to the original category id.
 
     Args:
