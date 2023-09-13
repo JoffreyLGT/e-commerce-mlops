@@ -10,6 +10,7 @@ Open provided folder, create train and test dataset and optimize images by:
 """
 
 import datetime
+import pydantic
 import os
 import pickle
 import shutil
@@ -24,7 +25,7 @@ import numpy as np
 import pandas as pd
 import pydantic_argparse
 from PIL import Image, ImageOps
-from pydantic import BaseModel, DirectoryPath, validator
+from pydantic import BaseModel, DirectoryPath, Field, validator
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
@@ -388,6 +389,13 @@ class OptimizeImagesArgs(BaseModel):
     test_size: int | float
     input_dir: DirectoryPath
     output_dir: Path
+    cat_subdir: bool = pydantic.Field(
+        False,
+        description=(
+            "True to store the images of each "
+            "category into a subdir named with the category id."
+        ),
+    )
 
     @validator("input_dir")
     def must_contain_data(
@@ -424,6 +432,15 @@ def main(args: OptimizeImagesArgs) -> int:
         stratify=target,
     )
 
+    print("Save datasets into csv")
+    if not os.path.exists(args.output_dir):
+        os.makedirs(args.output_dir)
+
+    X_train.to_csv(f"{args.output_dir}/X_train.csv")
+    X_test.to_csv(f"{args.output_dir}/X_test.csv")
+    y_train.to_csv(f"{args.output_dir}/y_train.csv")  # pyright: ignore
+    y_test.to_csv(f"{args.output_dir}/y_test.csv")  # pyright: ignore
+
     transformer = ImagePipeline(
         size=(model_settings.IMG_WIDTH, model_settings.IMG_HEIGHT),
         keep_ratio=model_settings.IMG_KEEP_RATIO,
@@ -434,26 +451,26 @@ def main(args: OptimizeImagesArgs) -> int:
 
     pipeline = transformer.img_transformer
 
-    print("Transformation du jeu de données d'entrainement")
-    X_train = pipeline.transform(X_train, y_train, type="train")
-    print("Transformation du jeu de données de test")
-    X_test = pipeline.transform(X_test, y_test, type="test")
-
-    print("Enregistrement des données")
-    if not os.path.exists(args.output_dir):
-        os.makedirs(args.output_dir)
-
-    X_train.to_csv(f"{args.output_dir}/X_train.csv")
-    X_test.to_csv(f"{args.output_dir}/X_test.csv")
-    y_train.to_csv(f"{args.output_dir}/y_train.csv")  # pyright: ignore
-    y_test.to_csv(f"{args.output_dir}/y_test.csv")  # pyright: ignore
+    print("Transform and store train dataset images")
+    X_train = pipeline.transform(
+        X_train, y_train if args.cat_subdir is True else None, type="train"
+    )
+    print("Transform and store test dataset images")
+    X_test = pipeline.transform(
+        X_test, y_test if args.cat_subdir is True else None, type="test"
+    )
 
     return 0
 
 
 if __name__ == "__main__":
     parser = pydantic_argparse.ArgumentParser(
-        model=OptimizeImagesArgs, description="Define which data to work with"
+        model=OptimizeImagesArgs,
+        description=(
+            "Generate a dataset using data from --input-dir "
+            "and preprocess images to remove white stripes. "
+            "Datasets are saved into csv files, images in jpg."
+        ),
     )
     args = parser.parse_typed_args()
     sys.exit(main(args))

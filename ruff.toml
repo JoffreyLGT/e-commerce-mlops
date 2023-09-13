@@ -36,6 +36,7 @@ fixable = ["ALL"]
 # Rules to concider non-autofix-able
 unfixable = [
   "ERA001", # commented-out-code
+  "F841",   # unused-variable
 ]
 # pyproject.toml must be included to load configuration
 include = ["app/*.py", "scripts/*.py", "**/pyproject.toml", "src/*.py"]
