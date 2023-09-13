@@ -1,5 +1,5 @@
-# ruff: noqa
 # type: ignore
+# ruff: noqa
 """Train text model, evaluate its performance and generates figures and stats.
 
 All logs and best checkpoints are stored in --output-dir.
@@ -23,9 +23,7 @@ Use scripts/optimize_images.py to generate a dataset.
 import logging
 import os
 import pickle
-import re
 import sys
-from html.parser import HTMLParser
 from pathlib import Path
 
 import keras
@@ -45,18 +43,12 @@ from keras.losses import CategoricalCrossentropy
 from keras.optimizers import (
     Adam,
 )
-from nltk.stem.snowball import SnowballStemmer
 from pydantic import BaseModel, DirectoryPath
 from sklearn import metrics
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.feature_extraction.text import (
-    CountVectorizer,
-    TfidfVectorizer,
-)
-from sklearn.pipeline import Pipeline
 from tensorflow.train import latest_checkpoint
 
 from src.core.settings import get_common_settings
+from src.transformers.text_transformer import TextPreprocess, TfidfStemming
 from src.utilities.dataset_utils import to_normal_category_id, to_simplified_category_id
 from src.utilities.model_eval import (
     gen_classification_report,
@@ -65,127 +57,6 @@ from src.utilities.model_eval import (
 )
 
 logger = logging.getLogger(__file__)
-
-
-class TextPreprocess:
-    def __init__(self, pipeline):
-        self.pipeline = pipeline
-
-    def fit(self, data):
-        return self.pipeline.fit(data)
-
-    def fit_transform(self, data) -> tf.SparseTensor:
-        out = self.pipeline.fit_transform(data)
-        return convert_sparse_matrix_to_sparse_tensor(out)
-
-    def transform(self, data) -> tf.SparseTensor:
-        out = self.pipeline.transform(data)
-        return convert_sparse_matrix_to_sparse_tensor(out)
-
-    def get_voc(self):
-        return self.pipeline.get_voc()
-
-    def save_voc(self, prefix_filename):
-        voc = self.get_voc()
-        file_name = f"{prefix_filename}_{self.pipeline.name}.pkl"
-        with open(file_name, "wb") as fp:
-            pickle.dump(voc, fp)
-        logger.info(f"TextPreprocess.save_voc {file_name}")
-        return file_name
-
-
-class _RakutenHTMLParser(HTMLParser):
-    """Parse the text fed to it using feed() and return the content without HTML tag or encoding with get_all_content()."""
-
-    def __init__(self):
-        self.allcontent = ""
-        super().__init__()
-
-    def handle_data(self, data):
-        self.allcontent += data + " "
-
-    def get_all_content(self):
-        return self.allcontent.strip()
-
-
-class HTMLRemover(BaseEstimator, TransformerMixin):
-    """Transformer removing HTML tags and decoding HTML special characters."""
-
-    def _parseValue(self, value):
-        if type(value) != str:
-            return value
-        parser = _RakutenHTMLParser()
-        parser.feed(value)
-        return parser.get_all_content()
-
-    def _parseColumn(self, column):
-        return [self._parseValue(value) for value in column]
-
-    def fit(self, X, y=None):
-        # Do nothing, mandatory function for when a model is provided to the pipeline.
-        return self
-
-    def transform(self, X):
-        if type(X) == pd.DataFrame:
-            return X.apply(lambda column: self._parseColumn(column))
-
-        return X.apply(lambda column: self._parseValue(column))
-
-
-class NumRemover(BaseEstimator, TransformerMixin):
-    """Remove all number from strings."""
-
-    def _parse_value(self, value):
-        if isinstance(type(value), int):
-            return value
-        return re.sub("\s?([0-9]+)\s?", " ", value)
-
-    def _parse_column(self, column):
-        return [self._parse_value(value) for value in column]
-
-    def fit(self, X, y=None):
-        # Do nothing, mandatory function for when a model is provided to the pipeline.
-        return self
-
-    def transform(self, X):
-        if type(X) == pd.DataFrame:
-            return X.apply(lambda column: self._parse_column(column))
-
-        return X.apply(lambda column: self._parse_value(column))
-
-
-class StemmedCountVectorizer(CountVectorizer):
-    fr_stemmer = SnowballStemmer("french")
-
-    def build_analyzer(self):
-        analyzer = super().build_analyzer()
-        return lambda doc: (
-            StemmedCountVectorizer.fr_stemmer.stem(w) for w in analyzer(doc)
-        )
-
-
-class StemmedTfidfVectorizer(TfidfVectorizer):
-    fr_stemmer = SnowballStemmer("french")
-
-    def build_analyzer(self):
-        analyzer = super().build_analyzer()
-        return lambda doc: (
-            StemmedTfidfVectorizer.fr_stemmer.stem(w) for w in analyzer(doc)
-        )
-
-
-class TfidfStemming(Pipeline):
-    def __init__(self):
-        self.name = "TfidfStemming"
-        steps = [
-            ("remove_html", HTMLRemover()),
-            ("remove_num", NumRemover()),
-            ("tfidStem", StemmedTfidfVectorizer()),
-        ]
-        Pipeline.__init__(self, steps)
-
-    def get_voc(self):
-        return self.steps[2][1].vocabulary_
 
 
 class TrainTextModelArgs(BaseModel):
@@ -211,12 +82,6 @@ class TrainTextModelArgs(BaseModel):
             "before stopping the model training."
         ),
     )
-
-
-def convert_sparse_matrix_to_sparse_tensor(X) -> tf.SparseTensor:
-    coo = X.tocoo()
-    indices = np.mat([coo.row, coo.col]).transpose()
-    return tf.sparse.reorder(tf.SparseTensor(indices, coo.data, coo.shape))
 
 
 def main(args: TrainTextModelArgs) -> int:  # noqa: PLR0915
@@ -268,6 +133,10 @@ def main(args: TrainTextModelArgs) -> int:  # noqa: PLR0915
     preprocessor = TextPreprocess(TfidfStemming())
     X_train_tensor = preprocessor.fit_transform(X_train)
     X_test_tensor = preprocessor.transform(X_test)
+    preprocessor_path = args.output_dir / "text_preprocess.pkl"
+    with preprocessor_path.open("wb") as file:
+        pickle.dump(preprocessor, file)
+    logger.info(f"Preprocessor saved: {preprocessor_path}")
 
     logger.info("Create datasets")
     train_ds = tf.data.Dataset.from_tensor_slices(
