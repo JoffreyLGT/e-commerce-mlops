@@ -8,8 +8,7 @@ Note: important variable must have a validator using pydantic.
 import logging
 from functools import lru_cache
 from pathlib import Path
-from types import MappingProxyType
-from typing import Any, Literal
+from typing import Any, Final, Literal
 
 from pydantic import BaseSettings, DirectoryPath, validator
 
@@ -22,38 +21,66 @@ class _ConstantSettings:
 
     # TODO @JoffreyLGT: Should we have a package handling configurations since they are common to all projects?
     #  https://github.com/JoffreyLGT/e-commerce-mlops/issues/80
-    ROOT_DIR: DirectoryPath = Path(Path(src.__file__).parent).parent
-    CATEGORIES_DIC = MappingProxyType(
-        {
-            10: "Livre",
-            1140: "Figurine et produits dérivés",
-            1160: "Carte à collectionner",
-            1180: "Univers fantastiques",
-            1280: "Jouet pour enfant",
-            1281: "Jeu de société",
-            1300: "Miniature de collection",
-            1301: "Loisir",
-            1302: "Activité d'extérieur",
-            1320: "Accessoire bébé",
-            1560: "Meuble d'intérieur",
-            1920: "Litterie, rideaux",
-            1940: "Epicerie",
-            2060: "Décoration d'intérieur",
-            2220: "Accessoire animaux de compagnie",
-            2280: "Magazine et BD",
-            2403: "Livres anciens",
-            2462: "Jeu vidéo - Pack",
-            2522: "Fourniture de bureau",
-            2582: "Meubles extérieur",
-            2583: "Piscine",
-            2585: "Bricolage",
-            2705: "Livre",
-            2905: "Jeu vidéo - Jeu",
-            40: "Jeu vidéo - Jeu",
-            50: "Jeu vidéo - Accessoire",
-            60: "Jeu vidéo - Console",
-        }
-    )
+    ROOT_DIR: Final = Path(Path(src.__file__).parent).parent
+    CATEGORIES_DIC: Final = {
+        10: "Livre",
+        1140: "Figurine et produits dérivés",
+        1160: "Carte à collectionner",
+        1180: "Univers fantastiques",
+        1280: "Jouet pour enfant",
+        1281: "Jeu de société",
+        1300: "Miniature de collection",
+        1301: "Loisir",
+        1302: "Activité d'extérieur",
+        1320: "Accessoire bébé",
+        1560: "Meuble d'intérieur",
+        1920: "Litterie, rideaux",
+        1940: "Epicerie",
+        2060: "Décoration d'intérieur",
+        2220: "Accessoire animaux de compagnie",
+        2280: "Magazine et BD",
+        2403: "Livres anciens",
+        2462: "Jeu vidéo - Pack",
+        2522: "Fourniture de bureau",
+        2582: "Meubles extérieur",
+        2583: "Piscine",
+        2585: "Bricolage",
+        2705: "Livre",
+        2905: "Jeu vidéo - Jeu",
+        40: "Jeu vidéo - Jeu",
+        50: "Jeu vidéo - Accessoire",
+        60: "Jeu vidéo - Console",
+    }
+
+    CATEGORIES_SIMPLIFIED_DIC: Final = {
+        10: 0,
+        1140: 1,
+        1160: 2,
+        1180: 3,
+        1280: 4,
+        1281: 5,
+        1300: 6,
+        1301: 7,
+        1302: 8,
+        1320: 9,
+        1560: 10,
+        1920: 11,
+        1940: 12,
+        2060: 13,
+        2220: 14,
+        2280: 15,
+        2403: 16,
+        2462: 17,
+        2522: 18,
+        2582: 19,
+        2583: 20,
+        2585: 21,
+        2705: 22,
+        2905: 23,
+        40: 24,
+        50: 25,
+        60: 26,
+    }
 
 
 class _CommonSettings(BaseSettings, _ConstantSettings):

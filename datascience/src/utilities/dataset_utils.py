@@ -1,9 +1,9 @@
 """Functions to generate Datasets."""
-
-
 import logging
 from pathlib import Path
+from typing import Any
 
+import numpy as np
 import pandas as pd
 from pydantic.types import DirectoryPath
 
@@ -137,3 +137,39 @@ def get_remaining_dataset_path() -> Path:
         )
 
     return Path(settings.REMAINING_DATA_DIR)
+
+
+def to_simplified_category_id(
+    y: np.ndarray[Any, np.dtype[np.int32]]
+) -> np.ndarray[Any, np.dtype[np.int32]]:
+    """Convert the category id into a simplified equivalent ranging from 0 to 26.
+
+    Args:
+        y: list of category id to convert to a simplified range.
+
+    Returns:
+        y with converted category id.
+    """
+    from src.core.settings import get_common_settings
+
+    categories = get_common_settings().CATEGORIES_SIMPLIFIED_DIC
+    return np.array([categories[i] for i in y])
+
+
+def to_normal_category_id(
+    y: np.ndarray[Any, np.dtype[np.int32]]
+) -> np.ndarray[Any, np.dtype[np.int32]]:
+    """Convert back a simplified category id to the original category id.
+
+    Args:
+        y: list of category id to convert to a the original value.
+
+    Returns:
+        y with original category id.
+    """
+    from src.core.settings import get_common_settings
+
+    categories = get_common_settings().CATEGORIES_SIMPLIFIED_DIC
+    return np.array(
+        [list(categories.keys())[list(categories.values()).index(i)] for i in y]
+    )
