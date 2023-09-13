@@ -133,6 +133,7 @@ def main(args: TrainFusionModelArgs) -> int:  # noqa: PLR0915
         0 if everything went as expected, 1 otherwise.
     """
     logger.info("Script started")
+    logger.info(f"Args: {args}")
 
     # Ensure all messages from Tensorflow will be logged and not only printed
     tf.keras.utils.disable_interactive_logging()
