@@ -1,5 +1,5 @@
-# type: ignore
 # ruff: noqa
+# type: ignore
 """Train text model, evaluate its performance and generates figures and stats.
 
 All logs and best checkpoints are stored in --output-dir.
@@ -20,7 +20,6 @@ dataset_dir
 
 Use scripts/optimize_images.py to generate a dataset.
 """
-import itertools
 import logging
 import os
 import pickle
@@ -30,7 +29,6 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 import keras
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pydantic
@@ -60,6 +58,11 @@ from tensorflow.train import latest_checkpoint
 
 from src.core.settings import get_common_settings
 from src.utilities.dataset_utils import to_normal_category_id, to_simplified_category_id
+from src.utilities.model_eval import (
+    gen_classification_report,
+    gen_confusion_matrix,
+    gen_training_history_figure,
+)
 
 logger = logging.getLogger(__file__)
 
@@ -255,31 +258,30 @@ def main(args: TrainTextModelArgs) -> int:  # noqa: PLR0915
         args.input_dir / "y_test.csv", dtype=int, delimiter=",", skiprows=1, usecols=(1)
     )
 
+    y_train_simplified = to_simplified_category_id(y_train)
+    y_test_simplified = to_simplified_category_id(y_test)
+
+    y_train_categorical = keras.utils.to_categorical(y_train_simplified)
+    y_test_categorical = keras.utils.to_categorical(y_test_simplified)
+
     logger.info("Create preprocessor and preprocess features")
     preprocessor = TextPreprocess(TfidfStemming())
     X_train_tensor = preprocessor.fit_transform(X_train)
     X_test_tensor = preprocessor.transform(X_test)
 
-    y_train_simplified = to_simplified_category_id(y_train)
-    y_test_simplified = to_simplified_category_id(y_test)
-
-    y_train_categorical = keras.utils.to_categorical(y_train_simplified)
-
-    y_test_categorical = keras.utils.to_categorical(y_test_simplified)
-
     logger.info("Create datasets")
-    train_dataset = tf.data.Dataset.from_tensor_slices(
+    train_ds = tf.data.Dataset.from_tensor_slices(
         (X_train_tensor, y_train_categorical)
     ).batch(args.batch_size)
-    test_dataset = tf.data.Dataset.from_tensor_slices(
+    test_ds = tf.data.Dataset.from_tensor_slices(
         (X_test_tensor, y_test_categorical)
     ).batch(args.batch_size)
 
     # # Add cache configuration to speed up training
     # # If this cause issues, we'll add an argument to enable it
     autotune = tf.data.AUTOTUNE
-    train_dataset = train_dataset.cache().prefetch(buffer_size=autotune)
-    test_dataset = test_dataset.cache().prefetch(buffer_size=autotune)
+    train_ds = train_ds.cache().prefetch(buffer_size=autotune)
+    test_ds = test_ds.cache().prefetch(buffer_size=autotune)
 
     logger.info("Build text model")
     model = tf.keras.models.Sequential()
@@ -334,9 +336,9 @@ def main(args: TrainTextModelArgs) -> int:  # noqa: PLR0915
 
     logger.info("Start model training")
     model.fit(
-        train_dataset,
+        train_ds,
         epochs=100,
-        validation_data=test_dataset,
+        validation_data=test_ds,
         callbacks=cp_callbacks,
         batch_size=args.batch_size,
     )
@@ -348,108 +350,21 @@ def main(args: TrainTextModelArgs) -> int:  # noqa: PLR0915
         model.load_weights(latest)
     model.save(args.output_dir / "mlp_text.keras")
 
-    # TODO @joffreylgt: figure and stats generation should be in their own functions.
-    #  https://github.com/JoffreyLGT/e-commerce-mlops/issues/103
-
     logger.info("Generate training history figure")
-    training_history = pd.read_csv(history_file_path, delimiter=",", header=0)
-
-    fig = plt.figure(figsize=(10, 3))
-    ax1 = fig.add_subplot(121)
-
-    # TODO @joffreylgt: translate from French to English.
-    #  https://github.com/JoffreyLGT/e-commerce-mlops/issues/103
-
-    # Labels des axes
-    ax1.set_xlabel("Epochs")
-    ax1.set_ylabel("Accuracy")
-
-    # Courbe de la précision sur l'échantillon d'entrainement
-    ax1.plot(
-        np.arange(1, training_history["accuracy"].count() + 1, 1),
-        training_history["accuracy"],
-        label="Training Accuracy",
-        color="blue",
-    )
-
-    # Courbe de la précision sur l'échantillon de test
-    ax1.plot(
-        np.arange(1, training_history["val_accuracy"].count() + 1, 1),
-        training_history["val_accuracy"],
-        label="Validation Accuracy",
-        color="red",
-    )
-
-    ax1.legend()
-    ax1.set_title("Accuracy per epoch")
-
-    ax2 = fig.add_subplot(122)
-    ax2.set_ylabel("Loss")
-    ax2.set_xlabel("Epochs")
-
-    ax2.plot(
-        np.arange(1, training_history["loss"].count() + 1, 1),
-        training_history["loss"],
-        label="Training loss",
-        linestyle="dashed",
-        color="blue",
-    )
-
-    ax2.plot(
-        np.arange(1, training_history["val_loss"].count() + 1, 1),
-        training_history["val_loss"],
-        label="Validation loss",
-        linestyle="dashed",
-        color="red",
-    )
-
-    ax2.legend()
-    ax2.set_title("Loss per epoch")
-
-    plt.savefig(args.output_dir / "training_history.png")
+    logger.info(gen_training_history_figure(history_file_path, args.output_dir))
 
     logger.info("Predict test data categories")
-    y_pred_simplified = model.predict(test_dataset)
+    y_pred_simplified = model.predict(test_ds)
     y_pred = to_normal_category_id([np.argmax(i) for i in y_pred_simplified])
 
     logger.info(f"Accuracy score: {metrics.accuracy_score(y_test, y_pred)}")
-    logger.info("Generate classification report")
-    class_report = metrics.classification_report(
-        y_test, y_pred, zero_division=0.0  # pyright: ignore
-    )
 
-    Path(args.output_dir / "classification_report.txt").write_text(str(class_report))
-    logger.info(str(class_report))
+    logger.info("Generate classification report")
+    (_, class_report) = gen_classification_report(y_test, y_pred, args.output_dir)
+    logger.info(class_report)
 
     logger.info("Generate confusion matrix")
-    cnf_matrix = np.round(metrics.confusion_matrix(y_test, y_pred, normalize="true"), 2)
-
-    classes = range(0, nb_output_classes)
-    category_ids = list(settings.CATEGORIES_DIC.keys())
-
-    plt.figure(figsize=(13, 13))
-
-    plt.imshow(cnf_matrix, interpolation="nearest", cmap="Blues")
-    plt.title("Confusion matrix")
-    tick_marks = classes
-    plt.xticks(tick_marks, category_ids)
-    plt.yticks(tick_marks, category_ids)
-
-    for i, j in itertools.product(
-        range(cnf_matrix.shape[0]), range(cnf_matrix.shape[1])
-    ):
-        plt.text(
-            j,
-            i,
-            cnf_matrix[i, j],
-            horizontalalignment="center",
-            color="white" if cnf_matrix[i, j] > (cnf_matrix.max() / 2) else "black",
-        )
-
-    plt.ylabel("Real")
-    plt.xlabel("Predicted")
-    plt.xticks(rotation=45)
-    plt.savefig(args.output_dir / "confusion_matrix.png")
+    logger.info(gen_confusion_matrix(y_test, y_pred, args.output_dir))
 
     logger.info("Script finished")
     return 0
