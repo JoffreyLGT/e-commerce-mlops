@@ -41,7 +41,7 @@ from pydantic import BaseModel, DirectoryPath
 from sklearn import metrics
 from tensorflow.train import latest_checkpoint
 
-from src.core.settings import get_mobilenet_image_model_settings
+from src.core.settings import get_common_settings, get_mobilenet_image_model_settings
 from src.utilities.dataset_utils import (
     get_imgs_filenames,
     to_img_feature_target,
@@ -209,17 +209,14 @@ def main(args: TrainImageModelArgs) -> int:  # noqa: PLR0915
     x = layers.GlobalAveragePooling2D()(x)
     x = layers.Dropout(rate=0.2, name="Dropout")(x)
 
-    # TODO @joffreylgt: set value in configuration
-    #  https://github.com/JoffreyLGT/e-commerce-mlops/issues/103
-    nb_output_classes = 27
-
     checkpoints_dir = args.output_dir / "checkpoints"
     checkpoint_file_path = (
         checkpoints_dir / "cp_loss-{val_loss:.2f}_acc-{val_accuracy:.2f}.ckpt"
     )
     history_file_path = args.output_dir / "history.csv"
     tensorboard_logs_dir = args.output_dir / "tensorboard_logs"
-    outputs = layers.Dense(nb_output_classes, name="Output")(x)
+    settings = get_common_settings()
+    outputs = layers.Dense(len(settings.CATEGORIES_DIC.keys()), name="Output")(x)
     model = tf.keras.Model(inputs, outputs, name="RakutenImageNet")
 
     model.build((None, model_settings.IMG_WIDTH, model_settings.IMG_HEIGHT, 3))
