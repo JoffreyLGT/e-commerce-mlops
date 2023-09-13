@@ -5,6 +5,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 from pydantic.types import DirectoryPath
 
 from src.core.custom_errors import MissingDataError, MissingEnvironmentVariableError
@@ -173,3 +174,59 @@ def to_normal_category_id(
     return np.array(
         [list(categories.keys())[list(categories.values()).index(i)] for i in y]
     )
+
+
+def get_img_name(productid: int, imageid: int) -> str:
+    """Return the filename of the image.
+
+    Args:
+        productid: "productid" field from the original DataFrame.
+        imageid: "imageid" field from the original DataFrame.
+
+    Returns:
+        Image filename, for example: image_1000076039_product_580161.jpg
+    """
+    return f"image_{imageid}_product_{productid}.jpg"
+
+
+def get_imgs_filenames(
+    productids: list[int], imageids: list[int], img_dir: Path
+) -> list[str]:
+    """Return a list of filenames from productids and imagesids.
+
+    Args:
+        productids: list of product ids
+        imageids: list of image ids
+        img_dir: dir containing the images. Used only to return a full path.
+
+    Returns:
+        A list of the same size as productids and imageids containing the filenames.
+    """
+    if len(productids) != len(imageids):
+        raise ValueError(  # noqa: TRY003
+            "productids and imageids should be the same size"
+        )
+    if img_dir is None:
+        return [
+            get_img_name(productid, imageid)
+            for productid, imageid in zip(productids, imageids)
+        ]
+    return [
+        str(img_dir / get_img_name(productid, imageid))
+        for productid, imageid in zip(productids, imageids)
+    ]
+
+
+def to_img_feature_target(filename: str, y: Any) -> tuple[tf.Tensor, Any]:
+    """Open image and return a resized version in a tensor with the target.
+
+    Args:
+        filename: complete path to image file including the extension.
+        y: image category.
+
+    Return:
+        Tuple with (image matrix in a tensor, category to predict).
+    """
+    img = tf.io.read_file(filename)
+    img = tf.io.decode_jpeg(img, channels=3)
+    return (tf.image.resize(img, [224, 224]), y)
