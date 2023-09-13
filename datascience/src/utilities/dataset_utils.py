@@ -232,7 +232,7 @@ def to_img_feature_target(filename: str, y: Any) -> tuple[tf.Tensor, Any]:
     return (tf.image.resize(img, [224, 224]), y)
 
 
-def convert_sparse_matrix_to_sparse_tensor(X) -> tf.SparseTensor:
+def convert_sparse_matrix_to_sparse_tensor(X) -> tf.SparseTensor:  # type: ignore
     """Convert provided sparse matrix into a sparse tensor."""
     coo = X.tocoo()
     indices = np.mat([coo.row, coo.col]).transpose()
