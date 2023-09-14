@@ -1,5 +1,8 @@
 # type: ignore
-"""Train image model, evaluate its performance and generates figures and stats.
+"""Train fusion model, evaluate its performance and generates figures and stats.
+
+Training is done using results from both text and image models without their
+classification layer.
 
 All logs and best checkpoints are stored in --output-dir.
 --input-dir expects a dataset with this structure is expected:
@@ -19,8 +22,9 @@ Use scripts/optimize_images.py to generate a dataset.
 """
 import logging
 import os
+import pickle
 import sys
-from pathlib import Path
+from pathlib import Path, PurePath
 
 import keras
 import numpy as np
@@ -28,7 +32,7 @@ import pandas as pd
 import pydantic
 import pydantic_argparse
 import tensorflow as tf
-from keras import Sequential, layers
+from keras import layers
 from keras.callbacks import (
     CSVLogger,
     EarlyStopping,
@@ -37,16 +41,16 @@ from keras.callbacks import (
 )
 from keras.losses import CategoricalCrossentropy
 from keras.optimizers import SGD
-from pydantic import BaseModel, DirectoryPath
+from pydantic import BaseModel, DirectoryPath, FilePath, validator
 from sklearn import metrics
 from tensorflow.train import latest_checkpoint
 
-from src.core.settings import get_common_settings, get_mobilenet_image_model_settings
+from src.core.settings import get_common_settings
 from src.utilities.dataset_utils import (
     get_imgs_filenames,
     to_img_feature_target,
     to_normal_category_id,
-    to_simplified_category_id,
+    to_simplified_category_id,  # pyright: ignore
 )
 from src.utilities.model_eval import (
     gen_classification_report,
@@ -54,8 +58,27 @@ from src.utilities.model_eval import (
     gen_training_history_figure,
 )
 
+logger = logging.getLogger(__file__)
 
-class TrainImageModelArgs(BaseModel):
+
+def check_extension(file_path: FilePath) -> FilePath:
+    """Check file extension to ensure it's .h5 or .keras.
+
+    Args:
+        file_path: path to the model file.
+
+    Returns:
+        Path to the file if the format is correct.
+
+    Raises:
+        ValueError: when the file extension is incorrect.
+    """
+    if PurePath(file_path).suffix in [".h5", ".keras"]:
+        return file_path
+    raise ValueError("Only .h5 and .keras extensions are supported")  # noqa: TRY003
+
+
+class TrainFusionModelArgs(BaseModel):
     """Hold all scripts arguments and do type checking."""
 
     input_dir: DirectoryPath = pydantic.Field(
@@ -64,22 +87,29 @@ class TrainImageModelArgs(BaseModel):
     output_dir: Path = pydantic.Field(
         description="Directory to save trained model and stats."
     )
+    text_model: FilePath = pydantic.Field(
+        description="Path to the saved text model. Format must be either .h5 or .keras."
+    )
+    _check_text_model_extension = validator("text_model", allow_reuse=True)(
+        check_extension
+    )
+    text_preprocessor: FilePath = pydantic.Field(
+        description="Path to the text preprocessor pkl."
+    )
+    image_model: FilePath = pydantic.Field(
+        description=(
+            "Path to the saved image model. Format must be either .h5 or .keras."
+        )
+    )
+    _check_image_model_extension = validator("image_model", allow_reuse=True)(
+        check_extension
+    )
+
     batch_size: int = pydantic.Field(
         96,
         description=(
             "Size of the batches to use for the training. "
             "Set as much as your machine allows."
-        ),
-    )
-    data_augmentation: bool = pydantic.Field(
-        True, description="Add layers of data augmentation to avoid early overfitting."
-    )
-    seed: int = pydantic.Field(
-        123,
-        description=(
-            "Seed to use for randomisation. "
-            "Ensure batches are always de same "
-            "when executing script with the same seed."
         ),
     )
     train_patience: int = pydantic.Field(
@@ -91,8 +121,8 @@ class TrainImageModelArgs(BaseModel):
     )
 
 
-def main(args: TrainImageModelArgs) -> int:  # noqa: PLR0915
-    """Create and train a new MobileNetV2 based image model.
+def main(args: TrainFusionModelArgs) -> int:  # noqa: PLR0915
+    """Create and train a new fusion model.
 
     All artifacts are exported into output-dir.
 
@@ -102,8 +132,6 @@ def main(args: TrainImageModelArgs) -> int:  # noqa: PLR0915
     Return:
         0 if everything went as expected, 1 otherwise.
     """
-    logger = logging.getLogger(__file__)
-
     logger.info("Script started")
     logger.info(f"Args: {args}")
 
@@ -118,18 +146,21 @@ def main(args: TrainImageModelArgs) -> int:  # noqa: PLR0915
     df_X_train = pd.read_csv(args.input_dir / "X_train.csv", index_col=0).fillna("")
     df_X_test = pd.read_csv(args.input_dir / "X_test.csv", index_col=0).fillna("")
 
-    logger.info("Extract features and target")
-    X_train = get_imgs_filenames(
+    logger.info("Extract features")
+    X_train_text = df_X_train["designation"] + " " + df_X_train["description"]
+    X_test_text = df_X_test["designation"] + " " + df_X_test["description"]
+    X_train_img = get_imgs_filenames(
         df_X_train["productid"].to_list(),
         df_X_train["imageid"].to_list(),
         args.input_dir / "images",
     )
-    X_test = get_imgs_filenames(
+    X_test_img = get_imgs_filenames(
         df_X_test["productid"].to_list(),
         df_X_test["imageid"].to_list(),
         args.input_dir / "images",
     )
 
+    logger.info("Extract targets")
     y_train = np.loadtxt(
         args.input_dir / "y_train.csv",
         dtype=int,
@@ -147,68 +178,71 @@ def main(args: TrainImageModelArgs) -> int:  # noqa: PLR0915
     y_train_categorical = keras.utils.to_categorical(y_train_simplified)
     y_test_categorical = keras.utils.to_categorical(y_test_simplified)
 
-    logger.info("Create datasets")
-    train_ds = (
-        tf.data.Dataset.from_tensor_slices((X_train, y_train_categorical))
+    logger.info("Load text preprocessor and preprocess text features")
+    preprocessor = pickle.load(args.text_preprocessor.open("rb"))
+    X_train_text_tensor = preprocessor.transform(X_train_text)
+    X_test_text_tensor = preprocessor.transform(X_test_text)
+
+    logger.info("Create text datasets")
+    train_txt_ds = tf.data.Dataset.from_tensor_slices(
+        (X_train_text_tensor, y_train_categorical)
+    ).batch(args.batch_size)
+    test_txt_ds = tf.data.Dataset.from_tensor_slices(
+        (X_test_text_tensor, y_test_categorical)
+    ).batch(args.batch_size)
+
+    logger.info("Create image datasets")
+    train_img_ds = (
+        tf.data.Dataset.from_tensor_slices((X_train_img, y_train_categorical))
         .map(to_img_feature_target)
         .batch(args.batch_size)
     )
-
-    test_ds = (
-        tf.data.Dataset.from_tensor_slices((X_test, y_test_categorical))
+    test_img_ds = (
+        tf.data.Dataset.from_tensor_slices((X_test_img, y_test_categorical))
         .map(to_img_feature_target)
         .batch(args.batch_size)
     )
-
-    model_settings = get_mobilenet_image_model_settings()
-
-    nb_train_images = len(X_train)
-    nb_test_images = len(X_test)
 
     # Add cache configuration to speed up training
     # If this cause issues, we'll add an argument to enable it
     autotune = tf.data.AUTOTUNE
-    train_ds = train_ds.cache().prefetch(buffer_size=autotune)
-    test_ds = test_ds.cache().prefetch(buffer_size=autotune)
+    train_txt_ds = train_txt_ds.cache().prefetch(buffer_size=autotune)
+    test_txt_ds = test_txt_ds.cache().prefetch(buffer_size=autotune)
+    train_img_ds = train_img_ds.cache().prefetch(buffer_size=autotune)
+    test_img_ds = test_img_ds.cache().prefetch(buffer_size=autotune)
 
-    logger.info("Build image model")
-    mobilenet_layers = tf.keras.applications.MobileNetV2(
-        include_top=False,  # Do not include the ImageNet classifier at the top
-        weights="imagenet",  # Load weights pre-trained on ImageNet
-        input_shape=(model_settings.IMG_WIDTH, model_settings.IMG_HEIGHT, 3),
+    logger.info("Load text model without classification layers")
+    text_model = tf.keras.models.load_model(args.text_model, compile=False)
+    headless_text_model = tf.keras.Model(
+        inputs=text_model.inputs, outputs=text_model.layers[-2].output
     )
-    # Freeze the base model
-    mobilenet_layers.trainable = False
+    headless_text_model.summary()
 
-    inputs = tf.keras.Input(
-        shape=(model_settings.IMG_WIDTH, model_settings.IMG_HEIGHT, 3), name="Input"
+    logger.info("Load image model without classification layers")
+    image_model = tf.keras.models.load_model(args.image_model, compile=False)
+    headless_image_model = tf.keras.Model(
+        inputs=image_model.inputs, outputs=image_model.layers[-2].output
     )
+    headless_image_model.summary()
 
-    if args.data_augmentation:
-        x = Sequential(
-            [
-                layers.RandomFlip("horizontal_and_vertical", name="RandomFlip"),
-                layers.RandomRotation(0.2, name="RandomRotation"),
-                layers.RandomTranslation(
-                    height_factor=(-0.2, 0.3),
-                    width_factor=(-0.2, 0.3),
-                    name="RandomTranslation",
-                ),
-            ],
-            name="Augmentations",
-        )(inputs)
+    logger.info("Predict using text model")
+    train_txt_output = headless_text_model.predict(train_txt_ds)
+    test_txt_output = headless_text_model.predict(test_txt_ds)
 
-        # Rescale the pixels to have values between 0 and 1
-        x = layers.Rescaling(1.0 / 255, name="Rescaling")(x)
+    logger.info("Predict using image model")
+    train_img_output = headless_image_model.predict(train_img_ds)
+    test_img_output = headless_image_model.predict(test_img_ds)
 
-    else:
-        # Rescale the pixels to have values between 0 and 1
-        x = layers.Rescaling(1.0 / 255, name="Rescaling")(inputs)
+    logger.info("Create fusion model dataset")
+    train_fusion = np.concatenate((train_txt_output, train_img_output), axis=1)
+    test_fusion = np.concatenate((test_txt_output, test_img_output), axis=1)
 
-    # Run in inference mode to be safe when we unfreeze the base model for fine-tuning
-    x = mobilenet_layers(x, training=False)
-    x = layers.GlobalAveragePooling2D()(x)
-    x = layers.Dropout(rate=0.2, name="Dropout")(x)
+    train_fusion_ds = tf.data.Dataset.from_tensor_slices(
+        (train_fusion, y_train_categorical)
+    ).batch(args.batch_size)
+    test_fusion_ds = tf.data.Dataset.from_tensor_slices(
+        (test_fusion, y_test_categorical)
+    ).batch(args.batch_size)
 
     checkpoints_dir = args.output_dir / "checkpoints"
     checkpoint_file_path = (
@@ -216,22 +250,34 @@ def main(args: TrainImageModelArgs) -> int:  # noqa: PLR0915
     )
     history_file_path = args.output_dir / "history.csv"
     tensorboard_logs_dir = args.output_dir / "tensorboard_logs"
-    settings = get_common_settings()
-    outputs = layers.Dense(len(settings.CATEGORIES_DIC.keys()), name="Output")(x)
-    model = tf.keras.Model(inputs, outputs, name="RakutenImageNet")
 
-    model.build((None, model_settings.IMG_WIDTH, model_settings.IMG_HEIGHT, 3))
-    model.compile(
+    settings = get_common_settings()
+    fusion_model = tf.keras.Sequential()
+    fusion_model.add(layers.InputLayer(input_shape=(train_fusion.shape[1])))
+    fusion_model.add(layers.Dense(units=512, activation="relu"))
+    fusion_model.add(layers.Dropout(rate=0.2))
+
+    fusion_model.add(layers.Dense(units=128, activation="relu"))
+    fusion_model.add(layers.Dropout(rate=0.2))
+
+    fusion_model.add(
+        layers.Dense(
+            len(settings.CATEGORIES_DIC.keys()), activation="softmax", name="Output"
+        )
+    )
+
+    fusion_model.build((None, train_fusion.shape[1]))
+    fusion_model.compile(
         optimizer=SGD(learning_rate=0.005, momentum=0.9),
         loss=CategoricalCrossentropy(from_logits=True, label_smoothing=0.1),
         metrics=["accuracy"],
     )
-    model.summary()
+    fusion_model.summary()
 
     latest = latest_checkpoint(checkpoints_dir)
     if latest is not None:
         logger.info(f"Load checkpoint: {latest}")
-        model.load_weights(latest)
+        fusion_model.load_weights(latest)
     else:
         logger.info("No checkpoint to load")
 
@@ -254,54 +300,26 @@ def main(args: TrainImageModelArgs) -> int:  # noqa: PLR0915
         TensorBoard(log_dir=str(tensorboard_logs_dir), histogram_freq=1),
     ]
 
-    logger.info("Start model training")
-    steps_per_epoch = nb_train_images // args.batch_size
-    validation_steps = nb_test_images // args.batch_size
-
-    # Train the top layer
-    model.fit(
-        train_ds.repeat(),
+    logger.info("Start fusion model training")
+    fusion_model.fit(
+        train_fusion_ds,
         epochs=100,
-        steps_per_epoch=steps_per_epoch,
-        validation_data=test_ds.repeat(),
-        validation_steps=validation_steps,
+        validation_data=test_fusion_ds,
         callbacks=cp_callbacks,
     )
 
-    logger.info("Start model fine tuning")
-    # Unfreeze the base_model. Note that it keeps running in inference mode
-    # since we passed `training=False` when calling it. This means that
-    # the batchnorm layers will not update their batch statistics.
-    # This prevents the batchnorm layers from undoing all the training
-    # we've done so far.
-    mobilenet_layers.trainable = True
-    model.compile(
-        optimizer=SGD(learning_rate=0.001, momentum=0.9),
-        loss=CategoricalCrossentropy(label_smoothing=0.1),
-        metrics=["accuracy"],
-    )
-    model.summary()
-    model.fit(
-        train_ds.repeat(),
-        epochs=100,
-        steps_per_epoch=steps_per_epoch,
-        validation_data=test_ds.repeat(),
-        validation_steps=validation_steps,
-        callbacks=cp_callbacks,
-    )
-
-    logger.info("Save the model")
+    logger.info("Save the fusion_model")
     # Load the latest checkpoint to avoid overfitting
     latest = latest_checkpoint(checkpoints_dir)
     if latest is not None:
-        model.load_weights(latest)
-    model.save(args.output_dir / "cnn_mobilenetv2.keras")
+        fusion_model.load_weights(latest)
+    fusion_model.save(args.output_dir / "fusion.keras")
 
     logger.info("Generate training history figure")
     logger.info(gen_training_history_figure(history_file_path, args.output_dir))
 
     logger.info("Predict test data categories")
-    y_pred_simplified = model.predict(test_ds)
+    y_pred_simplified = fusion_model.predict(test_fusion_ds)
     y_pred = to_normal_category_id([np.argmax(i) for i in y_pred_simplified])
 
     logger.info(f"Accuracy score: {metrics.accuracy_score(y_test, y_pred)}")
@@ -314,15 +332,14 @@ def main(args: TrainImageModelArgs) -> int:  # noqa: PLR0915
     logger.info(gen_confusion_matrix(y_test, y_pred, args.output_dir))
 
     logger.info("Script finished")
-
     return 0
 
 
 if __name__ == "__main__":
     parser = pydantic_argparse.ArgumentParser(
-        model=TrainImageModelArgs,
+        model=TrainFusionModelArgs,
         description=(
-            "Create and train a new image model "
+            "Create and train a new fusion model "
             "using dataset provided with --input-dir, "
             "then save it to --output-dir with "
             "its performance statistics."

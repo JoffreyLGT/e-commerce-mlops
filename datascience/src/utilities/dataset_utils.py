@@ -230,3 +230,10 @@ def to_img_feature_target(filename: str, y: Any) -> tuple[tf.Tensor, Any]:
     img = tf.io.read_file(filename)
     img = tf.io.decode_jpeg(img, channels=3)
     return (tf.image.resize(img, [224, 224]), y)
+
+
+def convert_sparse_matrix_to_sparse_tensor(X) -> tf.SparseTensor:  # type: ignore
+    """Convert provided sparse matrix into a sparse tensor."""
+    coo = X.tocoo()
+    indices = np.mat([coo.row, coo.col]).transpose()
+    return tf.sparse.reorder(tf.SparseTensor(indices, coo.data, coo.shape))
