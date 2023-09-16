@@ -217,13 +217,15 @@ def main(args: TrainImageModelArgs) -> int:  # noqa: PLR0915
     history_file_path = args.output_dir / "history.csv"
     tensorboard_logs_dir = args.output_dir / "tensorboard_logs"
     settings = get_common_settings()
-    outputs = layers.Dense(len(settings.CATEGORIES_DIC.keys()), name="Output")(x)
+    outputs = layers.Dense(
+        len(settings.CATEGORIES_DIC.keys()), name="Output", activation="softmax"
+    )(x)
     model = tf.keras.Model(inputs, outputs, name="RakutenImageNet")
 
     model.build((None, model_settings.IMG_WIDTH, model_settings.IMG_HEIGHT, 3))
     model.compile(
         optimizer=SGD(learning_rate=0.005, momentum=0.9),
-        loss=CategoricalCrossentropy(from_logits=True, label_smoothing=0.1),
+        loss=CategoricalCrossentropy(label_smoothing=0.1),
         metrics=["accuracy"],
     )
     model.summary()
