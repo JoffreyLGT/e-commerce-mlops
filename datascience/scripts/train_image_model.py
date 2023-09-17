@@ -44,7 +44,7 @@ from mlflow.pyfunc import ModelSignature, PythonModel, PythonModelContext
 from mlflow.types import ColSpec, Schema
 from pydantic import BaseModel, DirectoryPath
 from sklearn import metrics
-from tensorflow.train import latest_checkpoint  # type: ignore
+from tensorflow import train
 
 from src.core.settings import get_mobilenet_image_model_settings, get_training_settings
 from src.utilities.dataset_utils import (
@@ -301,7 +301,7 @@ def main(args: TrainImageModelArgs) -> int:  # noqa: PLR0915
     model.summary()
 
     initial_epoch: int = 1
-    latest: str = latest_checkpoint(checkpoints_dir)
+    latest: str = train.latest_checkpoint(checkpoints_dir)
     if latest is not None:
         logger.info(f"Load checkpoint: {latest}")
         model.load_weights(latest)
@@ -367,7 +367,7 @@ def main(args: TrainImageModelArgs) -> int:  # noqa: PLR0915
 
     logger.info("Save the model")
     # Load the latest checkpoint to avoid overfitting
-    latest = latest_checkpoint(checkpoints_dir)
+    latest = train.latest_checkpoint(checkpoints_dir)
     if latest is not None:
         model.load_weights(latest)
     model_file_path = args.output_dir / "cnn_mobilenetv2.h5"
