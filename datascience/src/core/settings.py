@@ -10,7 +10,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any, Final, Literal
 
-from pydantic import BaseSettings, DirectoryPath, validator
+from pydantic import BaseModel, BaseSettings, DirectoryPath, validator
 
 import src
 from src.utilities.dataset_utils import ensure_dataset_dir_content
@@ -115,6 +115,44 @@ class _CommonSettings(BaseSettings, _ConstantSettings):
         case_sensitive = False
 
 
+def check_has_extension(file_name: str, extension: str) -> str:
+    """Ensure the file has the extension .png."""
+    logger = logging.getLogger(__file__)
+    if Path(file_name).suffix != extension:
+        final_name = f"{file_name}.{extension}"
+        logger.warning(
+            f"{file_name} doesn't have {extension} extension. "
+            f"Therefore, final name will be {final_name}"
+        )
+        return final_name
+    return file_name
+
+
+class _TrainingSettings(_CommonSettings):
+    """Settings used in training scripts."""
+
+    TRAINING_HISTORY_FILE_NAME: str = "training_history.png"
+
+    @validator("TRAINING_HISTORY_FILE_NAME")
+    def check_has_png_extension(cls, name: str) -> str:  # noqa: N805
+        """Ensure the file has .png extension."""
+        return check_has_extension(name, ".png")
+
+    CLASSIFICATION_REPORT_FILE_NAME: str = "classifaction_report.txt"
+
+    @validator("CLASSIFICATION_REPORT_FILE_NAME")
+    def check_has_txt_extension(cls, name: str) -> str:  # noqa: N805
+        """Ensure the file has .txt extension."""
+        return check_has_extension(name, ".txt")
+
+    CONFUSION_MATRIX_FILE_NAME: str = "confusion_matrix.png"
+
+    @validator("CONFUSION_MATRIX_FILE_NAME")
+    def check_has_png_extension_2(cls, name: str) -> str:  # noqa: N805
+        """Ensure the file has .png extension."""
+        return check_has_extension(name, ".png")
+
+
 class _DatasetSettings(BaseSettings, _ConstantSettings):
     """Settings to manage datasets."""
 
@@ -168,7 +206,7 @@ class _DatasetSettings(BaseSettings, _ConstantSettings):
         case_sensitive = False
 
 
-class _MobileNetImageModelSettings:
+class _MobileNetImageModelSettings(BaseModel):
     """Define constants regarding the MobileNet image model."""
 
     # Model images characteristics
@@ -208,3 +246,13 @@ def get_mobilenet_image_model_settings() -> _MobileNetImageModelSettings:
     and send it back everytime the function is called.
     """
     return _MobileNetImageModelSettings()
+
+
+@lru_cache(maxsize=1)
+def get_training_settings() -> _TrainingSettings:
+    """Return the training settings.
+
+    @lru_cache(maxsize=1) ensure we create only one instance, cache it,
+    and send it back everytime the function is called.
+    """
+    return _TrainingSettings()

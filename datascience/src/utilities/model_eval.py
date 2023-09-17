@@ -1,20 +1,18 @@
 """Utility functions to evaluate models performance and generate figures."""
 import itertools
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from pydantic import DirectoryPath, FilePath
+from pydantic import FilePath
 from sklearn import metrics
 
 from src.core.settings import get_common_settings
 
 
-def gen_training_history_figure(
-    history_file_path: FilePath, output_dir: DirectoryPath
-) -> Path:
+def gen_training_history_figure(history_file_path: FilePath, output_file: str) -> str:
     """Generate a figure with training history data.
 
     One subfigure shows training and validation accuracy.
@@ -22,7 +20,7 @@ def gen_training_history_figure(
 
     Args:
         history_file_path: path to the csv containing training history.
-        output_dir: directory to save the figure in.
+        output_file: file path to save the figure in.
 
     Returns:
         Path to the generated figure.
@@ -74,48 +72,45 @@ def gen_training_history_figure(
 
     ax2.legend()
     ax2.set_title("Loss per epoch")
-    file_path = output_dir / "training_history.png"
+    file_path = output_file
     plt.savefig(file_path)
     return file_path
 
 
 def gen_classification_report(
-    y: np.ndarray[Any, np.dtype[np.int32]],
-    y_pred: np.ndarray[Any, np.dtype[np.int32]],
-    output_dir: DirectoryPath,
-) -> tuple[Path, str]:
+    y: Iterable[int],
+    y_pred: Iterable[int],
+    output_file: str,
+) -> str:
     """Generate a classification report and save it into a txt file.
 
     Args:
         y: target values.
         y_pred: predicted values.
-        output_dir: directory to save the txt file in.
+        output_file: path to save the txt file in.
 
     Returns:
-        A tuple with (path to savex txt file, classification report).
+        Classification report.
     """
     class_report = str(
         metrics.classification_report(y, y_pred, zero_division=0.0)  # pyright: ignore
     )
-    file_path = output_dir / "classification_report.txt"
+    file_path = Path(output_file)
     file_path.write_text(class_report)
-    return (file_path, class_report)
+    return class_report
 
 
 def gen_confusion_matrix(
-    y: np.ndarray[Any, np.dtype[np.int32]],
-    y_pred: np.ndarray[Any, np.dtype[np.int32]],
-    output_dir: DirectoryPath,
-) -> Path:
+    y: Iterable[int],
+    y_pred: Iterable[int],
+    output_file: str,
+) -> None:
     """Generate a confusion matrix and save the figure.
 
     Args:
         y: target values.
         y_pred: predicted values.
-        output_dir: directory to save the txt file in.
-
-    Returns:
-        Path to the generated figure.
+        output_file: path to save the txt file in.
     """
     cnf_matrix = np.round(metrics.confusion_matrix(y, y_pred, normalize="true"), 2)
 
@@ -145,6 +140,4 @@ def gen_confusion_matrix(
     plt.ylabel("Real")
     plt.xlabel("Predicted")
     plt.xticks(rotation=45)
-    file_path = output_dir / "confusion_matrix.png"
-    plt.savefig(file_path)
-    return file_path
+    plt.savefig(output_file)
