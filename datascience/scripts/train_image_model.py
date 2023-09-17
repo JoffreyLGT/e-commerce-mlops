@@ -7,10 +7,8 @@ dataset_dir
 ├── X_test.csv
 ├── X_train.csv
 ├── images
-│   ├── test
-│   │   └── image_977803476_product_278535420.jpg
-│   └── train
-│       └── image_1174586892_product_2940638801.jpg
+│   └── image_977803476_product_278535420.jpg
+│   └── image_1174586892_product_2940638801.jpg
 ├── y_test.csv
 └── y_train.csv
 
@@ -386,8 +384,6 @@ def main(args: TrainImageModelArgs) -> int:  # noqa: PLR0915
 
     logger.info("Predict test data categories")
     y_pred_simplified = model.predict(test_ds)
-    values = [np.argmax(i) for i in y_pred_simplified]
-    print(values)
     y_pred = to_normal_category_id([int(np.argmax(i)) for i in y_pred_simplified])
 
     accuracy_score: float = float(metrics.accuracy_score(y_test, y_pred))
