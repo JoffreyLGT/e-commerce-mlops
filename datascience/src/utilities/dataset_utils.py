@@ -1,7 +1,8 @@
 """Functions to generate Datasets."""
 import logging
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict
 
 import numpy as np
 import pandas as pd
@@ -158,8 +159,8 @@ def to_simplified_category_id(
 
 
 def to_normal_category_id(
-    y: np.ndarray[Any, np.dtype[np.int32]]
-) -> np.ndarray[Any, np.dtype[np.int32]]:
+    y: Iterable[int],  # np.ndarray[Any, np.dtype[np.int32]]
+) -> Iterable[int]:  # np.ndarray[Any, np.dtype[np.int32]]:
     """Convert back a simplified category id to the original category id.
 
     Args:
@@ -217,7 +218,7 @@ def get_imgs_filenames(
     ]
 
 
-def to_img_feature_target(filename: str, y: Any) -> tuple[tf.Tensor, Any]:
+def to_img_feature_target(filename: str, y: Any = None) -> tuple[tf.Tensor, Any]:
     """Open image and return a resized version in a tensor with the target.
 
     Args:
@@ -237,3 +238,45 @@ def convert_sparse_matrix_to_sparse_tensor(X) -> tf.SparseTensor:  # type: ignor
     coo = X.tocoo()
     indices = np.mat([coo.row, coo.col]).transpose()
     return tf.sparse.reorder(tf.SparseTensor(indices, coo.data, coo.shape))
+
+
+class CategoryProbabilities(TypedDict):
+    """Represent the probabilities for an item to be part of a category."""
+
+    category_id: int
+    probabilities: float
+
+
+def get_category_probabilities(
+    y_pred: list[list[float]],
+) -> list[list[CategoryProbabilities]]:
+    """Get the probabilities for each categories from the predictions.
+
+    Argument:
+    - y_pred: predictions from the model
+
+    Returns:
+    - a list of [prdtypecode, probability in percent] sorted descending
+    """
+    from src.core.settings import get_common_settings
+
+    settings = get_common_settings()
+    list_decisions: list[list[CategoryProbabilities]] = []
+    for y in y_pred:
+        list_probabilities: list[CategoryProbabilities] = []
+        for i, probability in enumerate(y):
+            code = list(settings.CATEGORIES_DIC.keys())
+            if len(code) <= i:
+                raise NotImplementedError(
+                    f"CATEGORIES_DIC does not contain {i} values."
+                )
+            list_probabilities.append(
+                {
+                    "category_id": code[i],
+                    "probabilities": np.around(probability * 100, 2),
+                }
+            )
+        list_decisions.append(
+            sorted(list_probabilities, key=lambda x: x["probabilities"], reverse=True)
+        )
+    return list_decisions

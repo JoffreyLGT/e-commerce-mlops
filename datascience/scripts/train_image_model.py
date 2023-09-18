@@ -1,4 +1,3 @@
-# type: ignore
 """Train image model, evaluate its performance and generates figures and stats.
 
 All logs and best checkpoints are stored in --output-dir.
@@ -8,10 +7,8 @@ dataset_dir
 ├── X_test.csv
 ├── X_train.csv
 ├── images
-│   ├── test
-│   │   └── image_977803476_product_278535420.jpg
-│   └── train
-│       └── image_1174586892_product_2940638801.jpg
+│   └── image_977803476_product_278535420.jpg
+│   └── image_1174586892_product_2940638801.jpg
 ├── y_test.csv
 └── y_train.csv
 
@@ -21,8 +18,10 @@ import logging
 import os
 import sys
 from pathlib import Path
+from typing import Any
 
 import keras
+import mlflow
 import numpy as np
 import pandas as pd
 import pydantic
@@ -37,12 +36,18 @@ from keras.callbacks import (
 )
 from keras.losses import CategoricalCrossentropy
 from keras.optimizers import SGD
+from mlflow.data.pandas_dataset import from_pandas
+from mlflow.models.model import ModelInfo
+from mlflow.pyfunc import ModelSignature, PythonModel, PythonModelContext
+from mlflow.types import ColSpec, Schema
 from pydantic import BaseModel, DirectoryPath
 from sklearn import metrics
-from tensorflow.train import latest_checkpoint
+from tensorflow import train
 
-from src.core.settings import get_common_settings, get_mobilenet_image_model_settings
+from src.core.settings import get_mobilenet_image_model_settings, get_training_settings
 from src.utilities.dataset_utils import (
+    CategoryProbabilities,
+    get_category_probabilities,
     get_imgs_filenames,
     to_img_feature_target,
     to_normal_category_id,
@@ -53,6 +58,59 @@ from src.utilities.model_eval import (
     gen_confusion_matrix,
     gen_training_history_figure,
 )
+
+
+class ImageClassificationWrapper(PythonModel):  # type: ignore
+    """Image classification model with preprocessor and output conversion."""
+
+    tf_model: keras.Model
+
+    def load_context(self, context: PythonModelContext) -> None:
+        """Called when the wrapper is created, load model.
+
+        Args:
+            context: provided automatically, contains MLFlow model information.
+        """
+        self.tf_model = tf.keras.models.load_model(context.artifacts["model"])
+
+    def predict(
+        self,
+        context: PythonModelContext,
+        model_input: pd.DataFrame,
+        params: dict[str, Any] | None = None,
+    ) -> list[list[CategoryProbabilities]]:
+        """Predict images category."""
+        values = model_input.iloc[:, 0].to_numpy()
+        predict_ds = (
+            tf.data.Dataset.from_tensor_slices(values)
+            .map(to_img_feature_target)
+            .batch(96)
+        )
+        predictions = self.tf_model.predict(predict_ds)
+        return get_category_probabilities(predictions)
+
+
+def log_model_wrapper(
+    artifact_path: str,
+    keras_model_path: str,
+) -> ModelInfo:
+    """Create a model wrapper with its schema and log it to mlflow."""
+    input_schema = Schema([ColSpec("string", "image path")])
+    output_schema = Schema(
+        [
+            ColSpec("integer", "category id"),
+            ColSpec("float", "probabilities"),
+        ]
+    )
+    signature = ModelSignature(inputs=input_schema, outputs=output_schema)
+
+    return mlflow.pyfunc.log_model(
+        artifact_path=artifact_path,
+        python_model=ImageClassificationWrapper(),
+        artifacts={"model": keras_model_path},
+        code_path=["src", "scripts"],
+        signature=signature,
+    )
 
 
 class TrainImageModelArgs(BaseModel):
@@ -73,14 +131,6 @@ class TrainImageModelArgs(BaseModel):
     )
     data_augmentation: bool = pydantic.Field(
         True, description="Add layers of data augmentation to avoid early overfitting."
-    )
-    seed: int = pydantic.Field(
-        123,
-        description=(
-            "Seed to use for randomisation. "
-            "Ensure batches are always de same "
-            "when executing script with the same seed."
-        ),
     )
     train_patience: int = pydantic.Field(
         10,
@@ -103,9 +153,15 @@ def main(args: TrainImageModelArgs) -> int:  # noqa: PLR0915
         0 if everything went as expected, 1 otherwise.
     """
     logger = logging.getLogger(__file__)
-
     logger.info("Script started")
     logger.info(f"Args: {args}")
+
+    mlflow.set_experiment("MobileNetV2_Image_PD")
+    mlflow.set_tag("type", "image")
+    mlflow.tensorflow.autolog(log_datasets=False, log_models=False)
+
+    settings = get_training_settings()
+    mlflow.log_param("args", args.dict())
 
     # Ensure all messages from Tensorflow will be logged and not only printed
     tf.keras.utils.disable_interactive_logging()
@@ -115,8 +171,17 @@ def main(args: TrainImageModelArgs) -> int:  # noqa: PLR0915
 
     logger.info("Load data")
 
-    df_X_train = pd.read_csv(args.input_dir / "X_train.csv", index_col=0).fillna("")
-    df_X_test = pd.read_csv(args.input_dir / "X_test.csv", index_col=0).fillna("")
+    X_train_path = str(args.input_dir / "X_train.csv")
+    X_test_path = str(args.input_dir / "X_test.csv")
+    df_X_train = pd.read_csv(X_train_path, index_col=0).fillna("")
+    df_X_test = pd.read_csv(X_test_path, index_col=0).fillna("")
+
+    mlflow.log_input(
+        from_pandas(df_X_train, source=X_train_path, name=X_train_path), "training"
+    )
+    mlflow.log_input(
+        from_pandas(df_X_test, source=X_test_path, name=X_test_path), "testing"
+    )
 
     logger.info("Extract features and target")
     X_train = get_imgs_filenames(
@@ -155,15 +220,19 @@ def main(args: TrainImageModelArgs) -> int:  # noqa: PLR0915
     )
 
     test_ds = (
-        tf.data.Dataset.from_tensor_slices((X_test, y_test_categorical))
+        tf.data.Dataset.from_tensor_slices((X_test.copy(), y_test_categorical))
         .map(to_img_feature_target)
         .batch(args.batch_size)
     )
 
     model_settings = get_mobilenet_image_model_settings()
+    mlflow.log_param("mobilenet_image_model_settings", model_settings.dict())
 
     nb_train_images = len(X_train)
     nb_test_images = len(X_test)
+    mlflow.log_metrics(
+        {"nb_train_images": nb_train_images, "nb_test_images": nb_test_images}
+    )
 
     # Add cache configuration to speed up training
     # If this cause issues, we'll add an argument to enable it
@@ -183,7 +252,6 @@ def main(args: TrainImageModelArgs) -> int:  # noqa: PLR0915
     inputs = tf.keras.Input(
         shape=(model_settings.IMG_WIDTH, model_settings.IMG_HEIGHT, 3), name="Input"
     )
-
     if args.data_augmentation:
         x = Sequential(
             [
@@ -212,15 +280,15 @@ def main(args: TrainImageModelArgs) -> int:  # noqa: PLR0915
 
     checkpoints_dir = args.output_dir / "checkpoints"
     checkpoint_file_path = (
-        checkpoints_dir / "cp_loss-{val_loss:.2f}_acc-{val_accuracy:.2f}.ckpt"
+        checkpoints_dir / "{epoch:02d}-{val_loss:.2f}-{val_accuracy:.2f}.ckpt"
     )
     history_file_path = args.output_dir / "history.csv"
     tensorboard_logs_dir = args.output_dir / "tensorboard_logs"
-    settings = get_common_settings()
+
     outputs = layers.Dense(
         len(settings.CATEGORIES_DIC.keys()), name="Output", activation="softmax"
     )(x)
-    model = tf.keras.Model(inputs, outputs, name="RakutenImageNet")
+    model = tf.keras.Model(inputs, outputs, name="MobileNetV2_Image_PD")
 
     model.build((None, model_settings.IMG_WIDTH, model_settings.IMG_HEIGHT, 3))
     model.compile(
@@ -230,12 +298,17 @@ def main(args: TrainImageModelArgs) -> int:  # noqa: PLR0915
     )
     model.summary()
 
-    latest = latest_checkpoint(checkpoints_dir)
+    initial_epoch: int = 1
+    latest: str = train.latest_checkpoint(checkpoints_dir)
     if latest is not None:
         logger.info(f"Load checkpoint: {latest}")
         model.load_weights(latest)
+        initial_epoch = int(Path(latest).name.split("-")[0])
     else:
         logger.info("No checkpoint to load")
+
+    logger.info("Evaluate initial val_loss and val_accuracy")
+    _, val_accuracy = model.evaluate(test_ds)
 
     # Callbacks called between each epoch
     cp_callbacks = [
@@ -249,6 +322,7 @@ def main(args: TrainImageModelArgs) -> int:  # noqa: PLR0915
             monitor="val_accuracy",
             save_weights_only=True,
             verbose=1,
+            initial_value_threshold=val_accuracy,
         ),
         # Insert the metrics into a CSV file
         CSVLogger(history_file_path, separator=",", append=True),
@@ -257,19 +331,15 @@ def main(args: TrainImageModelArgs) -> int:  # noqa: PLR0915
     ]
 
     logger.info("Start model training")
-    steps_per_epoch = nb_train_images // args.batch_size
-    validation_steps = nb_test_images // args.batch_size
-
-    # Train the top layer
-    model.fit(
-        train_ds.repeat(),
-        epochs=100,
-        steps_per_epoch=steps_per_epoch,
-        validation_data=test_ds.repeat(),
-        validation_steps=validation_steps,
-        callbacks=cp_callbacks,
-    )
-
+    with mlflow.start_run(run_name="training", nested=True):
+        # Train our custom layers
+        history = model.fit(
+            train_ds,
+            epochs=100,
+            validation_data=test_ds,
+            callbacks=cp_callbacks,
+            initial_epoch=initial_epoch,
+        )
     logger.info("Start model fine tuning")
     # Unfreeze the base_model. Note that it keeps running in inference mode
     # since we passed `training=False` when calling it. This means that
@@ -283,37 +353,54 @@ def main(args: TrainImageModelArgs) -> int:  # noqa: PLR0915
         metrics=["accuracy"],
     )
     model.summary()
-    model.fit(
-        train_ds.repeat(),
-        epochs=100,
-        steps_per_epoch=steps_per_epoch,
-        validation_data=test_ds.repeat(),
-        validation_steps=validation_steps,
-        callbacks=cp_callbacks,
-    )
+    with mlflow.start_run(run_name="fine-tuning", nested=True):
+        # Train all the layers including MobileNet's
+        model.fit(
+            train_ds,
+            epochs=100,
+            validation_data=test_ds,
+            callbacks=cp_callbacks,
+            initial_epoch=history.epoch[-1],
+        )
 
     logger.info("Save the model")
     # Load the latest checkpoint to avoid overfitting
-    latest = latest_checkpoint(checkpoints_dir)
+    latest = train.latest_checkpoint(checkpoints_dir)
     if latest is not None:
         model.load_weights(latest)
-    model.save(args.output_dir / "cnn_mobilenetv2.keras")
+    model_file_path = args.output_dir / "cnn_mobilenetv2.h5"
+    model.save(model_file_path)
+
+    logger.info("Create model wrapper and save send it to MLFlow")
+    log_model_wrapper(
+        artifact_path="image-model",
+        keras_model_path=str(model_file_path),
+    )
 
     logger.info("Generate training history figure")
-    logger.info(gen_training_history_figure(history_file_path, args.output_dir))
+    history_fig_path = str(args.output_dir / settings.TRAINING_HISTORY_FILE_NAME)
+    logger.info(gen_training_history_figure(history_file_path, history_fig_path))
+    mlflow.log_artifact(history_fig_path)
 
     logger.info("Predict test data categories")
     y_pred_simplified = model.predict(test_ds)
-    y_pred = to_normal_category_id([np.argmax(i) for i in y_pred_simplified])
+    y_pred = to_normal_category_id([int(np.argmax(i)) for i in y_pred_simplified])
 
-    logger.info(f"Accuracy score: {metrics.accuracy_score(y_test, y_pred)}")
+    accuracy_score: float = float(metrics.accuracy_score(y_test, y_pred))
+    logger.info(f"Accuracy score: {accuracy_score}")
+    mlflow.log_metric("accuracy_score", accuracy_score)
 
     logger.info("Generate classification report")
-    (_, class_report) = gen_classification_report(y_test, y_pred, args.output_dir)
+    class_report_path = str(args.output_dir / settings.CLASSIFICATION_REPORT_FILE_NAME)
+    class_report = gen_classification_report(y_test, y_pred, class_report_path)
     logger.info(class_report)
+    mlflow.log_artifact(class_report_path)
 
     logger.info("Generate confusion matrix")
-    logger.info(gen_confusion_matrix(y_test, y_pred, args.output_dir))
+    confu_matrix_path = str(args.output_dir / settings.CONFUSION_MATRIX_FILE_NAME)
+    gen_confusion_matrix(y_test, y_pred, confu_matrix_path)
+    logger.info(confu_matrix_path)
+    mlflow.log_artifact(confu_matrix_path)
 
     logger.info("Script finished")
 

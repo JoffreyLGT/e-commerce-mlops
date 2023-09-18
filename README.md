@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD013 -->
+
 # Catégorisation des produits d'un boutique en ligne
 
 ![Python version](https://img.shields.io/badge/Python-3.11-blue.svg)
@@ -15,7 +17,7 @@ API permettant de prédire la catégorie d'un produit en fonction de sa désigna
 
 ## Structure du projet
 
-```txt
+```text
 E-COMMERCE-MLOPS/
 ├─ .devcontainer/ : fichiers du conteneur de dev
 ├─ .github/workflow/ : Github Actions
@@ -119,9 +121,9 @@ Sur la ligne `WORKSPACE RECOMMENDATION`, cliquer sur `Install workspace Recommen
 
 Cette section concerne les outils en général. Chaque sous-projet a sa propre section :
 
-- [root](#questions-et-réponses-root)
-- [backend](#questions-et-réponses-backend)
-- [datascience](#questions-et-réponses-datascience)
+- [root](#questions-et-réponses-(root))
+- [backend](#questions-et-réponses-(backend))
+- [datascience](#questions-et-réponses-(datascience))
 
 ### Docker m'indique que je le disque de la VM est plein
 
@@ -140,7 +142,7 @@ docker system prune -a --volumes
 
 - Ouvrir le moniteur d'activité pour repérer le processus utilisant le CPU.
 - S'il s'agit de `code helper (plugin)`, noter le PID.
-- Quitter complètement VSCode (`Cmd + Q`` sur MacOS)
+- Quitter complètement VSCode (`Cmd + Q` sur MacOS)
 
     Si le processus disparait, relancer VSCode et attendre quelques minutes. Si le processus ne revient pas, tout est de nouveau en ordre. Sinon, continuer les étapes ci-dessous.
 
@@ -338,6 +340,113 @@ Les tâches ci-dessous sont disponibles :
     ```
 
 ### datascience
+
+#### Création d'un jeu de données
+
+En partant du principe que toutes les données ont été stockées dans le dossier `data/datasets/original` avec la structure suivante :
+
+```text
+original
+├── X.csv
+├── y.csv
+└──── images
+   ├── image_977803476_product_278535420.jpg
+   ├── image_1174586892_product_2940638801.jpg
+   └── [...]
+```
+
+- `X.csv` contient les features, à savoir les informations sur le produit dans les colonnes `désignation`, `description`, `productid` et `imageid`.
+- `y.csv` contient la target, à savoir la catégorie du produit dans une colonne.
+- `images` contient toutes les images des produits. Les images doivent respecter la convention `image_[imageid]_[productid].jpg`
+
+Pour créer un dataset (jeu de données) pour l'entrainement, utiliser le script [optimize_images.py](datascience/scripts/optimize_images.py).
+
+```bash
+# Depuis le dossier e-commerce-mlops/datascience
+python -m scripts.optimize_images --train-size 0.8 --test-size 0.2 --input-dir "data/originals" --output-dir "data/datasets/example"
+```
+
+Le script va s'occuper de traiter les images pour retirer les bandes blanches inutiles, les redimentionner et va créer les jeux de données d'entrainement (80%) et de test (20%) au format `.csv`.
+
+#### Entrainement d'un modèle
+
+Le projet utilise 3 modèles (image, texte et fusion). De ce fait, 3 scripts sont mis à disposition pour l'entrainement :
+
+- [train_image_model.py](datascience/train_image_model.py)
+- [train_text_model.py](datascience/train_text_model.py)
+- [train_fusion_model.py](datascience/train_fusion_model.py)
+
+Ceux-ci utilisent [MLFlow](https://mlflow.org) pour le suivi des metrics.
+
+Chaque script est documenté. Pour afficher l'aide, utiliser la commande `--help`.  
+Exemple :
+
+```bash
+# Affiche l'aide du script train_image_model.py
+python -m scripts.train_image_model --help
+```
+
+Ce qui affiche :
+
+```text
+usage: train_image_model.py [-h] [--input-dir INPUT_DIR] [--output-dir OUTPUT_DIR] [--batch-size BATCH_SIZE] [--no-data-augmentation]
+                            [--train-patience TRAIN_PATIENCE]
+
+Create and train a new image model using dataset provided with --input-dir, then save it to --output-dir with its performance
+statistics.
+
+required arguments:
+  --input-dir INPUT_DIR
+                        Directory containing the datasets to use.
+  --output-dir OUTPUT_DIR
+                        Directory to save trained model and stats.
+
+optional arguments:
+  --batch-size BATCH_SIZE
+                        Size of the batches to use for the training. Set as much as your machine allows. (default: 96)
+  --no-data-augmentation
+                        Add layers of data augmentation to avoid early overfitting. (default: True)
+  --train-patience TRAIN_PATIENCE
+                        Number of epoch to do without improvements before stopping the model training. (default: 10)
+
+help:
+  -h, --help            show this help message and exit
+```
+
+#### Mise en ligne d'une nouvelle version du modèle
+
+1. Dans un terminal, lancer l'interface graphique de MLFlow avec la commande suivante :
+
+    ```bash
+    mlflow ui
+    ```
+
+2. Dans l'en-tête, cliquer sur `Experiments`.
+3. Rechercher le run du modèle à mettre en production et cliquer dessus.
+4. Dans la liste des `artifacts`, cliquer sur le modèle, puis sur `Register Model`.
+5. Dans la popup qui s'ouvre, sélectionner le modèle en question, puis cliquer sur `Register`.
+6. Dans l'en-tête, cliquer sur le modèle, puis sur la version.
+7. Le champ `Stage` permet de changer le statut du modèle (`Staging` pour test, `Production` pour production.
+8. Utiliser la commande ci-dessous pour lancer le modèle :
+
+    ```bash
+    # Remplacer image par le nom du modèle, et Staging par Production pour une mise en production
+    mlflow models serve -m "models:/image/Staging" --port 5002 --env-manager local
+    ```
+
+#### Envoyer une requête sur le modèl
+
+L'exemple ci-dessous effectue une prédiction sur le modèle image :
+
+```bash
+curl -d '{"dataframe_records":[{"image path":"/path/to/image_1261427590_product_3898729018.jpg"}]}' -H 'Content-Type: application/json' -X POST localhost:5002/invocations
+```
+
+Le résultat est le suivant (l'utilisation d'un formater JSON permet une meilleure lisibilité) :
+
+```json
+{"predictions": [[{"category_id": 1301, "probabilities": 17.82}, {"category_id": 2220, "probabilities": 16.83}, {"category_id": 1280, "probabilities": 16.58}, {"category_id": 1560, "probabilities": 9.92}, {"category_id": 1320, "probabilities": 9.25}, {"category_id": 2060, "probabilities": 6.27}, {"category_id": 2582, "probabilities": 2.85}, {"category_id": 1281, "probabilities": 2.7}, {"category_id": 1302, "probabilities": 2.14}, {"category_id": 2522, "probabilities": 1.98}, {"category_id": 1140, "probabilities": 1.78}, {"category_id": 1180, "probabilities": 1.6}, {"category_id": 60, "probabilities": 1.33}, {"category_id": 2585, "probabilities": 1.21}, {"category_id": 10, "probabilities": 1.18}, {"category_id": 2403, "probabilities": 1.18}, {"category_id": 2280, "probabilities": 1.08}, {"category_id": 2705, "probabilities": 0.96}, {"category_id": 50, "probabilities": 0.89}, {"category_id": 1300, "probabilities": 0.5}, {"category_id": 1940, "probabilities": 0.47}, {"category_id": 40, "probabilities": 0.45}, {"category_id": 2583, "probabilities": 0.38}, {"category_id": 2905, "probabilities": 0.33}, {"category_id": 2462, "probabilities": 0.32}, {"category_id": 1920, "probabilities": 0.01}, {"category_id": 1160, "probabilities": 0.0}]]}%
+```
 
 #### Questions et réponses (datascience)
 
