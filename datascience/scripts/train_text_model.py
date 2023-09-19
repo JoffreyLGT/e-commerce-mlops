@@ -1,5 +1,3 @@
-# type: ignore
-# ruff: noqa
 """Train text model, evaluate its performance and generates figures and stats.
 
 All logs and best checkpoints are stored in --output-dir.
@@ -25,8 +23,10 @@ import os
 import pickle
 import sys
 from pathlib import Path
+from typing import Any
 
 import keras
+import mlflow
 import numpy as np
 import pandas as pd
 import pydantic
@@ -40,23 +40,96 @@ from keras.callbacks import (
 )
 from keras.layers import Dense, Dropout, InputLayer
 from keras.losses import CategoricalCrossentropy
-from keras.optimizers import (
+from keras.optimizers.legacy import (
     Adam,
 )
+from mlflow.data.pandas_dataset import from_pandas
+from mlflow.models.model import ModelInfo
+from mlflow.pyfunc import ModelSignature, PythonModel, PythonModelContext
+from mlflow.types import ColSpec, Schema
 from pydantic import BaseModel, DirectoryPath
 from sklearn import metrics
-from tensorflow.train import latest_checkpoint
+from tensorflow import train
 
-from src.core.settings import get_common_settings
-from src.transformers.text_transformer import TextPreprocess, TfidfStemming
-from src.utilities.dataset_utils import to_normal_category_id, to_simplified_category_id
-from src.utilities.model_eval import (
+from src.core.settings import (
+    get_training_settings,
+)
+from src.transformers.text_transformer import (  # type: ignore
+    TextPreprocess,
+    TfidfStemming,
+)
+from src.utilities.dataset_utils import (
+    CategoryProbabilities,
+    get_category_probabilities,
+    to_normal_category_id,
+    to_simplified_category_id,
+)
+from src.utilities.model_utils import (
     gen_classification_report,
     gen_confusion_matrix,
     gen_training_history_figure,
+    generate_requirements,
 )
 
-logger = logging.getLogger(__file__)
+
+class TextClassificationWrapper(PythonModel):  # type: ignore
+    """Text classification model with preprocessor and output conversion."""
+
+    tf_model: keras.Model
+    preprocessor: TextPreprocess
+
+    def load_context(self, context: PythonModelContext) -> None:
+        """Called when the wrapper is created, load model.
+
+        Args:
+            context: provided automatically, contains MLFlow model information.
+        """
+        self.tf_model = tf.keras.models.load_model(context.artifacts["model"])
+        with Path(context.artifacts["preprocessor"]).open("rb") as file:
+            self.preprocessor = pickle.load(file)
+
+    def predict(
+        self,
+        context: PythonModelContext,  # pyright: ignore
+        model_input: pd.DataFrame,
+        params: dict[str, Any] | None = None,  # pyright: ignore
+    ) -> list[list[CategoryProbabilities]]:
+        """Predict product category."""
+        values = model_input["designation"] + " " + model_input["description"]
+        preprocessed_values = self.preprocessor.transform(values)
+        predict_ds = tf.data.Dataset.from_tensor_slices(
+            preprocessed_values  # pyright: ignore
+        ).batch(96)
+        predictions = self.tf_model.predict(predict_ds)
+        return get_category_probabilities(predictions)
+
+
+def log_model_wrapper(
+    artifact_path: str,
+    keras_model_path: str,
+    preprocessor_path: str,
+    requirements_path: str,
+) -> ModelInfo:
+    """Create a model wrapper with its schema and log it to mlflow."""
+    input_schema = Schema(
+        [ColSpec("string", "designation"), ColSpec("string", "description")]
+    )
+    output_schema = Schema(
+        [
+            ColSpec("integer", "category id"),
+            ColSpec("float", "probabilities"),
+        ]
+    )
+    signature = ModelSignature(inputs=input_schema, outputs=output_schema)
+
+    return mlflow.pyfunc.log_model(
+        artifact_path=artifact_path,
+        python_model=TextClassificationWrapper(),
+        artifacts={"model": keras_model_path, "preprocessor": preprocessor_path},
+        code_path=["src", "scripts"],
+        signature=signature,
+        pip_requirements=requirements_path,
+    )
 
 
 class TrainTextModelArgs(BaseModel):
@@ -95,8 +168,19 @@ def main(args: TrainTextModelArgs) -> int:  # noqa: PLR0915
     Return:
         0 if everything went as expected, 1 otherwise.
     """
+    logger = logging.getLogger(__file__)
     logger.info("Script started")
     logger.info(f"Args: {args}")
+
+    mlflow.set_experiment("MLP_Text_PD")
+    mlflow.set_tag("type", "text")
+    mlflow.tensorflow.autolog(log_datasets=False, log_models=False)
+
+    settings = get_training_settings()
+    mlflow.log_param("args", args.dict())
+
+    requirements_file_path = args.output_dir / settings.REQUIREMENTS_FILE_NAME
+    generate_requirements(requirements_file_path)
 
     # Ensure all messages from Tensorflow will be logged and not only printed
     tf.keras.utils.disable_interactive_logging()
@@ -106,8 +190,17 @@ def main(args: TrainTextModelArgs) -> int:  # noqa: PLR0915
 
     logger.info("Load data")
 
-    df_X_train = pd.read_csv(args.input_dir / "X_train.csv", index_col=0).fillna("")
-    df_X_test = pd.read_csv(args.input_dir / "X_test.csv", index_col=0).fillna("")
+    X_train_path = str(args.input_dir / "X_train.csv")
+    X_test_path = str(args.input_dir / "X_test.csv")
+    df_X_train = pd.read_csv(X_train_path, index_col=0).fillna("")
+    df_X_test = pd.read_csv(X_test_path, index_col=0).fillna("")
+
+    mlflow.log_input(
+        from_pandas(df_X_train, source=X_train_path, name=X_train_path), "training"
+    )
+    mlflow.log_input(
+        from_pandas(df_X_test, source=X_test_path, name=X_test_path), "testing"
+    )
 
     logger.info("Extract features and target")
     X_train = df_X_train["designation"] + " " + df_X_train["description"]
@@ -134,6 +227,9 @@ def main(args: TrainTextModelArgs) -> int:  # noqa: PLR0915
     preprocessor = TextPreprocess(TfidfStemming())
     X_train_tensor = preprocessor.fit_transform(X_train)
     X_test_tensor = preprocessor.transform(X_test)
+
+    args.output_dir.mkdir(parents=True, exist_ok=True)
+
     preprocessor_path = args.output_dir / "text_preprocess.pkl"
     with preprocessor_path.open("wb") as file:
         pickle.dump(preprocessor, file)
@@ -141,12 +237,15 @@ def main(args: TrainTextModelArgs) -> int:  # noqa: PLR0915
 
     logger.info("Create datasets")
     train_ds = tf.data.Dataset.from_tensor_slices(
-        (X_train_tensor, y_train_categorical)
+        (X_train_tensor, y_train_categorical)  # pyright: ignore
     ).batch(args.batch_size)
     test_ds = tf.data.Dataset.from_tensor_slices(
-        (X_test_tensor, y_test_categorical)
+        (X_test_tensor, y_test_categorical)  # pyright: ignore
     ).batch(args.batch_size)
 
+    nb_train = len(X_train)
+    nb_test = len(X_test)
+    mlflow.log_metrics({"nb_train": nb_train, "nb_test": nb_test})
     # # Add cache configuration to speed up training
     # # If this cause issues, we'll add an argument to enable it
     autotune = tf.data.AUTOTUNE
@@ -159,14 +258,13 @@ def main(args: TrainTextModelArgs) -> int:  # noqa: PLR0915
     model.add(Dense(units=128, activation="relu"))
     model.add(Dropout(rate=0.2))
 
-    settings = get_common_settings()
     nb_output_classes = len(settings.CATEGORIES_DIC.keys())
 
     model.add(Dense(units=nb_output_classes, activation="softmax"))
 
     checkpoints_dir = args.output_dir / "checkpoints"
     checkpoint_file_path = (
-        checkpoints_dir / "cp_loss-{val_loss:.2f}_acc-{val_accuracy:.2f}.ckpt"
+        checkpoints_dir / "{epoch:02d}-{val_loss:.2f}-{val_accuracy:.2f}-ckpt"
     )
     history_file_path = args.output_dir / "history.csv"
     tensorboard_logs_dir = args.output_dir / "tensorboard_logs"
@@ -178,12 +276,17 @@ def main(args: TrainTextModelArgs) -> int:  # noqa: PLR0915
     )
     model.summary()
 
-    latest = latest_checkpoint(checkpoints_dir)
+    initial_epoch: int = 1
+    latest: str = train.latest_checkpoint(checkpoints_dir)
     if latest is not None:
         logger.info(f"Load checkpoint: {latest}")
         model.load_weights(latest)
+        initial_epoch = int(Path(latest).name.split("-")[0])
     else:
         logger.info("No checkpoint to load")
+
+    logger.info("Evaluate initial val_loss and val_accuracy")
+    _, val_accuracy = model.evaluate(test_ds)
 
     # Callbacks called between each epoch
     cp_callbacks = [
@@ -197,11 +300,12 @@ def main(args: TrainTextModelArgs) -> int:  # noqa: PLR0915
             monitor="val_accuracy",
             save_weights_only=True,
             verbose=1,
+            initial_value_threshold=val_accuracy,
         ),
         # Insert the metrics into a CSV file
         CSVLogger(history_file_path, separator=",", append=True),
         # Log information to display them in TensorBoard
-        TensorBoard(log_dir=tensorboard_logs_dir, histogram_freq=1),
+        TensorBoard(log_dir=str(tensorboard_logs_dir), histogram_freq=1),
     ]
 
     logger.info("Start model training")
@@ -210,31 +314,52 @@ def main(args: TrainTextModelArgs) -> int:  # noqa: PLR0915
         epochs=100,
         validation_data=test_ds,
         callbacks=cp_callbacks,
-        batch_size=args.batch_size,
+        initial_epoch=initial_epoch,
     )
 
     logger.info("Save the model")
     # Load the latest checkpoint to avoid overfitting
-    latest = latest_checkpoint(checkpoints_dir)
+    latest = train.latest_checkpoint(checkpoints_dir)
     if latest is not None:
         model.load_weights(latest)
-    model.save(args.output_dir / "mlp_text.keras")
+    model_file_path = args.output_dir / "mlp_text.tf"
+    model.save(model_file_path)
+
+    logger.info("Create model wrapper and save send it to MLFlow")
+    log_model_wrapper(
+        artifact_path="text-model",
+        keras_model_path=str(model_file_path),
+        preprocessor_path=str(preprocessor_path),
+        requirements_path=str(requirements_file_path),
+    )
 
     logger.info("Generate training history figure")
-    logger.info(gen_training_history_figure(history_file_path, args.output_dir))
+    history_fig_path = str(args.output_dir / settings.TRAINING_HISTORY_FILE_NAME)
+    logger.info(gen_training_history_figure(history_file_path, history_fig_path))
+    mlflow.log_artifact(history_fig_path)
 
     logger.info("Predict test data categories")
+    test_ds = tf.data.Dataset.from_tensor_slices(
+        X_test_tensor  # pyright: ignore
+    ).batch(args.batch_size)
     y_pred_simplified = model.predict(test_ds)
-    y_pred = to_normal_category_id([np.argmax(i) for i in y_pred_simplified])
+    y_pred = to_normal_category_id([int(np.argmax(i)) for i in y_pred_simplified])
 
-    logger.info(f"Accuracy score: {metrics.accuracy_score(y_test, y_pred)}")
+    accuracy_score: float = float(metrics.accuracy_score(y_test, y_pred))
+    logger.info(f"Accuracy score: {accuracy_score}")
+    mlflow.log_metric("accuracy_score", accuracy_score)
 
     logger.info("Generate classification report")
-    (_, class_report) = gen_classification_report(y_test, y_pred, args.output_dir)
+    class_report_path = str(args.output_dir / settings.CLASSIFICATION_REPORT_FILE_NAME)
+    class_report = gen_classification_report(y_test, y_pred, class_report_path)
     logger.info(class_report)
+    mlflow.log_artifact(class_report_path)
 
     logger.info("Generate confusion matrix")
-    logger.info(gen_confusion_matrix(y_test, y_pred, args.output_dir))
+    confu_matrix_path = str(args.output_dir / settings.CONFUSION_MATRIX_FILE_NAME)
+    gen_confusion_matrix(y_test, y_pred, confu_matrix_path)
+    logger.info(confu_matrix_path)
+    mlflow.log_artifact(confu_matrix_path)
 
     logger.info("Script finished")
     return 0
