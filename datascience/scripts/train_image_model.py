@@ -53,7 +53,7 @@ from src.utilities.dataset_utils import (
     to_normal_category_id,
     to_simplified_category_id,
 )
-from src.utilities.model_eval import (
+from src.utilities.model_utils import (
     gen_classification_report,
     gen_confusion_matrix,
     gen_training_history_figure,

@@ -1,5 +1,6 @@
 """Utility functions to evaluate models performance and generate figures."""
 import itertools
+import subprocess
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -9,6 +10,7 @@ import pandas as pd
 from pydantic import FilePath
 from sklearn import metrics
 
+from src.core.custom_errors import RequirementsGenerationError
 from src.core.settings import get_common_settings
 
 
@@ -141,3 +143,28 @@ def gen_confusion_matrix(
     plt.xlabel("Predicted")
     plt.xticks(rotation=45)
     plt.savefig(output_file)
+
+
+def generate_requirements(file_path: Path | str) -> None:
+    """Generate the requirements using Poetry.
+
+    Args:
+        file_path: where to save the file.
+    """
+    try:
+        subprocess.run(
+            [
+                "poetry",
+                "export",
+                "--without",
+                "dev",
+                "--without-hashes",
+                "-f",
+                "requirements.txt",
+                "-o",
+                f"{file_path}",
+            ],
+            check=True,
+        )
+    except subprocess.CalledProcessError as ex:
+        raise RequirementsGenerationError from ex

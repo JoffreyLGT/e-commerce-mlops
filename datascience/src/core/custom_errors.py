@@ -17,3 +17,9 @@ class ImageProcessingError(Exception):
     """Raised when an issue occurs during image processing."""
 
     pass
+
+
+class RequirementsGenerationError(Exception):
+    """Raised when an error occurs during Poetry's requirements.txt generation."""
+
+    pass

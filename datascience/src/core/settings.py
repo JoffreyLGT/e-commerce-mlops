@@ -152,6 +152,13 @@ class _TrainingSettings(_CommonSettings):
         """Ensure the file has .png extension."""
         return check_has_extension(name, ".png")
 
+    REQUIREMENTS_FILE_NAME: str = "requirements.txt"
+
+    @validator("REQUIREMENTS_FILE_NAME")
+    def check_has_txt_extension_2(cls, name: str) -> str:  # noqa: N805
+        """Ensure the file has .txt extension."""
+        return check_has_extension(name, ".txt")
+
 
 class _DatasetSettings(BaseSettings, _ConstantSettings):
     """Settings to manage datasets."""
