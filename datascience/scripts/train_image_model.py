@@ -35,7 +35,7 @@ from keras.callbacks import (
     TensorBoard,
 )
 from keras.losses import CategoricalCrossentropy
-from keras.optimizers import SGD
+from keras.optimizers.legacy import SGD
 from mlflow.data.pandas_dataset import from_pandas
 from mlflow.models.model import ModelInfo
 from mlflow.pyfunc import ModelSignature, PythonModel, PythonModelContext
@@ -57,6 +57,7 @@ from src.utilities.model_utils import (
     gen_classification_report,
     gen_confusion_matrix,
     gen_training_history_figure,
+    generate_requirements,
 )
 
 
@@ -91,8 +92,7 @@ class ImageClassificationWrapper(PythonModel):  # type: ignore
 
 
 def log_model_wrapper(
-    artifact_path: str,
-    keras_model_path: str,
+    artifact_path: str, keras_model_path: str, requirements_path: str
 ) -> ModelInfo:
     """Create a model wrapper with its schema and log it to mlflow."""
     input_schema = Schema([ColSpec("string", "image path")])
@@ -110,6 +110,7 @@ def log_model_wrapper(
         artifacts={"model": keras_model_path},
         code_path=["src", "scripts"],
         signature=signature,
+        pip_requirements=requirements_path,
     )
 
 
@@ -162,6 +163,9 @@ def main(args: TrainImageModelArgs) -> int:  # noqa: PLR0915
 
     settings = get_training_settings()
     mlflow.log_param("args", args.dict())
+
+    requirements_file_path = args.output_dir / settings.REQUIREMENTS_FILE_NAME
+    generate_requirements(requirements_file_path)
 
     # Ensure all messages from Tensorflow will be logged and not only printed
     tf.keras.utils.disable_interactive_logging()
@@ -368,13 +372,14 @@ def main(args: TrainImageModelArgs) -> int:  # noqa: PLR0915
     latest = train.latest_checkpoint(checkpoints_dir)
     if latest is not None:
         model.load_weights(latest)
-    model_file_path = args.output_dir / "cnn_mobilenetv2.h5"
+    model_file_path = args.output_dir / "cnn_mobilenetv2.tf"
     model.save(model_file_path)
 
     logger.info("Create model wrapper and save send it to MLFlow")
     log_model_wrapper(
         artifact_path="image-model",
         keras_model_path=str(model_file_path),
+        requirements_path=str(requirements_file_path),
     )
 
     logger.info("Generate training history figure")
