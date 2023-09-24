@@ -133,7 +133,9 @@ class HTMLRemover(BaseEstimator, TransformerMixin):  # type: ignore
         """Do nothing, mandatory function so it can be used into the pipeline."""
         return self
 
-    def transform(self, X: pd.DataFrame | pd.Series) -> Iterable[str] | str:
+    def transform(
+        self, X: pd.DataFrame | pd.Series  # type: ignore
+    ) -> Iterable[str] | str:
         """Remove all HTML tag and decode HTML special character from data.
 
         Args:
@@ -163,7 +165,7 @@ class NumRemover(BaseEstimator, TransformerMixin):  # type:ignore
         """Do nothing, mandatory function so it can be used into the pipeline."""
         return self
 
-    def transform(self, X: pd.DataFrame | pd.Series | str) -> Iterable[str] | str:
+    def transform(self, X: pd.DataFrame | pd.Series[str] | str) -> Iterable[str] | str:
         """Transform data by removind the numbers.
 
         Args:
@@ -175,7 +177,7 @@ class NumRemover(BaseEstimator, TransformerMixin):  # type:ignore
         if type(X) == pd.DataFrame:
             return X.apply(lambda column: self._parse_column(column))  # type: ignore
         if type(X) == pd.Series:
-            return X.apply(lambda column: self._parse_value(column))
+            return X.apply(lambda column: self._parse_value(column))  # type: ignore
 
         return self._parse_value(X)  # type: ignore
 

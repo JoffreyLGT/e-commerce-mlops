@@ -12,7 +12,6 @@ from sklearn import metrics
 
 from src.core import constants
 from src.core.custom_errors import RequirementsGenerationError
-from src.core.settings import get_common_settings
 
 
 def gen_training_history_figure(history_file_path: FilePath, output_file: str) -> str:
@@ -117,7 +116,6 @@ def gen_confusion_matrix(
     """
     cnf_matrix = np.round(metrics.confusion_matrix(y, y_pred, normalize="true"), 2)
 
-    settings = get_common_settings()
     classes = range(0, len(constants.CATEGORIES_DIC.keys()))
     category_ids = list(constants.CATEGORIES_DIC.keys())
 

@@ -17,6 +17,7 @@ Use scripts/optimize_images.py to generate a dataset.
 import logging
 import os
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
@@ -81,7 +82,7 @@ class ImageClassificationWrapper(PythonModel):  # type: ignore
         context: PythonModelContext,
         model_input: pd.DataFrame,
         params: dict[str, Any] | None = None,
-    ) -> list[list[str | int | float]]:
+    ) -> list[Sequence[str | int | float]]:
         """Predict images category."""
         predict_ds = (
             tf.data.Dataset.from_tensor_slices(model_input["image_path"].to_numpy())
@@ -98,7 +99,6 @@ def log_model_wrapper(
     artifact_path: str, keras_model_path: str, requirements_path: str
 ) -> ModelInfo:
     """Create a model wrapper with its schema and log it to mlflow."""
-    settings = get_training_settings()
     input_schema = Schema(
         [ColSpec("string", "product_id"), ColSpec("string", "image_path")]
     )

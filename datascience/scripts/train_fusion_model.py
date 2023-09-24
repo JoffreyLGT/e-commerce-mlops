@@ -22,6 +22,7 @@ import json
 import logging
 import os
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any, NamedTuple
 
@@ -105,14 +106,14 @@ class FusionClassificationWrapper(PythonModel):  # type: ignore
 
     def predict_text_only(
         self, model_input: pd.DataFrame
-    ) -> list[list[str | int | float]]:
+    ) -> list[Sequence[str | int | float]]:
         """Predict product category using text model."""
         if len(model_input.index) == 0:
             return list()
         text = model_input["designation"] + " " + model_input["description"]
         preprocessed = self.text_preprocessor.transform(text.to_numpy())
         text_ds = tf.data.Dataset.from_tensor_slices(
-            preprocessed  # pyright: ignore
+            preprocessed  # type: ignore
         ).batch(96)
         y_predicted = self.text_model.predict(text_ds)
         return get_product_category_probabilities(
@@ -121,7 +122,7 @@ class FusionClassificationWrapper(PythonModel):  # type: ignore
 
     def predict_images_only(
         self, model_input: pd.DataFrame
-    ) -> list[list[str | int | float]]:
+    ) -> list[Sequence[str | int | float]]:
         """Predict product category using image model."""
         if len(model_input.index) == 0:
             return list()
@@ -137,7 +138,7 @@ class FusionClassificationWrapper(PythonModel):  # type: ignore
 
     def predict_fusion(
         self, model_input: pd.DataFrame
-    ) -> list[list[str | int | float]]:
+    ) -> list[Sequence[str | int | float]]:
         """Predict product category using text model."""
         if len(model_input.index) == 0:
             return list()
@@ -248,7 +249,6 @@ def log_model_wrapper(
     requirements_path: str,
 ) -> ModelInfo:
     """Create a model wrapper with its schema and log it to mlflow."""
-    settings = get_training_settings()
     input_schema = Schema(
         [
             ColSpec("string", "product_id"),
@@ -438,10 +438,10 @@ def main(args: TrainFusionModelArgs) -> int:  # noqa: PLR0915
 
     logger.info("Create text datasets")
     train_txt_ds = tf.data.Dataset.from_tensor_slices(
-        (X_train_text_tensor, y_train_categorical)  # pyright: ignore
+        (X_train_text_tensor, y_train_categorical)  # type: ignore
     ).batch(args.batch_size)
     test_txt_ds = tf.data.Dataset.from_tensor_slices(
-        (X_test_text_tensor, y_test_categorical)  # pyright: ignore
+        (X_test_text_tensor, y_test_categorical)  # type: ignore
     ).batch(args.batch_size)
 
     logger.info("Create image datasets")

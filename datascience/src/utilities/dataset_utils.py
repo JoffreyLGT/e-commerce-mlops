@@ -1,7 +1,7 @@
 """Functions to generate Datasets."""
 import itertools
 import logging
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from pathlib import Path
 from typing import Any, TypedDict
 
@@ -284,7 +284,7 @@ def get_product_category_probabilities(
     product_ids: Iterable[str],
     y_pred_simplified: list[list[float]],
     with_header: bool = True,
-) -> list[list[str | int | float]]:
+) -> list[Sequence[str | int | float]]:
     """Get the probabilities for each categories from the predictions.
 
     Args:
@@ -295,9 +295,10 @@ def get_product_category_probabilities(
     Returns:
         A list with the product id and prediction probabilities for each category.
     """
-    list_decisions: list[list[str | int | float]] = list()
+    list_decisions: list[Sequence[str | int | float]] = list()
     if with_header:
-        list_decisions.append(get_probabilities_header())
+        probabilities = get_probabilities_header()
+        list_decisions.append(probabilities)
 
     for product_id, y in zip(product_ids, y_pred_simplified):
         list_probabilities: list[str | int | float] = list()

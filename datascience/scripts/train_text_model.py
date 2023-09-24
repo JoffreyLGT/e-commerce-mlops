@@ -18,6 +18,7 @@ import json
 import logging
 import os
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
@@ -52,7 +53,7 @@ from src.core import constants
 from src.core.settings import (
     get_training_settings,
 )
-from src.transformers.text_transformer import (  # type: ignore
+from src.transformers.text_transformer import (
     TextPreprocess,
 )
 from src.utilities.dataset_utils import (
@@ -92,7 +93,7 @@ class TextClassificationWrapper(PythonModel):  # type: ignore
         context: PythonModelContext,  # pyright: ignore
         model_input: pd.DataFrame,
         params: dict[str, Any] | None = None,  # pyright: ignore
-    ) -> list[list[str | int | float]]:
+    ) -> list[Sequence[str | int | float]]:
         """Predict product category."""
         values = model_input["designation"] + " " + model_input["description"]
         preprocessed_values = self.preprocessor.transform(values)
@@ -113,7 +114,6 @@ def log_model_wrapper(
     requirements_path: str,
 ) -> ModelInfo:
     """Create a model wrapper with its schema and log it to mlflow."""
-    settings = get_training_settings()
     input_schema = Schema(
         [
             ColSpec("string", "product_id"),
@@ -279,10 +279,10 @@ def main(args: TrainTextModelArgs) -> int:  # noqa: PLR0915
 
     logger.info("Create datasets")
     train_ds = tf.data.Dataset.from_tensor_slices(
-        (X_train_tensor, y_train_categorical)  # pyright: ignore
+        (X_train_tensor, y_train_categorical)  # type: ignore
     ).batch(args.batch_size)
     test_ds = tf.data.Dataset.from_tensor_slices(
-        (X_test_tensor, y_test_categorical)  # pyright: ignore
+        (X_test_tensor, y_test_categorical)  # type: ignore
     ).batch(args.batch_size)
 
     nb_train = len(X_train)
