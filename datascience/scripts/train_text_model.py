@@ -7,20 +7,16 @@ dataset_dir
 ├── X_test.csv
 ├── X_train.csv
 ├── images
-│   ├── test
-│   │   └── 2705 # One folder per category id
-│   │       └── image_977803476_product_278535420.jpg
-│   └── train
-│       └── 2583 # One folder per category id
-│           └── image_1174586892_product_2940638801.jpg
+│   ├── image_977803476_product_278535420.jpg
+│   └── image_1174586892_product_2940638801.jpg
 ├── y_test.csv
 └── y_train.csv
 
 Use scripts/optimize_images.py to generate a dataset.
 """
+import json
 import logging
 import os
-import pickle
 import sys
 from pathlib import Path
 from typing import Any
@@ -43,6 +39,7 @@ from keras.losses import CategoricalCrossentropy
 from keras.optimizers.legacy import (
     Adam,
 )
+from mlflow.data.numpy_dataset import from_numpy
 from mlflow.data.pandas_dataset import from_pandas
 from mlflow.models.model import ModelInfo
 from mlflow.pyfunc import ModelSignature, PythonModel, PythonModelContext
@@ -51,19 +48,19 @@ from pydantic import BaseModel, DirectoryPath
 from sklearn import metrics
 from tensorflow import train
 
+from src.core import constants
 from src.core.settings import (
     get_training_settings,
 )
 from src.transformers.text_transformer import (  # type: ignore
     TextPreprocess,
-    TfidfStemming,
 )
 from src.utilities.dataset_utils import (
-    CategoryProbabilities,
-    get_category_probabilities,
+    get_product_category_probabilities,
     to_normal_category_id,
     to_simplified_category_id,
 )
+from src.utilities.mlflow_utils import set_staging_stage, setup_mlflow
 from src.utilities.model_utils import (
     gen_classification_report,
     gen_confusion_matrix,
@@ -75,57 +72,70 @@ from src.utilities.model_utils import (
 class TextClassificationWrapper(PythonModel):  # type: ignore
     """Text classification model with preprocessor and output conversion."""
 
-    tf_model: keras.Model
-    preprocessor: TextPreprocess
-
     def load_context(self, context: PythonModelContext) -> None:
         """Called when the wrapper is created, load model.
 
         Args:
             context: provided automatically, contains MLFlow model information.
         """
-        self.tf_model = tf.keras.models.load_model(context.artifacts["model"])
-        with Path(context.artifacts["preprocessor"]).open("rb") as file:
-            self.preprocessor = pickle.load(file)
+        self.model = tf.keras.models.load_model(context.artifacts["model"])
+        vocabulary = None
+        idfs = None
+        with Path(context.artifacts["vocabulary"]).open("r") as file:
+            vocabulary = json.load(file)
+        with Path(context.artifacts["idfs"]).open("r") as file:
+            idfs = json.load(file)
+        self.preprocessor = TextPreprocess(vocabulary, idfs)
 
     def predict(
         self,
         context: PythonModelContext,  # pyright: ignore
         model_input: pd.DataFrame,
         params: dict[str, Any] | None = None,  # pyright: ignore
-    ) -> list[list[CategoryProbabilities]]:
+    ) -> list[list[str | int | float]]:
         """Predict product category."""
         values = model_input["designation"] + " " + model_input["description"]
         preprocessed_values = self.preprocessor.transform(values)
         predict_ds = tf.data.Dataset.from_tensor_slices(
-            preprocessed_values  # pyright: ignore
+            preprocessed_values  # type: ignore
         ).batch(96)
-        predictions = self.tf_model.predict(predict_ds)
-        return get_category_probabilities(predictions)
+        y_predicted = self.model.predict(predict_ds)
+        return get_product_category_probabilities(
+            model_input["product_id"].values, y_predicted, True
+        )
 
 
 def log_model_wrapper(
     artifact_path: str,
     keras_model_path: str,
-    preprocessor_path: str,
+    vocabulary_path: str,
+    idfs_path: str,
     requirements_path: str,
 ) -> ModelInfo:
     """Create a model wrapper with its schema and log it to mlflow."""
+    settings = get_training_settings()
     input_schema = Schema(
-        [ColSpec("string", "designation"), ColSpec("string", "description")]
-    )
-    output_schema = Schema(
         [
-            ColSpec("integer", "category id"),
-            ColSpec("float", "probabilities"),
+            ColSpec("string", "product_id"),
+            ColSpec("string", "designation"),
+            ColSpec("string", "description"),
         ]
     )
+    output_cols = [
+        ColSpec("float", f"{category_id}")
+        for category_id in sorted(constants.CATEGORIES_DIC.keys())
+    ]
+    output_schema = Schema([ColSpec("string", "product_id"), *output_cols])
     signature = ModelSignature(inputs=input_schema, outputs=output_schema)
 
     return mlflow.pyfunc.log_model(
         artifact_path=artifact_path,
         python_model=TextClassificationWrapper(),
-        artifacts={"model": keras_model_path, "preprocessor": preprocessor_path},
+        artifacts={
+            "model": keras_model_path,
+            "vocabulary": vocabulary_path,
+            "idfs": idfs_path,
+        },
         code_path=["src", "scripts"],
         signature=signature,
         pip_requirements=requirements_path,
@@ -155,6 +165,24 @@ class TrainTextModelArgs(BaseModel):
             "before stopping the model training."
         ),
     )
+    epochs: int = pydantic.Field(
+        100,
+        description=(
+            "Number of epochs to reach before stopping."
+            " Stops before if train-patience is reached."
+        ),
+    )
+    set_staging: bool = pydantic.Field(
+        False,
+        description=("Set new model version status as staging for 'fusion' model"),
+    )
+    registered_model: str = pydantic.Field(
+        "text",
+        descriptions=(
+            "Define registered model name in MLFlow. "
+            "Used only with set-staging flag."
+        ),
+    )
 
 
 def main(args: TrainTextModelArgs) -> int:  # noqa: PLR0915
@@ -172,12 +200,14 @@ def main(args: TrainTextModelArgs) -> int:  # noqa: PLR0915
     logger.info("Script started")
     logger.info(f"Args: {args}")
 
-    mlflow.set_experiment("MLP_Text_PD")
-    mlflow.set_tag("type", "text")
+    model_name = "Text_PD_MLP"
+    setup_mlflow(model_name, {"type": "text"})
     mlflow.tensorflow.autolog(log_datasets=False, log_models=False)
 
     settings = get_training_settings()
     mlflow.log_param("args", args.dict())
+
+    args.output_dir.mkdir(parents=True, exist_ok=True)
 
     requirements_file_path = args.output_dir / settings.REQUIREMENTS_FILE_NAME
     generate_requirements(requirements_file_path)
@@ -196,25 +226,38 @@ def main(args: TrainTextModelArgs) -> int:  # noqa: PLR0915
     df_X_test = pd.read_csv(X_test_path, index_col=0).fillna("")
 
     mlflow.log_input(
-        from_pandas(df_X_train, source=X_train_path, name=X_train_path), "training"
+        from_pandas(df_X_train, source=X_train_path, name="X_train"), "training"
     )
     mlflow.log_input(
-        from_pandas(df_X_test, source=X_test_path, name=X_test_path), "testing"
+        from_pandas(df_X_test, source=X_test_path, name="X_test"), "testing"
     )
 
-    logger.info("Extract features and target")
+    logger.info("Extract features")
     X_train = df_X_train["designation"] + " " + df_X_train["description"]
     X_test = df_X_test["designation"] + " " + df_X_test["description"]
 
+    logger.info("Extract targets")
+    y_train_path = args.input_dir / "y_train.csv"
     y_train = np.loadtxt(
-        args.input_dir / "y_train.csv",
+        y_train_path,
         dtype=int,
         delimiter=",",
         skiprows=1,
         usecols=(1),
     )
+    y_test_path = args.input_dir / "y_test.csv"
     y_test = np.loadtxt(
-        args.input_dir / "y_test.csv", dtype=int, delimiter=",", skiprows=1, usecols=(1)
+        y_test_path,
+        dtype=int,
+        delimiter=",",
+        skiprows=1,
+        usecols=(1),
+    )
+    mlflow.log_input(
+        from_numpy(y_train, source=str(y_train_path), name="y_train"), "training"
+    )
+    mlflow.log_input(
+        from_numpy(y_test, source=str(y_test_path), name="y_test"), "testing"
     )
 
     y_train_simplified = to_simplified_category_id(y_train)
@@ -224,16 +267,15 @@ def main(args: TrainTextModelArgs) -> int:  # noqa: PLR0915
     y_test_categorical = keras.utils.to_categorical(y_test_simplified)
 
     logger.info("Create preprocessor and preprocess features")
-    preprocessor = TextPreprocess(TfidfStemming())
+    preprocessor = TextPreprocess()
     X_train_tensor = preprocessor.fit_transform(X_train)
     X_test_tensor = preprocessor.transform(X_test)
 
-    args.output_dir.mkdir(parents=True, exist_ok=True)
-
-    preprocessor_path = args.output_dir / "text_preprocess.pkl"
-    with preprocessor_path.open("wb") as file:
-        pickle.dump(preprocessor, file)
-    logger.info(f"Preprocessor saved: {preprocessor_path}")
+    vocabulary_path = args.output_dir / settings.TEXT_VOCABULARY_FILE_NAME
+    idfs_path = args.output_dir / settings.TEXT_IDFS_FILE_NAME
+    preprocessor.save_voc(vocabulary_path, idfs_path)
+    logger.info(f"Vocabulary saved: {vocabulary_path}")
+    logger.info(f"Idfs saved: {idfs_path}")
 
     logger.info("Create datasets")
     train_ds = tf.data.Dataset.from_tensor_slices(
@@ -253,12 +295,12 @@ def main(args: TrainTextModelArgs) -> int:  # noqa: PLR0915
     test_ds = test_ds.cache().prefetch(buffer_size=autotune)
 
     logger.info("Build text model")
-    model = tf.keras.models.Sequential()
+    model = tf.keras.models.Sequential(name=model_name)
     model.add(InputLayer(input_shape=(X_train_tensor.shape[1]), sparse=True))
     model.add(Dense(units=128, activation="relu"))
     model.add(Dropout(rate=0.2))
 
-    nb_output_classes = len(settings.CATEGORIES_DIC.keys())
+    nb_output_classes = len(constants.CATEGORIES_DIC.keys())
 
     model.add(Dense(units=nb_output_classes, activation="softmax"))
 
@@ -311,7 +353,7 @@ def main(args: TrainTextModelArgs) -> int:  # noqa: PLR0915
     logger.info("Start model training")
     model.fit(
         train_ds,
-        epochs=100,
+        epochs=initial_epoch + args.epochs,
         validation_data=test_ds,
         callbacks=cp_callbacks,
         initial_epoch=initial_epoch,
@@ -322,16 +364,21 @@ def main(args: TrainTextModelArgs) -> int:  # noqa: PLR0915
     latest = train.latest_checkpoint(checkpoints_dir)
     if latest is not None:
         model.load_weights(latest)
-    model_file_path = args.output_dir / "mlp_text.tf"
+    model_file_path = args.output_dir / f"{model_name}.tf"
     model.save(model_file_path)
 
     logger.info("Create model wrapper and save send it to MLFlow")
-    log_model_wrapper(
+    model_info = log_model_wrapper(
         artifact_path="text-model",
         keras_model_path=str(model_file_path),
-        preprocessor_path=str(preprocessor_path),
+        vocabulary_path=str(vocabulary_path),
+        idfs_path=str(idfs_path),
         requirements_path=str(requirements_file_path),
     )
+
+    if args.set_staging:
+        logger.info("Set model status to staging")
+        set_staging_stage(model_info, args.registered_model, tags={"name": model_name})
 
     logger.info("Generate training history figure")
     history_fig_path = str(args.output_dir / settings.TRAINING_HISTORY_FILE_NAME)
@@ -339,9 +386,6 @@ def main(args: TrainTextModelArgs) -> int:  # noqa: PLR0915
     mlflow.log_artifact(history_fig_path)
 
     logger.info("Predict test data categories")
-    test_ds = tf.data.Dataset.from_tensor_slices(
-        X_test_tensor  # pyright: ignore
-    ).batch(args.batch_size)
     y_pred_simplified = model.predict(test_ds)
     y_pred = to_normal_category_id([int(np.argmax(i)) for i in y_pred_simplified])
 
@@ -361,6 +405,7 @@ def main(args: TrainTextModelArgs) -> int:  # noqa: PLR0915
     logger.info(confu_matrix_path)
     mlflow.log_artifact(confu_matrix_path)
 
+    mlflow.end_run()
     logger.info("Script finished")
     return 0
 

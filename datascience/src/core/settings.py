@@ -2,88 +2,21 @@
 
 Keep in mind classes inheriting from BaseSettings can have their properties
 replaced by environment variables. To add settings that cannot be changed,
-add them in _ConstantSettings.
+add them in settings.py.
 Note: important variable must have a validator using pydantic.
 """
 import logging
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Final, Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, BaseSettings, DirectoryPath, validator
 
-import src
+from src.core import constants
 from src.utilities.dataset_utils import ensure_dataset_dir_content
 
 
-class _ConstantSettings:
-    """Define constants we want embedded into the settings."""
-
-    # TODO @JoffreyLGT: Should we have a package handling configurations since they are common to all projects?
-    #  https://github.com/JoffreyLGT/e-commerce-mlops/issues/80
-    ROOT_DIR: Final = Path(Path(src.__file__).parent).parent
-    CATEGORIES_DIC: Final = {
-        10: "Livre",
-        1140: "Figurine et produits dérivés",
-        1160: "Carte à collectionner",
-        1180: "Univers fantastiques",
-        1280: "Jouet pour enfant",
-        1281: "Jeu de société",
-        1300: "Miniature de collection",
-        1301: "Loisir",
-        1302: "Activité d'extérieur",
-        1320: "Accessoire bébé",
-        1560: "Meuble d'intérieur",
-        1920: "Litterie, rideaux",
-        1940: "Epicerie",
-        2060: "Décoration d'intérieur",
-        2220: "Accessoire animaux de compagnie",
-        2280: "Magazine et BD",
-        2403: "Livres anciens",
-        2462: "Jeu vidéo - Pack",
-        2522: "Fourniture de bureau",
-        2582: "Meubles extérieur",
-        2583: "Piscine",
-        2585: "Bricolage",
-        2705: "Livre",
-        2905: "Jeu vidéo - Jeu",
-        40: "Jeu vidéo - Jeu",
-        50: "Jeu vidéo - Accessoire",
-        60: "Jeu vidéo - Console",
-    }
-
-    CATEGORIES_SIMPLIFIED_DIC: Final = {
-        10: 0,
-        1140: 1,
-        1160: 2,
-        1180: 3,
-        1280: 4,
-        1281: 5,
-        1300: 6,
-        1301: 7,
-        1302: 8,
-        1320: 9,
-        1560: 10,
-        1920: 11,
-        1940: 12,
-        2060: 13,
-        2220: 14,
-        2280: 15,
-        2403: 16,
-        2462: 17,
-        2522: 18,
-        2582: 19,
-        2583: 20,
-        2585: 21,
-        2705: 22,
-        2905: 23,
-        40: 24,
-        50: 25,
-        60: 26,
-    }
-
-
-class _CommonSettings(BaseSettings, _ConstantSettings):
+class _CommonSettings(BaseSettings):
     """Common settings of the project."""
 
     TARGET_ENV: Literal["development", "staging", "production"] = "development"
@@ -98,7 +31,7 @@ class _CommonSettings(BaseSettings, _ConstantSettings):
     ) -> DirectoryPath:
         """Ensure the directory contains the necessary values."""
         full_path: Path = (
-            Path(path) if Path(path).is_absolute() else Path(cls.ROOT_DIR) / path
+            Path(path) if Path(path).is_absolute() else Path(constants.ROOT_DIR) / path
         )
         full_path.mkdir(parents=True, exist_ok=True)
         return full_path
@@ -131,6 +64,20 @@ def check_has_extension(file_name: str, extension: str) -> str:
 class _TrainingSettings(_CommonSettings):
     """Settings used in training scripts."""
 
+    TEXT_IDFS_FILE_NAME: str = "text_idfs.json"
+
+    @validator("TEXT_IDFS_FILE_NAME")
+    def check_has_json_extension_1(cls, name: str) -> str:  # noqa: N805
+        """Ensure the file has .json extension."""
+        return check_has_extension(name, ".json")
+
+    TEXT_VOCABULARY_FILE_NAME: str = "text_vocabulary.json"
+
+    @validator("TEXT_VOCABULARY_FILE_NAME")
+    def check_has_json_extension(cls, name: str) -> str:  # noqa: N805
+        """Ensure the file has .json extension."""
+        return check_has_extension(name, ".json")
+
     TRAINING_HISTORY_FILE_NAME: str = "training_history.png"
 
     @validator("TRAINING_HISTORY_FILE_NAME")
@@ -159,8 +106,24 @@ class _TrainingSettings(_CommonSettings):
         """Ensure the file has .txt extension."""
         return check_has_extension(name, ".txt")
 
+    MLFLOW_REGISTRY_URI: str = Path("mlruns").as_posix()
 
-class _DatasetSettings(BaseSettings, _ConstantSettings):
+    @validator("MLFLOW_REGISTRY_URI")
+    def is_file_uri(cls, store_uri: str) -> str:  # noqa: N805
+        """Ensure the string has file URI format."""
+        return Path(store_uri).absolute().as_uri()
+
+    MLFLOW_TRACKING_URI: str = Path("mlruns").as_posix()
+
+    @validator("MLFLOW_TRACKING_URI")
+    def is_file_uri_2(cls, store_uri: str) -> str:  # noqa: N805
+        """Ensure the string has file URI format."""
+        return Path(store_uri).absolute().as_uri()
+
+    MLFLOW_SET_DEFAULT_MODELS: bool = True
+
+
+class _DatasetSettings(BaseSettings):
     """Settings to manage datasets."""
 
     # Number of threads to use when doing images conversion in optimize_images.py
@@ -175,7 +138,7 @@ class _DatasetSettings(BaseSettings, _ConstantSettings):
         path: DirectoryPath | None,
     ) -> str | None:
         """Ensure the directory contains the necessary values."""
-        return ensure_dataset_dir_content(path=path, root_dir=Path(cls.ROOT_DIR))
+        return ensure_dataset_dir_content(path=path, root_dir=Path(constants.ROOT_DIR))
 
     # Directory where remaining data not already in a dataset are stored.
     REMAINING_DATA_DIR: str | None = None
