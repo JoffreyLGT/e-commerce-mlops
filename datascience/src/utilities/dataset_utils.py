@@ -1,6 +1,7 @@
 """Functions to generate Datasets."""
+import itertools
 import logging
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from pathlib import Path
 from typing import Any, TypedDict
 
@@ -9,6 +10,7 @@ import pandas as pd
 import tensorflow as tf
 from pydantic.types import DirectoryPath
 
+from src.core import constants
 from src.core.custom_errors import MissingDataError, MissingEnvironmentVariableError
 
 
@@ -152,9 +154,7 @@ def to_simplified_category_id(
     Returns:
         y with converted category id.
     """
-    from src.core.settings import get_common_settings
-
-    categories = get_common_settings().CATEGORIES_SIMPLIFIED_DIC
+    categories = constants.CATEGORIES_SIMPLIFIED_DIC
     return np.array([categories[i] for i in y])
 
 
@@ -169,9 +169,7 @@ def to_normal_category_id(
     Returns:
         y with original category id.
     """
-    from src.core.settings import get_common_settings
-
-    categories = get_common_settings().CATEGORIES_SIMPLIFIED_DIC
+    categories = constants.CATEGORIES_SIMPLIFIED_DIC
     return np.array(
         [list(categories.keys())[list(categories.values()).index(i)] for i in y]
     )
@@ -247,36 +245,70 @@ class CategoryProbabilities(TypedDict):
     probabilities: float
 
 
-def get_category_probabilities(
-    y_pred: list[list[float]],
-) -> list[list[CategoryProbabilities]]:
-    """Get the probabilities for each categories from the predictions.
+def get_probabilities_header() -> list[str]:
+    """Generates the header line for a category probabilities array."""
+    return list(
+        itertools.chain(
+            ["product_id"], [str(i) for i in constants.CATEGORIES_SIMPLIFIED_DIC]
+        )
+    )
 
-    Argument:
-    - y_pred: predictions from the model
+
+def get_empty_product_category(
+    product_ids: Iterable[str], with_header: bool = True
+) -> list[list[str]]:
+    """Return a list with product_id has the first item rest with empty strings.
+
+    Args:
+        product_ids: to fill as first item into the list.
+        with_header: true for the first line to describe the columns.
 
     Returns:
-    - a list of [prdtypecode, probability in percent] sorted descending
+        List with a header and one line per product id.
     """
-    from src.core.settings import get_common_settings
+    list_decisions: list[list[str]] = list()
 
-    settings = get_common_settings()
-    list_decisions: list[list[CategoryProbabilities]] = []
-    for y in y_pred:
-        list_probabilities: list[CategoryProbabilities] = []
+    if with_header:
+        list_decisions.append(get_probabilities_header())
+
+    nb_categories = len(constants.CATEGORIES_SIMPLIFIED_DIC.keys())
+
+    empty_values = [
+        list(itertools.chain([product_id], ["" for _ in range(0, nb_categories)]))
+        for product_id in product_ids
+    ]
+    return list(itertools.chain(list_decisions, empty_values))
+
+
+def get_product_category_probabilities(
+    product_ids: Iterable[str],
+    y_pred_simplified: list[list[float]],
+    with_header: bool = True,
+) -> list[Sequence[str | int | float]]:
+    """Get the probabilities for each categories from the predictions.
+
+    Args:
+        product_ids: list of product ids.
+        y_pred_simplified: predictions from the model.
+        with_header: true for the first line to describe the columns.
+
+    Returns:
+        A list with the product id and prediction probabilities for each category.
+    """
+    list_decisions: list[Sequence[str | int | float]] = list()
+    if with_header:
+        probabilities = get_probabilities_header()
+        list_decisions.append(probabilities)
+
+    for product_id, y in zip(product_ids, y_pred_simplified):
+        list_probabilities: list[str | int | float] = list()
+        list_probabilities.append(product_id)
+        nb_category = len(constants.CATEGORIES_SIMPLIFIED_DIC.keys())
         for i, probability in enumerate(y):
-            code = list(settings.CATEGORIES_DIC.keys())
-            if len(code) <= i:
+            if nb_category <= i:
                 raise NotImplementedError(
-                    f"CATEGORIES_DIC does not contain {i} values."
+                    f"There are only {nb_category} categories, not {i}."
                 )
-            list_probabilities.append(
-                {
-                    "category_id": code[i],
-                    "probabilities": np.around(probability * 100, 2),
-                }
-            )
-        list_decisions.append(
-            sorted(list_probabilities, key=lambda x: x["probabilities"], reverse=True)
-        )
+            list_probabilities.append(np.around(probability * 100, 2))
+        list_decisions.append(list_probabilities)
     return list_decisions
