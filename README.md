@@ -1,4 +1,4 @@
-<!-- markdownlint-disable MD013 -->
+<!-- markdownlint-disable MD013 MD033 -->
 
 # Catégorisation des produits d'un boutique en ligne
 
@@ -198,6 +198,46 @@ Il s'agit d'un multi-root workspace configuré pour permettre un fonctionnement 
 
 Contient les fichiers commun à tout le projet, les sous-projets ainsi que des fichiers utilisés dans les sous-projets.
 
+### Continuous integration et Continuous delivery (CI/CD)
+
+```mermaid
+sequenceDiagram
+    box Local
+    participant A as Developer
+    participant B as Git hooks
+    end
+    box Server
+    participant C as Git repository<br/>Github
+    participant D as CI/CD<br/>Github Actions
+    end
+    A->>+B: Commit
+    alt Pre-commit
+    B-->>+B: Is formating good?
+    B-->>-A: No, auto-format some files
+    else Commit-msg
+    B-->>+B: Message respects<br/>convention?
+    B-->>-A: No, give reason<br/>Stop commit
+    end
+    B->>+A: Commit created
+    A->>-B: Push
+    alt Pre-push
+    B-->>+B: Run formatters
+    B-->>B: Run linters
+    B-->>B: Run type checkers
+    B-->>-A: Fail!
+    end
+    B->>C: Push
+    A->>+C: Create pull request
+    alt On pull-request
+    C->>-D: Trigger actions
+    D-->>+D: Run formatters
+    D-->>D: Run linters
+    D-->>D: Run type checkers
+    D-->>D: Run unit tests
+    D-->>-C: Send results
+    end
+```
+
 #### Symlinks
 
 Attention, certains fichiers sont référencés comme symlinks dans les sous-projets:
@@ -389,8 +429,9 @@ python -m scripts.train_image_model --help
 Ce qui affiche :
 
 ```text
-usage: train_image_model.py [-h] [--input-dir INPUT_DIR] [--output-dir OUTPUT_DIR] [--batch-size BATCH_SIZE] [--no-data-augmentation]
-                            [--train-patience TRAIN_PATIENCE]
+usage: train_image_model.py [-h] [--input-dir INPUT_DIR] [--output-dir OUTPUT_DIR] [--batch-size BATCH_SIZE]
+                            [--no-data-augmentation] [--train-patience TRAIN_PATIENCE] [--epochs EPOCHS] [--set-staging]
+                            [--registered-model REGISTERED_MODEL]
 
 Create and train a new image model using dataset provided with --input-dir, then save it to --output-dir with its performance
 statistics.
@@ -408,6 +449,10 @@ optional arguments:
                         Add layers of data augmentation to avoid early overfitting. (default: True)
   --train-patience TRAIN_PATIENCE
                         Number of epoch to do without improvements before stopping the model training. (default: 10)
+  --epochs EPOCHS       Number of epochs to reach before stopping. Stops before if train-patience is reached. (default: 100)
+  --set-staging         Set new model version status as staging for 'fusion' model (default: False)
+  --registered-model REGISTERED_MODEL
+                        (default: image)
 
 help:
   -h, --help            show this help message and exit
@@ -431,22 +476,281 @@ help:
 
     ```bash
     # Remplacer image par le nom du modèle, et Staging par Production pour une mise en production
-    mlflow models serve -m "models:/image/Staging" --port 5002 --env-manager local
+    mlflow models serve -m "models:/fusion/Staging" --port 5002 --env-manager local
     ```
 
 #### Envoyer une requête sur le modèl
 
-L'exemple ci-dessous effectue une prédiction sur le modèle image :
+- Exemple de requête pour effectuer une prédiction sur le modèle Fusion :
+
+<details>
+<summary>Cliquer ici pour afficher la requête.</summary>
 
 ```bash
-curl -d '{"dataframe_records":[{"image path":"/path/to/image_1261427590_product_3898729018.jpg"}]}' -H 'Content-Type: application/json' -X POST localhost:5002/invocations
+curl --location 'localhost:5002/invocations' \
+--header 'Content-Type: application/json' \
+--data '{
+    "dataframe_records": [
+        {
+            "product_id": "1",
+            "designation": "",
+            "description": "",
+            "image_path": "/Users/joffrey/workspace/e-commerce-mlops/datascience/data/datasets/subset_1/images/image_62350930_product_2242045.jpg"
+        },
+        {
+            "product_id": "2",
+            "designation": "Jeux Xbox",
+            "description": "",
+            "image_path": ""
+        },
+        {
+            "product_id": "3",
+            "designation": "",
+            "description": "Jeux Xbox Elder scrolls",
+            "image_path": ""
+        },
+        {
+            "product_id": "4",
+            "designation": "Jeux Xbox Elder scrolls",
+            "description": "UN RPG comme on les aimes !",
+            "image_path": "/Users/joffrey/workspace/e-commerce-mlops/datascience/data/datasets/subset_1/images/image_62350930_product_2242045.jpg"
+        },
+        {
+            "product_id": "5",
+            "designation": "",
+            "description": "",
+            "image_path": ""
+        }
+    ]
+}'
 ```
 
-Le résultat est le suivant (l'utilisation d'un formater JSON permet une meilleure lisibilité) :
+</details>
+<br/>
+
+- Le résultat contient l'objet JSON suivant :
+
+<details>
+<summary>Cliquer ici pour afficher le résultat.</summary>
 
 ```json
-{"predictions": [[{"category_id": 1301, "probabilities": 17.82}, {"category_id": 2220, "probabilities": 16.83}, {"category_id": 1280, "probabilities": 16.58}, {"category_id": 1560, "probabilities": 9.92}, {"category_id": 1320, "probabilities": 9.25}, {"category_id": 2060, "probabilities": 6.27}, {"category_id": 2582, "probabilities": 2.85}, {"category_id": 1281, "probabilities": 2.7}, {"category_id": 1302, "probabilities": 2.14}, {"category_id": 2522, "probabilities": 1.98}, {"category_id": 1140, "probabilities": 1.78}, {"category_id": 1180, "probabilities": 1.6}, {"category_id": 60, "probabilities": 1.33}, {"category_id": 2585, "probabilities": 1.21}, {"category_id": 10, "probabilities": 1.18}, {"category_id": 2403, "probabilities": 1.18}, {"category_id": 2280, "probabilities": 1.08}, {"category_id": 2705, "probabilities": 0.96}, {"category_id": 50, "probabilities": 0.89}, {"category_id": 1300, "probabilities": 0.5}, {"category_id": 1940, "probabilities": 0.47}, {"category_id": 40, "probabilities": 0.45}, {"category_id": 2583, "probabilities": 0.38}, {"category_id": 2905, "probabilities": 0.33}, {"category_id": 2462, "probabilities": 0.32}, {"category_id": 1920, "probabilities": 0.01}, {"category_id": 1160, "probabilities": 0.0}]]}%
+{
+    "predictions": [
+        {
+            "product_id": "2",
+            "10": "3.64",
+            "1140": "3.62",
+            "1160": "3.68",
+            "1180": "3.59",
+            "1280": "3.77",
+            "1281": "3.76",
+            "1300": "3.76",
+            "1301": "3.62",
+            "1302": "3.71",
+            "1320": "3.72",
+            "1560": "3.81",
+            "1920": "3.68",
+            "1940": "3.65",
+            "2060": "3.72",
+            "2220": "3.56",
+            "2280": "3.77",
+            "2403": "3.78",
+            "2462": "3.72",
+            "2522": "3.74",
+            "2582": "3.7",
+            "2583": "3.81",
+            "2585": "3.72",
+            "2705": "3.66",
+            "2905": "3.68",
+            "40": "3.78",
+            "50": "3.69",
+            "60": "3.63"
+        },
+        {
+            "product_id": "3",
+            "10": "3.64",
+            "1140": "3.62",
+            "1160": "3.68",
+            "1180": "3.59",
+            "1280": "3.77",
+            "1281": "3.76",
+            "1300": "3.76",
+            "1301": "3.62",
+            "1302": "3.71",
+            "1320": "3.72",
+            "1560": "3.81",
+            "1920": "3.68",
+            "1940": "3.65",
+            "2060": "3.72",
+            "2220": "3.56",
+            "2280": "3.77",
+            "2403": "3.78",
+            "2462": "3.72",
+            "2522": "3.74",
+            "2582": "3.7",
+            "2583": "3.81",
+            "2585": "3.72",
+            "2705": "3.66",
+            "2905": "3.68",
+            "40": "3.78",
+            "50": "3.69",
+            "60": "3.63"
+        },
+        {
+            "product_id": "1",
+            "10": "3.73",
+            "1140": "5.61",
+            "1160": "4.71",
+            "1180": "1.12",
+            "1280": "3.51",
+            "1281": "3.32",
+            "1300": "3.67",
+            "1301": "1.86",
+            "1302": "2.99",
+            "1320": "3.01",
+            "1560": "2.44",
+            "1920": "3.8",
+            "1940": "1.8",
+            "2060": "4.0",
+            "2220": "1.58",
+            "2280": "4.18",
+            "2403": "7.22",
+            "2462": "2.65",
+            "2522": "10.68",
+            "2582": "2.85",
+            "2583": "8.72",
+            "2585": "3.77",
+            "2705": "2.87",
+            "2905": "2.93",
+            "40": "3.28",
+            "50": "1.47",
+            "60": "2.22"
+        },
+        {
+            "product_id": "4",
+            "10": "5.84",
+            "1140": "3.09",
+            "1160": "4.33",
+            "1180": "1.84",
+            "1280": "4.01",
+            "1281": "3.33",
+            "1300": "4.7",
+            "1301": "1.03",
+            "1302": "0.7",
+            "1320": "4.26",
+            "1560": "2.84",
+            "1920": "7.49",
+            "1940": "1.08",
+            "2060": "8.53",
+            "2220": "1.53",
+            "2280": "4.61",
+            "2403": "6.52",
+            "2462": "1.38",
+            "2522": "5.42",
+            "2582": "5.24",
+            "2583": "8.53",
+            "2585": "1.88",
+            "2705": "3.86",
+            "2905": "1.41",
+            "40": "2.53",
+            "50": "2.7",
+            "60": "1.33"
+        },
+        {
+            "product_id": "2",
+            "10": "",
+            "1140": "",
+            "1160": "",
+            "1180": "",
+            "1280": "",
+            "1281": "",
+            "1300": "",
+            "1301": "",
+            "1302": "",
+            "1320": "",
+            "1560": "",
+            "1920": "",
+            "1940": "",
+            "2060": "",
+            "2220": "",
+            "2280": "",
+            "2403": "",
+            "2462": "",
+            "2522": "",
+            "2582": "",
+            "2583": "",
+            "2585": "",
+            "2705": "",
+            "2905": "",
+            "40": "",
+            "50": "",
+            "60": ""
+        },
+        {
+            "product_id": "3",
+            "10": "",
+            "1140": "",
+            "1160": "",
+            "1180": "",
+            "1280": "",
+            "1281": "",
+            "1300": "",
+            "1301": "",
+            "1302": "",
+            "1320": "",
+            "1560": "",
+            "1920": "",
+            "1940": "",
+            "2060": "",
+            "2220": "",
+            "2280": "",
+            "2403": "",
+            "2462": "",
+            "2522": "",
+            "2582": "",
+            "2583": "",
+            "2585": "",
+            "2705": "",
+            "2905": "",
+            "40": "",
+            "50": "",
+            "60": ""
+        },
+        {
+            "product_id": "5",
+            "10": "",
+            "1140": "",
+            "1160": "",
+            "1180": "",
+            "1280": "",
+            "1281": "",
+            "1300": "",
+            "1301": "",
+            "1302": "",
+            "1320": "",
+            "1560": "",
+            "1920": "",
+            "1940": "",
+            "2060": "",
+            "2220": "",
+            "2280": "",
+            "2403": "",
+            "2462": "",
+            "2522": "",
+            "2582": "",
+            "2583": "",
+            "2585": "",
+            "2705": "",
+            "2905": "",
+            "40": "",
+            "50": "",
+            "60": ""
+        }
+    ]
+}
 ```
+
+</details>
 
 #### Questions et réponses (datascience)
 

@@ -111,7 +111,7 @@ class FusionClassificationWrapper(PythonModel):  # type: ignore
         if len(model_input.index) == 0:
             return list()
         text = model_input["designation"] + " " + model_input["description"]
-        preprocessed = self.text_preprocessor.transform(text.to_numpy())
+        preprocessed = self.text_preprocessor.transform(text)
         text_ds = tf.data.Dataset.from_tensor_slices(
             preprocessed  # type: ignore
         ).batch(96)
