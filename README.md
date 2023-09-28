@@ -1,4 +1,4 @@
-<!-- markdownlint-disable MD013 MD033 -->
+<!-- markdownlint-disable MD013 MD033-->
 
 # Catégorisation des produits d'un boutique en ligne
 
@@ -51,7 +51,7 @@ Utilisation de la machine locale pour le développement permettant l'utilisation
 
 Prérequis :
 
-- Système UNIX-like (Linux, MacOS). Les utilisateurs de Windows peuvent soit utiliser le [conteneur de développement](#conteneur-de-développement) mis à disposition, soit installer un système Linux sur [WSL2](https://learn.microsoft.com/fr-fr/windows/wsl/install).
+- Système UNIX-like (Linux, MacOS). Les utilisateurs de Windows peuvent soit utiliser le [conteneur de développement](#dev-container) mis à disposition, soit installer un système Linux sur [WSL2](https://learn.microsoft.com/fr-fr/windows/wsl/install).
 - [Visual Studio Code](https://code.visualstudio.com)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 - [Python 3.11](https://www.python.org/downloads/)
@@ -83,6 +83,8 @@ Mise en place :
     ```
 
 7. Installer les [extensions recommandées dans le workspace.](#extensions)
+
+<a id="dev-container" />
 
 ### Conteneur de développement
 
@@ -121,9 +123,9 @@ Sur la ligne `WORKSPACE RECOMMENDATION`, cliquer sur `Install workspace Recommen
 
 Cette section concerne les outils en général. Chaque sous-projet a sa propre section :
 
-- [root](#questions-et-réponses-(root))
-- [backend](#questions-et-réponses-(backend))
-- [datascience](#questions-et-réponses-(datascience))
+- [root](#root-q&a)
+- [backend](#backend-q&a)
+- [datascience](#datascience-q&a)
 
 ### Docker m'indique que je le disque de la VM est plein
 
@@ -256,6 +258,8 @@ Les tâches ci-dessous sont disponibles :
 | Run Git pre-commit hooks  | Permet de lancer les hook git de pre-commit sans avoir à faire de commit.          |
 | Run Git pre-push hooks  | Permet de lancer les hook Git de pre-push sans avoir à faire de commit.          |
 
+<a id="root-q&a" />
+
 #### Questions et réponses (root)
 
 Rien pour le moment.
@@ -320,6 +324,8 @@ Les tâches ci-dessous sont disponibles :
 | Check Tensorflow GPU support | Affiche un message pour indiquer si Tensorflow supporte des GPU dans l'environnement. |
 | Start PostgreSQL DB container | Démarre le conteneur *db* depuis le fichier [docker-compose.yaml](docker-compose.yaml). |
 | Stop PostgreSQL DB container | Stop le conteneur *db* démarré depuis la tâche Start PostgreSQL DB container. |
+
+<a id="backend-q&a" />
 
 #### Questions et réponses (backend)
 
@@ -399,11 +405,11 @@ original
 - `y.csv` contient la target, à savoir la catégorie du produit dans une colonne.
 - `images` contient toutes les images des produits. Les images doivent respecter la convention `image_[imageid]_[productid].jpg`
 
-Pour créer un dataset (jeu de données) pour l'entrainement, utiliser le script [optimize_images.py](datascience/scripts/optimize_images.py).
+Pour créer un dataset (jeu de données) pour l'entrainement, utiliser le script [create_datasets.py](datascience/scripts/create_datasets.py).
 
 ```bash
 # Depuis le dossier e-commerce-mlops/datascience
-python -m scripts.optimize_images --train-size 0.8 --test-size 0.2 --input-dir "data/originals" --output-dir "data/datasets/example"
+python -m scripts.create_datasets --train-size 0.8 --test-size 0.2 --input-dir "data/originals" --output-dir "data/datasets/example"
 ```
 
 Le script va s'occuper de traiter les images pour retirer les bandes blanches inutiles, les redimentionner et va créer les jeux de données d'entrainement (80%) et de test (20%) au format `.csv`.
@@ -412,9 +418,9 @@ Le script va s'occuper de traiter les images pour retirer les bandes blanches in
 
 Le projet utilise 3 modèles (image, texte et fusion). De ce fait, 3 scripts sont mis à disposition pour l'entrainement :
 
-- [train_image_model.py](datascience/train_image_model.py)
-- [train_text_model.py](datascience/train_text_model.py)
-- [train_fusion_model.py](datascience/train_fusion_model.py)
+- [train_image_model.py](datascience/scripts/train_image_model.py)
+- [train_text_model.py](datascience/scripts/train_text_model.py)
+- [train_fusion_model.py](datascience/scripts/train_fusion_model.py)
 
 Ceux-ci utilisent [MLFlow](https://mlflow.org) pour le suivi des metrics.
 
@@ -751,6 +757,8 @@ curl --location 'localhost:5002/invocations' \
 ```
 
 </details>
+
+<a id="datascience-q&a" />
 
 #### Questions et réponses (datascience)
 

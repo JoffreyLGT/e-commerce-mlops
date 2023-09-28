@@ -1,9 +1,9 @@
 # ruff: noqa
-"""Optimize images.
+"""Create training and testing datasets from input folder.
 
-Open provided folder, create train and test dataset and optimize images by:
-- Removing the white stripes they can have around
-- Resize
+Image are preprocessed to be optimized for our image model:
+- Remove the white stripes they may have around
+- Resize them to match expected dimension
 - Keep the ratio (by adding white stripes if needed) or stretch images
 - Save it either grayscaled or colored
 """
@@ -381,7 +381,7 @@ class ImagePipeline:
         )
 
 
-class OptimizeImagesArgs(BaseModel):
+class CreateDatasetsArgs(BaseModel):
     """Hold all scripts arguments and do type checking."""
 
     train_size: int | float
@@ -405,8 +405,8 @@ class OptimizeImagesArgs(BaseModel):
         return ensure_dataset_dir_content(path=path, root_dir=Path(constants.ROOT_DIR))
 
 
-def main(args: OptimizeImagesArgs) -> int:
-    """Create a dataset of images and optimize them.
+def main(args: CreateDatasetsArgs) -> int:
+    """Create training and testing datasets with preprocessed images.
 
     Args:
         args: settings provided as arguments.
@@ -461,7 +461,7 @@ def main(args: OptimizeImagesArgs) -> int:
 
 if __name__ == "__main__":
     parser = pydantic_argparse.ArgumentParser(
-        model=OptimizeImagesArgs,
+        model=CreateDatasetsArgs,
         description=(
             "Generate a dataset using data from --input-dir "
             "and preprocess images to remove white stripes. "
