@@ -126,7 +126,7 @@ class _TrainingSettings(_CommonSettings):
 class _DatasetSettings(BaseSettings):
     """Settings to manage datasets."""
 
-    # Number of threads to use when doing images conversion in optimize_images.py
+    # Number of threads to use when doing images conversion in create_datasets.py
     IMG_PROCESSING_NB_THREAD: int = 4
 
     # Directory where data used to train the models are stored.

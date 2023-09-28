@@ -12,7 +12,7 @@ dataset_dir
 ├── y_test.csv
 └── y_train.csv
 
-Use scripts/optimize_images.py to generate a dataset.
+Use scripts/create_datasets.py to generate a dataset.
 """
 import json
 import logging
