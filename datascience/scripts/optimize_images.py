@@ -1,4 +1,3 @@
-# type: ignore
 # ruff: noqa
 """Optimize images.
 
@@ -10,9 +9,7 @@ Open provided folder, create train and test dataset and optimize images by:
 """
 
 import datetime
-import pydantic
 import os
-import pickle
 import shutil
 import sys
 import time
@@ -20,19 +17,21 @@ from collections import deque
 from pathlib import Path
 from queue import Queue
 from threading import Thread
+from typing import Any
 
 import numpy as np
 import pandas as pd
+import pydantic
 import pydantic_argparse
 from PIL import Image, ImageOps
-from pydantic import BaseModel, DirectoryPath, Field, validator
+from pydantic import BaseModel, DirectoryPath, validator
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 
+from src.core import constants
 from src.core.custom_errors import ImageProcessingError
 from src.core.settings import (
-    get_common_settings,
     get_dataset_settings,
     get_mobilenet_image_model_settings,
 )
@@ -96,7 +95,7 @@ def get_imgs_filenames(
         ]
 
 
-def remove_white_stripes(img_array: np.ndarray) -> np.ndarray:
+def remove_white_stripes(img_array: np.ndarray) -> np.ndarray:  # type: ignore
     """Analyse each lines and column of the array to remove the outer white stripes they might contain.
 
     Arguments:
@@ -166,11 +165,11 @@ def crop_resize_img(
         padding_value = np.abs(ratio) // 2
         padding = ()
         if ratio > 0:
-            padding = (0, padding_value, 0, padding_value)
+            padding = (0, padding_value, 0, padding_value)  # type:ignore
         else:
-            padding = (padding_value, 0, padding_value, 0)
+            padding = (padding_value, 0, padding_value, 0)  # type: ignore
 
-        new_img = ImageOps.expand(new_img, padding, (255, 255, 255))
+        new_img = ImageOps.expand(new_img, padding, (255, 255, 255))  # type: ignore
 
     new_img = new_img.resize((width, height))
 
@@ -183,12 +182,12 @@ def crop_resize_img(
 class Progression:
     """Inform the user about the progression of images transformation."""
 
-    def __init__(self, total_rows: int):
+    def __init__(self, total_rows: int) -> None:
         """Initiate a Progression object."""
         self.start_time = time.perf_counter()
         self.total_rows = total_rows
 
-    def display(self, remaining_rows_number: int):
+    def display(self, remaining_rows_number: int) -> None:
         """Display the image progression in the output."""
         current_row_number = self.total_rows - remaining_rows_number
         if current_row_number == 0:
@@ -204,12 +203,12 @@ class Progression:
         )
         print("Temps restant :", datetime.timedelta(seconds=int(remaining_time)))
 
-    def done(self):
+    def done(self) -> None:
         """Clear the output and display a 100% progress."""
         print("Avancement : 100%")
 
 
-class ImageTransformer(BaseEstimator, TransformerMixin):
+class ImageTransformer(BaseEstimator, TransformerMixin):  # type: ignore
     """Transform images.
 
     First by cropping the white stripes and then resize them either
@@ -233,9 +232,9 @@ class ImageTransformer(BaseEstimator, TransformerMixin):
         self.input_img_dir = input_img_dir
         self.nb_threads = get_dataset_settings().IMG_PROCESSING_NB_THREAD
         self.output_img_dir = output_img_dir
-        self.filenames_queue = Queue()
+        self.filenames_queue = Queue()  # type: ignore
 
-    def _initiate_crop_resize(self, type):
+    def _initiate_crop_resize(self, type: str) -> None:
         """Private function started by the threads to crop_resize_img."""
         while not self.filenames_queue.empty():
             filename, prdtypecode = self.filenames_queue.get()
@@ -255,7 +254,7 @@ class ImageTransformer(BaseEstimator, TransformerMixin):
                 self.grayscale,
             )
 
-    def _load_images_to_dataframe(self, X, filenames: list[str]):
+    def _load_images_to_dataframe(self, X: Any, filenames: list[str]) -> Any:
         images = np.array(
             [
                 np.asarray(Image.open(f"{self.output_img_dir}/{filename}"))
@@ -279,9 +278,9 @@ class ImageTransformer(BaseEstimator, TransformerMixin):
         )
         return X.drop(["designation", "description", "imageid", "productid"], axis=1)
 
-    def transform(self, x, y=None, type: str | None = None):
+    def transform(self, x: Any, y: Any = None, type: str | None = None) -> Any:
         """Transform the images for each line of X."""
-        existing_files = []
+        existing_files: list[str] = []
 
         # Check if the output directory for images exists
         if os.path.exists(self.output_img_dir):
@@ -403,9 +402,7 @@ class OptimizeImagesArgs(BaseModel):
         path: DirectoryPath | None,
     ) -> str | None:
         """Ensure the directory contains the necessary values."""
-        return ensure_dataset_dir_content(
-            path=path, root_dir=Path(get_common_settings().ROOT_DIR)
-        )
+        return ensure_dataset_dir_content(path=path, root_dir=Path(constants.ROOT_DIR))
 
 
 def main(args: OptimizeImagesArgs) -> int:
@@ -433,11 +430,10 @@ def main(args: OptimizeImagesArgs) -> int:
     )
 
     print("Save datasets into csv")
-    if not os.path.exists(args.output_dir):
-        os.makedirs(args.output_dir)
+    args.output_dir.mkdir(parents=True, exist_ok=True)
 
-    X_train.to_csv(f"{args.output_dir}/X_train.csv")
-    X_test.to_csv(f"{args.output_dir}/X_test.csv")
+    X_train.to_csv(f"{args.output_dir}/X_train.csv")  # pyright: ignore
+    X_test.to_csv(f"{args.output_dir}/X_test.csv")  # pyright: ignore
     y_train.to_csv(f"{args.output_dir}/y_train.csv")  # pyright: ignore
     y_test.to_csv(f"{args.output_dir}/y_test.csv")  # pyright: ignore
 
