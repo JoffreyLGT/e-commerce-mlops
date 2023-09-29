@@ -6,6 +6,11 @@
 # Stop if there is an error
 set -e
 
+echo "Setup datascience venv"
+cd datascience
+poetry install && poetry run python -m scripts.download_mlruns
+cd -
+
 # Check for the build
 if [[ -z "$ENV_TARGET" ]]; then
     echo "Run in 'development' build. To target another build, you must provide a environment variable called ENV_TARGET with the value 'development', 'staging' or 'production'."

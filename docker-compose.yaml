@@ -1,6 +1,8 @@
 name: product-classification
 services:
   api:
+    container_name: api
+    image: joff15/e-commerce-mlops-api
     build:
       context: .
       dockerfile: backend/backend.Dockerfile
@@ -10,23 +12,42 @@ services:
       - "8000:8000"
 
     env_file:
-      - .env
+      - scripts/demo.env
 
     environment:
       - SERVER_NAME=${DOMAIN?Variable not set}
       - SERVER_HOST=https://${DOMAIN?Variable not set}
 
   db:
+    container_name: db
     image: postgres:latest
     restart: unless-stopped
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
     env_file:
-      - .env
+      - scripts/demo.env
 
     ports:
-      - 5432:5432
+      - "5432:5432"
+
+  datascience:
+    container_name: datascience
+    image: joff15/e-commerce-mlops-datascience
+    build:
+      context: .
+      dockerfile: datascience/datascience.Dockerfile
+      target: ${TARGET?Variable not set}
+
+    ports:
+      - "5010:5000"
+      - "5011:5002"
+
+    env_file:
+      - scripts/demo.env
+
+    volumes:
+      - ${DATA_VOLUME_SRC?Variable not set}:/datascience/data:default
 
 volumes:
   postgres-data:
