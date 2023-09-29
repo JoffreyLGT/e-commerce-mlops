@@ -8,7 +8,7 @@ Open provided folder, create train and test dataset and optimize images by:
 - Keep the ratio (by adding white stripes if needed) or stretch images
 - Save it either grayscaled or colored
 """
-
+from src.core import constants
 import datetime
 import pydantic
 import os
@@ -403,9 +403,7 @@ class OptimizeImagesArgs(BaseModel):
         path: DirectoryPath | None,
     ) -> str | None:
         """Ensure the directory contains the necessary values."""
-        return ensure_dataset_dir_content(
-            path=path, root_dir=Path(get_common_settings().ROOT_DIR)
-        )
+        return ensure_dataset_dir_content(path=path, root_dir=Path(constants.ROOT_DIR))
 
 
 def main(args: OptimizeImagesArgs) -> int:
