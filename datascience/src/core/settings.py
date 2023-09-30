@@ -106,19 +106,19 @@ class _TrainingSettings(_CommonSettings):
         """Ensure the file has .txt extension."""
         return check_has_extension(name, ".txt")
 
-    MLFLOW_REGISTRY_URI: str = Path("mlruns").as_posix()
+    MLFLOW_REGISTRY_URI: str = "mlruns"
 
     @validator("MLFLOW_REGISTRY_URI")
     def is_file_uri(cls, store_uri: str) -> str:  # noqa: N805
         """Ensure the string has file URI format."""
-        return Path(store_uri).absolute().as_uri()
+        return Path(store_uri).absolute().as_posix()
 
-    MLFLOW_TRACKING_URI: str = Path("mlruns").as_posix()
+    MLFLOW_TRACKING_URI: str = "mlruns"
 
     @validator("MLFLOW_TRACKING_URI")
     def is_file_uri_2(cls, store_uri: str) -> str:  # noqa: N805
         """Ensure the string has file URI format."""
-        return Path(store_uri).absolute().as_uri()
+        return Path(store_uri).absolute().as_posix()
 
     MLFLOW_SET_DEFAULT_MODELS: bool = True
 

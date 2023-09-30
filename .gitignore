@@ -184,5 +184,6 @@ docker-stack.yaml
 
 datascience/data
 datascience/.python-version
-logs
+datascience/logs
 datascience/mlruns
+datascience/deployment
