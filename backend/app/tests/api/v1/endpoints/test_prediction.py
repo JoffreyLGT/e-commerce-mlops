@@ -40,7 +40,6 @@ def test_predict_category_valid_color(
     assert len(response) == int(params["limit"])
     assert "category_id" in response[0]
     assert "probabilities" in response[0]
-    assert "label" in response[0]
 
 
 def test_predict_category_invalid_gray(

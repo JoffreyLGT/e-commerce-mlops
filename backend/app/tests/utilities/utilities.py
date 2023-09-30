@@ -7,7 +7,6 @@ from fastapi.testclient import TestClient
 from pydantic import EmailStr
 
 from app.core.settings import settings
-from datascience.src.data import CATEGORIES_DIC
 
 
 def random_lower_string(length: int = 32) -> str:
@@ -58,5 +57,4 @@ def random_category_id() -> int:
     Returns:
         Random category id.
     """
-    all_ids = list(CATEGORIES_DIC.keys())
-    return random.choice(all_ids)
+    return random.randint(1, 27)

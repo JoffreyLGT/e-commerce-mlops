@@ -3,6 +3,7 @@ services:
   api:
     container_name: api
     image: joff15/e-commerce-mlops-api
+    restart: unless-stopped
     build:
       context: .
       dockerfile: backend/backend.Dockerfile
@@ -17,6 +18,10 @@ services:
     environment:
       - SERVER_NAME=${DOMAIN?Variable not set}
       - SERVER_HOST=https://${DOMAIN?Variable not set}
+
+    volumes:
+      - ${DATA_VOLUME_SRC?Variable not set}:/backend/data:default
+      # - products-data:${DATA_DIR?Variable not set}
 
   db:
     container_name: db
@@ -34,6 +39,7 @@ services:
   datascience:
     container_name: datascience
     image: joff15/e-commerce-mlops-datascience
+    restart: unless-stopped
     build:
       context: .
       dockerfile: datascience/datascience.Dockerfile
@@ -48,9 +54,11 @@ services:
 
     volumes:
       - ${DATA_VOLUME_SRC?Variable not set}:/datascience/data:default
+      # - products-data:${DATA_DIR?Variable not set}
 
 volumes:
   postgres-data:
+  products-data:
 
 networks:
   default:
