@@ -7,4 +7,3 @@ class PredictionResult(BaseModel):
 
     category_id: int
     probabilities: float
-    label: str

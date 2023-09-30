@@ -17,6 +17,3 @@ poetry run alembic upgrade head
 
 # Create initial data in DB
 poetry run python -m scripts.seed_data
-
-# Download model saves
-poetry run python -m scripts.download_models
