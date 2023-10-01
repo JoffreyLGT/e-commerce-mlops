@@ -24,7 +24,6 @@ E-COMMERCE-MLOPS/
 ├─ .vscode/tasks.json : tâches du project global
 ├─ backend/ : Projet - API permettant aux utilisateurs de prédire la catégorie d'un produitg
 ├─ datascience/ : Projet - entraînement, tracking et mise à disposition des modèles de prédiction
-├─ frontend/ : placeholder pour une éventuelle application WEB pour interagir avec l'API
 ├─ scripts/ : liste des scripts globaux du projet
 │ ├─ ressources/ : contient les ressources nécessaires aux scripts
 │ ├─ tests/ : sous-scripts utilisés par `run-tests.sh`
