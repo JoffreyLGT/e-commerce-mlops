@@ -1,60 +1,60 @@
-name: product-classification
+name: ${DOCKER_PROJECT_NAME:-product-classification}
 services:
   api:
-    container_name: api
+    container_name: ${BACKEND_SERVER:-api}
     image: joff15/e-commerce-mlops-api
     restart: unless-stopped
     build:
       context: .
       dockerfile: backend/backend.Dockerfile
-      target: ${TARGET?Variable not set}
+      target: ${TARGET_ENV:-development}
 
     ports:
-      - "8000:8000"
+      - ${BACKEND_FASTAPI_PORT}:${BACKEND_FASTAPI_PORT}
 
     env_file:
-      - scripts/demo.env
+      - ${ENV_FILE:-template.env}
 
     environment:
-      - SERVER_NAME=${DOMAIN?Variable not set}
-      - SERVER_HOST=https://${DOMAIN?Variable not set}
+      - SERVER_NAME=${DOMAIN:-localhost}
+      - SERVER_HOST=https://${DOMAIN:-localhost}
 
     volumes:
-      - ${DATA_VOLUME_SRC?Variable not set}:/backend/data:default
-      # - products-data:${DATA_DIR?Variable not set}
+      # - ${DATA_VOLUME_SRC?Variable not set}:/backend/data:default
+      - products-data:${DATA_DIR?Variable not set}
 
   db:
-    container_name: db
+    container_name: ${DB_SERVER:-db}
     image: postgres:latest
     restart: unless-stopped
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
     env_file:
-      - scripts/demo.env
+      - ${ENV_FILE:-template.env}
 
     ports:
-      - "5432:5432"
+      - 5432:5432
 
   datascience:
-    container_name: datascience
+    container_name: ${DATASCIENCE_SERVER:-datascience}
     image: joff15/e-commerce-mlops-datascience
     restart: unless-stopped
     build:
       context: .
       dockerfile: datascience/datascience.Dockerfile
-      target: ${TARGET?Variable not set}
+      target: ${TARGET_ENV:-development}
 
     ports:
-      - "5010:5000"
-      - "5011:5002"
+      - ${DATASCIENCE_MLFLOW_PORT}:${DATASCIENCE_MLFLOW_PORT}
+      - ${DATASCIENCE_MODEL_PORT}:${DATASCIENCE_MODEL_PORT}
 
     env_file:
-      - scripts/demo.env
+      - ${ENV_FILE:-template.env}
 
     volumes:
-      - ${DATA_VOLUME_SRC?Variable not set}:/datascience/data:default
-      # - products-data:${DATA_DIR?Variable not set}
+      # - ${DATA_VOLUME_SRC?Variable not set}:/datascience/data:default
+      - products-data:${DATA_DIR?Variable not set}
 
 volumes:
   postgres-data:
@@ -62,4 +62,4 @@ volumes:
 
 networks:
   default:
-    name: product-classification
+    name: ${DOCKER_NETWORK:-product-classification}

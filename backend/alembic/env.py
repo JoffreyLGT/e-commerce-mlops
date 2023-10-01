@@ -1,8 +1,7 @@
-from logging.config import fileConfig
 import os
+from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from sqlalchemy import engine_from_config, pool
 
 from alembic import context
 
@@ -16,6 +15,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 from app.database.base import Base  # noqa
+
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
@@ -27,12 +27,14 @@ target_metadata = Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
+
 def get_url():
     user = os.getenv("POSTGRES_USER", "postgres")
     password = os.getenv("POSTGRES_PASSWORD", "")
-    server = os.getenv("POSTGRES_SERVER", "db")
+    server = os.getenv("DB_SERVER", "db")
     db = os.getenv("POSTGRES_DB", "app")
     return f"postgresql://{user}:{password}@{server}/{db}"
+
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
@@ -66,7 +68,6 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-
     configuration = config.get_section(config.config_ini_section)
     configuration["sqlalchemy.url"] = get_url()
 
