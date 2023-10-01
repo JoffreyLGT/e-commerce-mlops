@@ -18,4 +18,4 @@ set -e
 scripts/prestart.sh
 
 echo "Start with telemetry"
-poetry run opentelemetry-instrument --traces_exporter otlp_proto_http --metrics_exporter otlp_proto_http uvicorn app.main:app --host 0.0.0.0 --port 8000
+poetry run opentelemetry-instrument --traces_exporter otlp_proto_http --metrics_exporter otlp_proto_http uvicorn app.main:app --host 0.0.0.0 --port $BACKEND_FASTAPI_PORT

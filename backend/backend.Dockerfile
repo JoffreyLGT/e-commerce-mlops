@@ -24,20 +24,20 @@ WORKDIR /backend
 FROM base as development
 RUN poetry install -n
 COPY ./backend/ /backend/
-COPY .env mypy.ini /backend/
+COPY mypy.ini /backend/
 RUN chmod +x /backend/scripts/start-reload.sh
 CMD [ "./scripts/start-reload.sh" ]
 
 FROM base as staging
 RUN poetry install -n
 COPY ./backend/ /backend/
-COPY .env mypy.ini /backend/
+COPY mypy.ini /backend/
 RUN chmod +x /backend/scripts/start.sh
 CMD [ "./scripts/start.sh" ]
 
 FROM base as production
 RUN poetry install -n --without dev
 COPY ./backend/ ../mypy.ini /backend/
-COPY .env mypy.ini /backend/
+COPY mypy.ini /backend/
 RUN chmod +x /backend/scripts/start-with-telemetry.sh
 CMD [ "./scripts/start-with-telemetry.sh" ]

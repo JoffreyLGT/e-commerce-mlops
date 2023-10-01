@@ -6,37 +6,24 @@
 # Stop if there is an error
 set -e
 
-echo "Setup datascience venv"
+# Store the script name for logging
+me=$(basename "$0")
+
+echo "$me - Setup datascience venv"
 cd datascience
 poetry install && poetry run python -m scripts.download_mlruns
 cd -
 
-# Check for the build
-if [[ -z "$ENV_TARGET" ]]; then
-    echo "Run in 'development' build. To target another build, you must provide a environment variable called ENV_TARGET with the value 'development', 'staging' or 'production'."
-    export TARGET="development"
-else
-    echo "Run in $ENV_TARGET"
-    export TARGET=$ENV_TARGET
-fi
-
+echo "$me - Using $2 as env file"
 # Get variable from .env file
-network=$(grep "DOCKER_NETWORK=" .env | sed -e 's/.*=//')
+network=$(grep "DOCKER_NETWORK=" $2 | sed -e 's/.*=//')
+echo "$me - Found DOCKER_NETWORK=$network"
 
-# Store the script name for logging
-me=$(basename "$0")
-# Ensure we are in the script directory
-reldir="$(dirname -- "$0")"
-cd "$reldir"
+echo "$me - Create project containers and start them"
+docker compose $1 $2 -f docker-compose.yaml up --build --remove-orphans -d
 
-echo "$me - Create project containers without starting them"
-docker compose -f "../docker-compose.yaml" create --build --force-recreate
-
-if [[ "$ENV_TARGET" == "production" ]]; then
+if [[ "$TARGET_ENV" == "production" ]]; then
+    cd scripts
     echo "$me - Run install-signoz script"
     ./install-signoz.sh -n $network
-fi
-
-if [[ $1 == "up" ]]; then
-    docker compose -f ../docker-compose.yaml "$@"
 fi

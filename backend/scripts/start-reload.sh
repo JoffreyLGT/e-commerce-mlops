@@ -18,4 +18,4 @@ cd $backend_dir
 scripts/prestart.sh
 
 echo "Start with reload"
-poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port $BACKEND_FASTAPI_PORT

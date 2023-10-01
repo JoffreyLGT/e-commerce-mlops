@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     SERVER_NAME: str | None = None
     SERVER_HOST: AnyHttpUrl | None = None
 
-    POSTGRES_SERVER: str | None = None
+    DB_SERVER: str | None = None
     POSTGRES_USER: str | None = None
     POSTGRES_PASSWORD: str | None = None
     POSTGRES_DB: str | None = None
@@ -52,7 +52,7 @@ class Settings(BaseSettings):
             scheme="postgresql",
             user=values.get("POSTGRES_USER"),
             password=values.get("POSTGRES_PASSWORD"),
-            host=f"{values.get('POSTGRES_SERVER') or ''}",
+            host=f"{values.get('DB_SERVER') or ''}",
             path=f"/{values.get('POSTGRES_DB') or ''}",
         )
 

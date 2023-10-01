@@ -22,19 +22,21 @@ E-COMMERCE-MLOPS/
 ├─ .devcontainer/ : fichiers du conteneur de dev
 ├─ .github/workflow/ : Github Actions
 ├─ .vscode/tasks.json : tâches du project global
-├─ backend/ : API de prédiction (sous-projet)
-├─ datascience/ : MLOPS via MLFlow (sous-projet)
+├─ backend/ : Projet - API permettant aux utilisateurs de prédire la catégorie d'un produitg
+├─ datascience/ : Projet - entraînement, tracking et mise à disposition des modèles de prédiction
 ├─ frontend/ : placeholder pour une éventuelle application WEB pour interagir avec l'API
 ├─ scripts/ : liste des scripts globaux du projet
 │ ├─ ressources/ : contient les ressources nécessaires aux scripts
 │ ├─ tests/ : sous-scripts utilisés par `run-tests.sh`
-├─ .env : définition des variables d'environnement
+├─ dev.env : fichier de configuration de l'environnement de développement
+├─ staging.env : fichier de configuration l'environnement de test
+├─ template.env : version "de base" du fichier de configuration
 ```
 
 ## Mise en place avec Docker
 
 1. Remplir le fichier [`.env`](.env) avec les informations du projet.
-2. Toujours dans [`.env`](.env), vérifier que la valeur de la variable `ENV_TARGET` est renseignée.
+2. Toujours dans [`.env`](.env), vérifier que la valeur de la variable `TARGET_ENV` est renseignée.
 3. Exécuter [`scripts/docker-deploy.sh`](scripts/docker-deploy.sh) pour créer les conteneurs.
 4. Lancer les conteneurs via Docker Desktop ou via ligne de commande :
 
@@ -73,7 +75,7 @@ Mise en place :
 
     ```env
     USE_DB_CONTAINER=true
-    POSTGRES_SERVER=localhost
+    DB_SERVER=localhost
     ```
 
 6. Une fois le projet ouvert, ouvrir un terminal dans le dossier `root`, et saisir la commande ci-dessous :
@@ -276,10 +278,10 @@ Le lancement de l'API en mode développement sur le conteneur se fait avec le sc
 ./scripts/start-reload.sh
 ```
 
-VSCode s'occupe automatiquement de la redirection du port 8000.
+VSCode s'occupe automatiquement de la redirection du port $BACKEND_FASTAPI_PORT.
 Ouvrir l’adresse ci-dessous dans un navigateur Web sur la machine hôte pour afficher la documentation :
 
-<http://localhost:8000/docs>
+<http://localhost:$BACKEND_FASTAPI_PORT/docs>
 
 Une tâche portant le nom `Start API in reload mode` permet de lancer l'API en mode développement.
 
