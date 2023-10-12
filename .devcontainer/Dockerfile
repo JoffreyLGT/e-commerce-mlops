@@ -31,13 +31,13 @@ RUN poetry self add poetry-plugin-dotenv
 
 # Cache all packages
 # The goal here is to cache all packages in the docker image, so setup is fast
-ENV POETRY_VIRTUALENVS_IN_PROJECT true
-# backend environment
-COPY --chown=vscode backend/poetry.lock backend/pyproject.toml /workspaces/backend/
-WORKDIR /workspaces/backend/
-RUN poetry install -n
+# ENV POETRY_VIRTUALENVS_IN_PROJECT true
+# # backend environment
+# COPY --chown=vscode backend/poetry.lock backend/pyproject.toml /workspaces/backend/
+# WORKDIR /workspaces/backend/
+# RUN poetry install -n
 
-# backend environment
-COPY --chown=vscode datascience/poetry.lock datascience/pyproject.toml /workspaces/datascience/
-WORKDIR /workspaces/datascience/
-RUN poetry install -n
+# # backend environment
+# COPY --chown=vscode datascience/poetry.lock datascience/pyproject.toml /workspaces/datascience/
+# WORKDIR /workspaces/datascience/
+# RUN poetry install -n

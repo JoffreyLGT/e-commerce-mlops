@@ -20,7 +20,7 @@ services:
     # (Adding the "ports" property to this file will not forward from a Codespace.)
 
     env_file:
-      - ../.env
+      - ../dev.env
 
     environment:
       - SERVER_NAME=${DOMAIN:-localhost}
@@ -36,7 +36,7 @@ services:
       - postgres-data:/var/lib/postgresql/data
 
     env_file:
-      - ../.env
+      - ../dev.env
 
     # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward PostgreSQL locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
