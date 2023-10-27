@@ -5,14 +5,19 @@ date: 2023-10-27
 tags:
 - dev
 ---
-> [!caution]
-> This page in under construction and might be incomplete.
+> [!caution] This page in under construction and might be incomplete.
 
+ > [!todo]-
+ > - [ ] Add a section regarding templates usage in Obsidian.
+ > - [ ] Add a section to explain how to run the documentation locally.
 ## Introduction
 
 This documentation is built using [Quartz v4.1.0.](https://quartz.jzhao.xyz/)
 It allows us to use the directory `docs/content` as an [Obsidian vault](https://obsidian.md/) for a fast and visual editing allowing easy linking between pages.
 
+Here is a comparison between how this page is displayed on Obsidian and how it will be rendered:
+
+![[developer-documentation-obsidian_quartz_comparison.png]]
 ## Update the documentation
 ### Requirements
 
