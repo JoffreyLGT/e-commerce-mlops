@@ -17,7 +17,7 @@ It allows us to use the directory `docs/content` as an [Obsidian vault](https://
 
 Here is a comparison between how this page is displayed on Obsidian and how it will be rendered:
 
-![[developer-documentation-obsidian_quartz_comparison.png]]
+![Comparison between the documentation and how it is displayed in Obsidian](assets/developer-documentation-obsidian_quartz_comparison.png)
 ## Update the documentation
 ### Requirements
 
