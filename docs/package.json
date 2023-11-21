@@ -2,7 +2,7 @@
   "name": "reagan-docs",
   "description": "Documentation of Reagan: the e-commerce product classification platform.",
   "private": true,
-  "version": "4.1.0",
+  "version": "4.1.1",
   "type": "module",
   "author": "Joffrey Lagut <joffreylagut.work@outlook.fr>",
   "license": "GPL-V3",
@@ -24,7 +24,6 @@
     "node": ">=18.14"
   },
   "keywords": [
-    "blog"
   ],
   "bin": {
     "quartz": "./quartz/bootstrap-cli.mjs"
