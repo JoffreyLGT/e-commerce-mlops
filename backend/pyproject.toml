@@ -52,6 +52,7 @@ opentelemetry-instrumentation-tortoiseorm = "^0.40b0"
 opentelemetry-instrumentation-urllib3 = "^0.40b0"
 pydantic = { version = "^1.10.12", extras = ["dotenv"] }
 requests = "^2.31.0"
+bcrypt = "^4.1.2"
 
 
 [tool.poetry.group.dev.dependencies]

@@ -28,6 +28,8 @@ def init_db(db: Session) -> None:
     user = crud_user.get_by_email(db, email=settings.FIRST_ADMINUSER)
     if not user:
         print("Adding FIRST_ADMINUSER to DB.")
+        # TODO @joffreylgt: encrypt password before storing it in DB
+        #  https://www.npmjs.com/package/bcrypt
         user_in = UserCreate(
             email=settings.FIRST_ADMINUSER,
             password=settings.FIRST_ADMINUSER_PASSWORD,
