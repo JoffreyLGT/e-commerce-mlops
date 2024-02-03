@@ -35,4 +35,3 @@ const response = await Auth(request, {
 });
 
 console.log(response);
-
